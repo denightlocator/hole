@@ -1,0 +1,28 @@
+{
+  "name": "hole-io-multiplayer",
+  "version": "1.0.0",
+  "description": "Real-time 3D multiplayer Hole.io game featuring big city maps, smart bots, level progression, and WebSockets.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "keywords": [
+    "game",
+    "hole-io",
+    "multiplayer",
+    "threejs",
+    "websocket",
+    "webgl",
+    "3d",
+    "gaming",
+    "browser-game"
+  ],
+  "author": "Arena Game Dev",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1",
+    "three": "^0.186.1",
+    "ws": "^8.22.0"
+  }
+}

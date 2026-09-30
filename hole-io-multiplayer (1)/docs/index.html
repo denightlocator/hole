@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hole.io 3D Multiplayer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23000%22 stroke=%22%2300f2fe%22 stroke-width=%228%22/></svg>">
+  <link rel="stylesheet" href="./css/style.css">
+  <!-- Shared constants -->
+  <script src="./shared/constants.js"></script>
+</head>
+<body>
+  <!-- 3D WebGL Canvas Container -->
+  <div id="game-container"></div>
+
+  <!-- LOBBY / MENU OVERLAY -->
+  <div id="lobby-screen">
+    <div class="lobby-modal ui-interactive">
+      <!-- Player Profile Summary Header -->
+      <div class="lobby-profile-header">
+        <div class="profile-chip" id="lobby-coins-chip" title="Saved Coins">
+          <span class="chip-icon">🪙</span>
+          <span id="lobby-coins-val">200</span>
+        </div>
+        <div class="profile-chip" id="lobby-career-chip" title="Career Rank">
+          <span class="chip-icon">🏆</span>
+          <span id="lobby-career-val">Lv. 1 Street Puddle</span>
+        </div>
+      </div>
+
+      <h1 class="game-title">HOLE.IO 3D</h1>
+      <p class="game-subtitle">Real-time Multiplayer Urban Devourer</p>
+
+      <!-- 3D Hole & Outer Layer Preview Viewport -->
+      <div class="hole-preview-box">
+        <div id="skin-preview-3d" class="preview-viewport-3d">
+          <!-- Mini Three.js canvas dynamically mounted here -->
+        </div>
+        <div class="preview-skin-label" id="preview-skin-label">
+          <span id="preview-skin-name">🐷 Peppa Pig</span>
+          <span class="outer-tag" id="preview-outer-tag">3D EARS & SNOUT</span>
+        </div>
+      </div>
+
+      <!-- Player Name -->
+      <div class="form-group">
+        <label for="player-name">Player Name</label>
+        <input type="text" id="player-name" class="text-input" placeholder="Enter nickname..." maxlength="15" value="VoidMaster">
+      </div>
+
+      <!-- Room Selection & Multiplayer Settings -->
+      <div class="form-group">
+        <label for="room-id">Multiplayer Room (or keep 'default')</label>
+        <input type="text" id="room-id" class="text-input" placeholder="Room Code (e.g. city1)" maxlength="16" value="default">
+      </div>
+
+      <!-- Game Mode Selection -->
+      <div class="form-group">
+        <label>Game Mode</label>
+        <div class="settings-pills-row" id="mode-selector">
+          <button type="button" class="mode-pill active" data-mode="classic">⏱️ Classic</button>
+          <button type="button" class="mode-pill" data-mode="battle_royale">🔥 Battle Royale</button>
+          <button type="button" class="mode-pill" data-mode="endless">♾️ Endless</button>
+          <button type="button" class="mode-pill" data-mode="monster_hunt">👾 Monster Hunt</button>
+        </div>
+      </div>
+
+      <!-- Map Selection -->
+      <div class="form-group">
+        <label>Massive City Map (700×700)</label>
+        <div class="settings-pills-row" id="map-selector">
+          <button type="button" class="map-pill active" data-map="metropolis">🏙️ Metropolis</button>
+          <button type="button" class="map-pill" data-map="airport_resort">✈️ Airport & Resort</button>
+          <button type="button" class="map-pill" data-map="amusement_park">🎡 Carnival Park</button>
+          <button type="button" class="map-pill" data-map="suburbs">🏡 Suburbs & Country</button>
+          <button type="button" class="map-pill" data-map="cyberpunk">🌃 Cyberpunk</button>
+        </div>
+      </div>
+
+      <!-- Quick Skin Aura Selector Bar -->
+      <div class="form-group">
+        <div class="skin-selector-header">
+          <label>Skin & 3D Outer Layer</label>
+          <button type="button" class="btn-text-action" id="open-locker-btn">👗 Skin Shop (🪙 Coins)</button>
+        </div>
+        <div class="skin-grid" id="skin-options">
+          <!-- Filled dynamically by ui.js -->
+        </div>
+      </div>
+
+      <!-- Primary Action Buttons -->
+      <button id="play-btn" class="btn-primary">ENTER CITY</button>
+
+      <div class="lobby-actions-row">
+        <button type="button" class="btn-action-pill" id="open-locker-btn2">
+          <span>👗</span> Skins Locker
+        </button>
+        <button type="button" class="btn-action-pill" id="open-stats-btn">
+          <span>📊</span> Career Stats
+        </button>
+      </div>
+
+      <!-- Download Button for GitHub -->
+      <a href="./hole-io-multiplayer.zip" download="hole-io-multiplayer.zip" class="btn-secondary" id="download-zip-btn">
+        📦 Download Source ZIP (Ready for GitHub)
+      </a>
+
+      <!-- How to Play Quick Guide -->
+      <div class="help-card">
+        <span>🖱️ <b>Mouse/Touch:</b> Steer</span>
+        <span>⚡ <b>Space/Click:</b> Boost</span>
+        <span>🏢 <b>Grow:</b> Eat City</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKINS WARDROBE / LOCKER MODAL -->
+  <div id="locker-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog ui-interactive">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <h2>👗 CUSTOM SKINS & OUTER LAYERS</h2>
+          <p>Equip custom character faces, 3D horns, petals, crowns and halos!</p>
+        </div>
+        <div class="modal-header-right">
+          <div class="profile-chip">
+            <span>🪙</span> <span id="locker-coin-val">200</span>
+          </div>
+          <button class="modal-close-btn" id="close-locker-btn">&times;</button>
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="locker-tabs" id="locker-tabs">
+        <button class="tab-btn active" data-tab="all">All</button>
+        <button class="tab-btn" data-tab="Character">Characters</button>
+        <button class="tab-btn" data-tab="Anime">Anime</button>
+        <button class="tab-btn" data-tab="Nature">Nature</button>
+        <button class="tab-btn" data-tab="Mythic">Mythic</button>
+        <button class="tab-btn" data-tab="Space">Space</button>
+        <button class="tab-btn" data-tab="Classic">Classic</button>
+      </div>
+
+      <!-- Skin Cards Grid -->
+      <div class="skins-grid-container" id="locker-skins-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CAREER STATS & PROGRESS MODAL -->
+  <div id="stats-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog ui-interactive">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <h2>📊 CAREER PROGRESS & STATS</h2>
+          <p>Your saved progression, devouring history and unlocked achievements</p>
+        </div>
+        <button class="modal-close-btn" id="close-stats-btn">&times;</button>
+      </div>
+
+      <div class="career-level-banner">
+        <div class="career-title-large" id="career-rank-title">Level 1: Street Puddle</div>
+        <div class="career-xp-bar-bg">
+          <div class="career-xp-bar-fill" id="career-xp-bar-fill"></div>
+        </div>
+        <div class="career-xp-label" id="career-xp-label">0 / 200 Career XP</div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-cards-grid">
+        <div class="stats-card">
+          <div class="stats-num" id="stat-matches">0</div>
+          <div class="stats-label">Matches Played</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-num" id="stat-wins">0</div>
+          <div class="stats-label">1st Place Wins</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-num" id="stat-kills">0</div>
+          <div class="stats-label">Holes Devoured</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-num" id="stat-props">0</div>
+          <div class="stats-label">Props Swallowed</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-num" id="stat-highscore">0</div>
+          <div class="stats-label">Highest Score</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-num" id="stat-coins-earned">0</div>
+          <div class="stats-label">Saved Coins</div>
+        </div>
+      </div>
+
+      <!-- Achievements Section -->
+      <div class="achievements-section">
+        <h3 class="ach-title">🏆 ACHIEVEMENTS</h3>
+        <div class="achievements-list" id="achievements-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IN-GAME HUD -->
+  <div id="game-hud">
+    <!-- Top Left Status -->
+    <div class="hud-top-left">
+      <div class="hud-pill" id="hud-room-label">Room: default</div>
+      <div class="hud-pill" id="hud-mode-label">⏱️ Classic</div>
+      <div class="hud-pill" id="hud-zone-label" style="display: none; color: #ff3344;">🔥 Safe Zone: 240m</div>
+      <div class="hud-pill" id="hud-monster-label" style="display: none; color: #ffd700;">👾 Kaiju Monster Active</div>
+      <div class="hud-pill" id="hud-ping">20 ms</div>
+      <button class="btn-icon" id="mute-btn" title="Toggle Sound">🔊</button>
+    </div>
+
+    <!-- Top Center Timer -->
+    <div class="hud-top-center">
+      <div class="timer-box">
+        <div class="timer-val" id="hud-timer">02:00</div>
+      </div>
+    </div>
+
+    <!-- Top Right Leaderboard -->
+    <div class="hud-top-right">
+      <div class="lb-title">
+        <span>Leaderboard</span>
+        <span>Score</span>
+      </div>
+      <div class="lb-list" id="hud-leaderboard-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Center Floating Announcement -->
+    <div id="announcement-banner">
+      <div class="ann-title">DOUBLE GULP!</div>
+      <div class="ann-sub">+50 XP</div>
+    </div>
+
+    <!-- Bottom Center Mini-Map -->
+    <div class="hud-bottom-center">
+      <canvas id="minimap-canvas" width="110" height="110"></canvas>
+    </div>
+
+    <!-- Bottom Left Level & XP -->
+    <div class="hud-bottom-left">
+      <div class="level-info-row">
+        <div class="level-badge" id="hud-level-badge">LVL 1</div>
+        <div class="level-name" id="hud-level-name">Tiny Puddle</div>
+      </div>
+      <div class="xp-bar-bg">
+        <div class="xp-bar-fill" id="hud-xp-fill"></div>
+        <div class="xp-bar-text" id="hud-xp-text">0 / 35 XP</div>
+      </div>
+    </div>
+
+    <!-- Bottom Right Boost Bar -->
+    <div class="hud-bottom-right">
+      <div class="boost-info-row">
+        <span>BOOST</span>
+        <span>SPACE / CLICK</span>
+      </div>
+      <div class="boost-bar-bg">
+        <div class="boost-bar-fill" id="hud-boost-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME OVER PODIUM OVERLAY -->
+  <div id="game-over-screen">
+    <div class="game-over-modal ui-interactive">
+      <h2 class="game-over-title">MATCH COMPLETED!</h2>
+
+      <!-- Top 3 Podium -->
+      <div class="podium-container">
+        <!-- 2nd Place -->
+        <div class="podium-col rank-2" id="podium-2nd">
+          <div class="podium-crown">🥈</div>
+          <div class="podium-name">Player 2</div>
+          <div class="podium-score">650 XP</div>
+          <div class="podium-kills">⚔️ 2 Kills</div>
+        </div>
+
+        <!-- 1st Place (Center & Tallest) -->
+        <div class="podium-col rank-1" id="podium-1st">
+          <div class="podium-crown">👑</div>
+          <div class="podium-name">Winner</div>
+          <div class="podium-score">1420 XP</div>
+          <div class="podium-kills">⚔️ 5 Kills</div>
+        </div>
+
+        <!-- 3rd Place -->
+        <div class="podium-col rank-3" id="podium-3rd">
+          <div class="podium-crown">🥉</div>
+          <div class="podium-name">Player 3</div>
+          <div class="podium-score">410 XP</div>
+          <div class="podium-kills">⚔️ 1 Kills</div>
+        </div>
+      </div>
+
+      <!-- Your Personal Match Summary -->
+      <div class="personal-stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Your Rank</div>
+          <div class="stat-val" id="self-final-rank">#1</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Score</div>
+          <div class="stat-val" id="self-final-score">1420 XP</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Holes Devoured</div>
+          <div class="stat-val" id="self-final-kills">5</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Highest Tier</div>
+          <div class="stat-val" id="self-final-level">Level 6</div>
+        </div>
+      </div>
+
+      <!-- Match Saved Rewards Banner -->
+      <div class="match-rewards-banner" id="match-rewards-box">
+        <div class="rewards-title">🎁 SAVED PROGRESS REWARDS</div>
+        <div class="rewards-items">
+          <div class="reward-pill" id="reward-coins-pill">🪙 +120 Coins</div>
+          <div class="reward-pill" id="reward-xp-pill">⭐ +450 Career XP</div>
+          <div class="reward-pill highlight" id="reward-level-pill" style="display: none;">🎉 LEVEL UP!</div>
+        </div>
+      </div>
+
+      <button id="play-again-btn" class="btn-primary">PLAY NEXT ROUND</button>
+    </div>
+  </div>
+
+  <!-- Game Client ES Module Script -->
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

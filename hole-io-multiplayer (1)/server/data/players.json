@@ -1,0 +1,55 @@
+{
+  "testplayer": {
+    "username": "TestPlayer",
+    "coins": 0,
+    "careerXp": 0,
+    "careerLevel": 1,
+    "careerTitle": "Street Puddle",
+    "selectedSkin": "dora",
+    "unlockedSkins": [
+      "peppa-pig",
+      "neon-cyan",
+      "neon-pink",
+      "toxic-lime",
+      "dora"
+    ],
+    "stats": {
+      "matchesPlayed": 0,
+      "matchesWon": 0,
+      "totalKills": 0,
+      "totalPropsSwallowed": 0,
+      "highestScore": 0
+    },
+    "achievements": {}
+  },
+  "testplayer_1790777617044": {
+    "username": "TestPlayer_1790777617044",
+    "coins": 1300,
+    "careerXp": 12000,
+    "careerLevel": 9,
+    "careerTitle": "Metropolis Eater",
+    "selectedSkin": "cosmic-galaxy",
+    "unlockedSkins": [
+      "peppa-pig",
+      "neon-cyan",
+      "neon-pink",
+      "toxic-lime",
+      "dora",
+      "cosmic-galaxy"
+    ],
+    "stats": {
+      "matchesPlayed": 1,
+      "matchesWon": 1,
+      "totalKills": 5,
+      "totalPropsSwallowed": 1500,
+      "highestScore": 12000
+    },
+    "achievements": {
+      "first_bite": 1790777617047,
+      "hole_hunter": 1790777617047,
+      "first_win": 1790777617047,
+      "level_six": 1790777617047,
+      "skyscraper_eater": 1790777617047
+    }
+  }
+}
