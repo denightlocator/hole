@@ -1,0 +1,8 @@
+{
+  "key.category.novaclient.main": "Nova Client",
+  "key.novaclient.open": "Open Nova menu",
+  "key.novaclient.sp_toggle": "Spotify: play / pause",
+  "key.novaclient.sp_next": "Spotify: next track",
+  "key.novaclient.sp_prev": "Spotify: previous track",
+  "key.novaclient.yt_next": "YouTube widget: next link"
+}

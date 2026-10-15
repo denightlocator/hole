@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "novaclient",
+  "version": "${version}",
+  "name": "Nova Client",
+  "description": "Clean HUD client: widgets, staff list, Spotify, YouTube and a Right-Ctrl config GUI.",
+  "authors": ["you"],
+  "environment": "client",
+  "entrypoints": { "client": ["com.novaclient.NovaClient"] },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
