@@ -36,30 +36,35 @@ var CLAW_SND = {
 }
 
 var CLAW_STEP = {
-  slash1: 6,
-  drop1: 17,
-  spin: 12,
-  dropSpin: 25,
-  slash2: 25,
-  drop2: 36,
-  rest: 32,
-  end: 38,
+  slash1: 8,
+  drop1: 26,
+  spin: 21,
+  turn: 12,
+  dropSpin: 40,
+  slash2: 40,
+  drop2: 58,
+  rest: 55,
+  end: 60,
+  draw: 6,
+  fly: 10,
 }
 
 var CLAW_POSE = [
   [0, {}],
-  [5, { TorsoNode: [-6, 22, 0], HeadMesh: [0, -15, 0], ArmRightMesh: [-155, 0, -30], ArmLeftMesh: [20, 0, 12], LegRightMesh: [12, 0, 0], LegLeftMesh: [-12, 0, 0] }],
-  [7, { TorsoNode: [14, -28, 0], HeadMesh: [0, 20, 0], ArmRightMesh: [-40, 0, 50], ArmLeftMesh: [30, 0, 15], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
-  [10, { TorsoNode: [10, -38, 0], HeadMesh: [0, 25, 0], ArmRightMesh: [15, 0, 35], ArmLeftMesh: [10, 0, 20], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
-  [12, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 0],
-  [14, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 90],
-  [16, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 180],
-  [18, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 270],
-  [20, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 360],
-  [24, { TorsoNode: [-6, -22, 0], HeadMesh: [0, 15, 0], ArmLeftMesh: [-155, 0, 30], ArmRightMesh: [20, 0, -12], LegLeftMesh: [12, 0, 0], LegRightMesh: [-12, 0, 0] }, 360],
-  [26, { TorsoNode: [14, 28, 0], HeadMesh: [0, -20, 0], ArmLeftMesh: [-40, 0, -50], ArmRightMesh: [30, 0, -15], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
-  [29, { TorsoNode: [10, 38, 0], HeadMesh: [0, -25, 0], ArmLeftMesh: [15, 0, -35], ArmRightMesh: [10, 0, -20], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
-  [32, {}, 360],
+  [8, { TorsoNode: [-6, 22, 0], HeadMesh: [0, -15, 0], ArmRightMesh: [-155, 0, -30], ArmLeftMesh: [20, 0, 12], LegRightMesh: [12, 0, 0], LegLeftMesh: [-12, 0, 0] }],
+  [11, { TorsoNode: [1, 4, 0], HeadMesh: [0, -3, 0], ArmRightMesh: [-115, 0, -2], ArmLeftMesh: [23, 0, 13], LegRightMesh: [2, 0, 0], LegLeftMesh: [-2, 0, 0] }],
+  [14, { TorsoNode: [14, -28, 0], HeadMesh: [0, 20, 0], ArmRightMesh: [-40, 0, 50], ArmLeftMesh: [30, 0, 15], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
+  [18, { TorsoNode: [10, -38, 0], HeadMesh: [0, 25, 0], ArmRightMesh: [15, 0, 35], ArmLeftMesh: [10, 0, 20], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
+  [21, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 0],
+  [24, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 90],
+  [27, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 180],
+  [30, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 270],
+  [33, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 360],
+  [40, { TorsoNode: [-6, -22, 0], HeadMesh: [0, 15, 0], ArmLeftMesh: [-155, 0, 30], ArmRightMesh: [20, 0, -12], LegLeftMesh: [12, 0, 0], LegRightMesh: [-12, 0, 0] }, 360],
+  [43, { TorsoNode: [1, -4, 0], HeadMesh: [0, 3, 0], ArmLeftMesh: [-115, 0, 2], ArmRightMesh: [23, 0, -13], LegLeftMesh: [2, 0, 0], LegRightMesh: [-2, 0, 0] }, 360],
+  [46, { TorsoNode: [14, 28, 0], HeadMesh: [0, -20, 0], ArmLeftMesh: [-40, 0, -50], ArmRightMesh: [30, 0, -15], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
+  [50, { TorsoNode: [10, 38, 0], HeadMesh: [0, -25, 0], ArmLeftMesh: [15, 0, -35], ArmRightMesh: [10, 0, -20], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
+  [55, {}, 360],
 ]
 
 var CLAW_NODES = ["TorsoNode", "HeadMesh", "ArmRightMesh", "ArmLeftMesh", "LegLeftMesh", "LegRightMesh"]
@@ -240,7 +245,7 @@ var clawSize = () => Math.max(0.5, Math.min(3, CLAW_CFG.slashSize))
 var clawNear = () => 0.9 + 1.3 * clawSize()
 
 function clawFront(age) {
-  var fly = 1 - Math.min(1, Math.max(0, age - 3) / 7)
+  var fly = 1 - Math.min(1, Math.max(0, age - CLAW_STEP.draw - 1) / CLAW_STEP.fly)
   return (1 - fly * fly) * Math.max(0, clawReach(false) - clawNear())
 }
 
@@ -261,12 +266,12 @@ function clawPoint(c, side, arc, u, drift, back) {
 function clawSlash(c, tag, side, age) {
   var rows = CLAW_MESH.talon
   var glow = CLAW_MESH.glow
-  var part = Math.min(1, (age + 1) / 2)
+  var part = Math.min(1, (age + 1) / CLAW_STEP.draw)
   var drift = clawFront(age)
   var k = clawSize()
   for (var arc = 0; arc < 3; arc++) {
     var m = CLAW_MESH.mark[arc]
-    var shown = Math.round(rows.length * part)
+    var shown = Math.max(1, Math.round(rows.length * part))
     for (var i = 0; i < shown; i++) {
       var q = clawPoint(c, side, arc, rows[i][0], drift)
       clawBox(c, tag + arc + "_" + i, rows[i][1] * m[2] * k, 0.6 * m[1] * k, rows[i][2], q.at, q.t)
@@ -276,15 +281,15 @@ function clawSlash(c, tag, side, age) {
       clawBox(c, tag + arc + "g" + g, glow[g][1] * m[2] * k, 0.9 * m[1] * k, glow[g][2], h.at, h.t)
     }
     var tip = clawPoint(c, side, arc, rows[shown - 1][0], drift)
-    if (age < 2) clawFx(tip.at, [tip.t[0] * 4, tip.t[1] * 4, tip.t[2] * 4], "white", "core", 0.3 * k, 0.5, "critical_hit", 4, 0.15)
-    else if (age < 3) clawFx(clawPoint(c, side, arc, 0, drift).at, null, "white", "core", 0.3 * k, 0.4, "glint", 3, 0.4 * k)
+    if (age < CLAW_STEP.draw) clawFx(tip.at, [tip.t[0] * 4, tip.t[1] * 4, tip.t[2] * 4], "white", "core", 0.3 * k, 0.5, "critical_hit", 4, 0.15)
+    else if (age === CLAW_STEP.draw) clawFx(clawPoint(c, side, arc, 0, drift).at, null, "white", "core", 0.3 * k, 0.4, "glint", 3, 0.4 * k)
     else {
       var u = ((age * 5 + arc * 3) % 9) / 4 - 1
       clawFx(clawPoint(c, side, arc, u, drift, 0.5).at, [-c.F[0], 0.1, -c.F[2]], "core", "edge", 0.26 * k, 0.5, "glint", 2, 0.15)
       clawFx(clawPoint(c, side, arc, -u, drift, 0.9).at, null, "edge", "deep", 0.34 * k, 0.6, "square_particle", 1, 0.1)
     }
   }
-  clawSweep(c, tag, false, clawNear() + 0.3 + drift)
+  if (age >= CLAW_STEP.draw / 2) clawSweep(c, tag, false, clawNear() + 0.3 + drift)
 }
 
 function clawBurst(c, side, age) {
@@ -299,9 +304,9 @@ function clawBurst(c, side, age) {
 
 function clawRing(c, age) {
   var rows = CLAW_MESH.ring
-  var shown = Math.min(rows.length, 2 + age * 2)
+  var shown = Math.min(rows.length, Math.ceil(((age + 1) / CLAW_STEP.turn) * rows.length))
   var mid = clawAdd(c.pos, [0, 1, 0], 1)
-  var grow = Math.max(0, Math.min(1, (age - 8) / 4))
+  var grow = Math.max(0, Math.min(1, (age - CLAW_STEP.turn) / 6))
   var rad = 2.3 + grow * Math.max(0, clawReach(true) - 2.6)
   var long = ((Math.PI * 2 * rad) / rows.length) * 1.1
   for (var i = 0; i < shown; i++) {
@@ -315,7 +320,7 @@ function clawRing(c, age) {
   }
   var lead = c.turn + (shown / rows.length) * Math.PI * 2 + age * 0.9
   clawFx([mid[0] + Math.cos(lead) * rad, mid[1], mid[2] + Math.sin(lead) * rad], [-Math.sin(lead) * 4, 0.4, Math.cos(lead) * 4], "white", "core", 0.3, 0.5, "critical_hit", 3, 0.12)
-  if (age === 8) clawWave(c, mid, rad)
+  if (age === CLAW_STEP.turn) clawWave(c, mid, rad)
   clawSweep(c, "ring", true, rad + 0.6)
 }
 

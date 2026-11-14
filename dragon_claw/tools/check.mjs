@@ -99,19 +99,20 @@ check(frames.length === T.end + 1, `it lasts ${(frames.length / 20).toFixed(2)} 
 check(s.errors.length === 0, 'every api call is well formed ' + [...new Set(s.errors)].join('; '))
 const at = (n) => frames[n].meshes
 const marks = (n) => at(n).filter((m) => Math.abs(m.r[0]) > 0.05 || m.p[1] > 11.4 || m.p[1] < 10.9)
-check(at(T.slash1).length === 24 && at(T.slash1 + 1).length === 42, 'first claw: three slash marks, each 9 bright meshes on 5 wider dark ones, drawn from one end to the other in 2 ticks')
+const grown = [...Array(T.draw).keys()].map((k) => at(T.slash1 + k).length)
+check(grown[T.draw - 1] === 42 && grown.every((n, k) => !k || n > grown[k - 1]), `first claw: three slash marks, each 9 bright meshes on 5 wider dark ones, drawn bit by bit while the arm comes down (${grown.join(', ')} meshes)`)
 const tall = (n) => { const y = at(n).filter((m) => Math.abs(m.r[0]) > 0.2).map((m) => m.p[1]); return Math.max(...y) - Math.min(...y) }
-check(tall(T.slash1 + 1) > 3.5 && Math.min(...at(T.slash1 + 1).map((m) => m.p[1])) > 9.9, `each claw is ${tall(T.slash1 + 1).toFixed(1)} blocks tall (lowest point ${(Math.min(...at(T.slash1 + 1).map((m) => m.p[1])) - 10).toFixed(2)} above the floor)`)
+check(tall(T.slash1 + T.draw - 1) > 3.5 && Math.min(...at(T.slash1 + T.draw - 1).map((m) => m.p[1])) > 9.9, `each claw is ${tall(T.slash1 + T.draw - 1).toFixed(1)} blocks tall (lowest point ${(Math.min(...at(T.slash1 + T.draw - 1).map((m) => m.p[1])) - 10).toFixed(2)} above the floor)`)
 const zs = (n) => at(n).filter((m) => m.depth < 1.2 && m.width < 0.45).map((m) => m.p[2] - 0.5)
 const lead = (n) => Math.max(...at(n).filter((m) => Math.abs(m.r[0]) > 0.2).map((m) => m.p[2] - 0.5))
-check(lead(T.slash1 + 2) === lead(T.slash1 + 1) && lead(T.slash1 + 4) - lead(T.slash1 + 3) > lead(T.drop1 - 1) - lead(T.drop1 - 2), 'the marks hang for a moment, then shoot off fast and slow down at the end')
-check(lead(T.slash1 + 2) < 3.6 && lead(T.drop1 - 1) > 9 && lead(T.drop1 - 1) <= 10, `the marks then fly forward: ${lead(T.slash1 + 2).toFixed(1)} blocks ahead when drawn, ${lead(T.drop1 - 1).toFixed(1)} when they end (range ${s.run.CLAW_CFG.range})`)
+check(lead(T.slash1 + T.draw) === lead(T.slash1 + T.draw - 1) && lead(T.slash1 + T.draw + 3) - lead(T.slash1 + T.draw + 2) > lead(T.drop1 - 1) - lead(T.drop1 - 2), 'the marks hang for a moment, then shoot off fast and slow down at the end')
+check(lead(T.slash1 + T.draw) < 3.6 && lead(T.drop1 - 1) > 9 && lead(T.drop1 - 1) <= 10, `the marks then fly forward: ${lead(T.slash1 + T.draw).toFixed(1)} blocks ahead when drawn, ${lead(T.drop1 - 1).toFixed(1)} when they end (range ${s.run.CLAW_CFG.range})`)
 const ringOf = (n) => at(n).filter((m) => Math.abs(m.r[0]) < 1e-9 && Math.abs(m.p[1] - 11) < 0.2)
 const radius = (n) => Math.max(...ringOf(n).map((m) => Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5)))
-check(ringOf(T.spin + 7).length === 24 && Math.abs(radius(T.spin + 5) - 2.3) < 0.05 && radius(T.dropSpin - 1) > 5.3, `spin: a ring of 16 bright and 8 dark meshes is drawn round the player, then widens from ${radius(T.spin + 5).toFixed(1)} to ${radius(T.dropSpin - 1).toFixed(1)} blocks`)
-check(at(T.slash2 + 2).filter((m) => Math.abs(m.r[0]) > 0.2).length >= 30, 'second claw: three more slash marks')
+check(ringOf(T.spin + T.turn - 1).length === 24 && Math.abs(radius(T.spin + 5) - 2.3) < 0.05 && radius(T.dropSpin - 1) > 5.3, `spin: a ring of 16 bright and 8 dark meshes is drawn round the player, then widens from ${radius(T.spin + 5).toFixed(1)} to ${radius(T.dropSpin - 1).toFixed(1)} blocks`)
+check(at(T.slash2 + T.draw - 1).filter((m) => Math.abs(m.r[0]) > 0.2).length >= 30, 'second claw: three more slash marks')
 const slope = (n) => { const m = at(n).filter((q) => Math.abs(q.r[0]) > 0.2); const a = m[0], b = m[8]; return Math.sign((b.p[0] - a.p[0]) * (b.p[1] - a.p[1])) }
-check(slope(T.slash1 + 2) === -slope(T.slash2 + 2), 'the two claws cross: one runs down to the left, the other down to the right')
+check(slope(T.slash1 + T.draw - 1) === -slope(T.slash2 + T.draw - 1), 'the two claws cross: one runs down to the left, the other down to the right')
 check(s.meshes.size === 0 && s.run.held() === 0 && s.peak <= 110, `every mesh is deleted at the end; at most ${s.peak} at once`)
 check(worst <= 160, `most api calls in one tick: ${worst}; particles in the whole move: ${s.particles}`)
 check(s.sounds.size >= 6, `${s.sounds.size} different sounds, all names from the documentation`)
@@ -128,7 +129,7 @@ check(steps.every((a) => Object.entries(a.schema.nodeAnimations).every(([n, v]) 
 const end = (a, n) => a.schema.nodeAnimations[n]?.timeline[1].rotation ?? [0, 0, 0]
 const start = (a, n) => a.schema.nodeAnimations[n]?.timeline[0].rotation ?? [0, 0, 0]
 check(steps.every((a, i) => !i || NODES.every((n) => [0, 2].every((k) => Math.abs(start(a, n)[k] - end(steps[i - 1], n)[k]) < 0.011) && Math.abs(Math.sin(start(a, n)[1]) - Math.sin(end(steps[i - 1], n)[1])) < 0.02)), 'each one starts in the pose the one before ended in')
-const spin = steps.filter((a) => a.t >= T.spin && a.t < T.spin + 8)
+const spin = steps.filter((a) => a.t >= T.spin && a.t < T.spin + T.turn)
 check(spin.length === 4 && spin.every((a, i) => Math.abs(end(a, 'TorsoNode')[1] - start(a, 'TorsoNode')[1] - Math.PI / 2) < 0.02 && Math.abs(end(a, 'LegLeftMesh')[1] - end(a, 'TorsoNode')[1]) < 0.02), 'the spin is four quarter turns of the torso, and the legs turn with it')
 check(Math.min(...steps.map((a) => end(a, 'ArmRightMesh')[0])) < -2.5 && Math.min(...steps.slice(8).map((a) => end(a, 'ArmLeftMesh')[0])) < -2.5, 'the right arm is raised for the first claw and the left arm for the second')
 
@@ -174,7 +175,7 @@ const b64 = Buffer.from(JSON.stringify(file), 'utf8').toString('base64')
 const out = path.join(dir, 'animation', 'Dragon Claw.bloxdmation')
 fs.writeFileSync(out, b64)
 const back = JSON.parse(Buffer.from(fs.readFileSync(out, 'utf8').trim(), 'base64').toString('utf8'))
-check(back.format === 'bloxdmation' && back.version === 3 && back.keyframes.length === 13 && back.keyframes.every((k) => NODES.every((n) => finite(k.data[n]))), `wrote animation/Dragon Claw.bloxdmation: ${back.keyframes.length} keyframes, ${b64.length} characters`)
+check(back.format === 'bloxdmation' && back.version === 3 && back.keyframes.length === P.length && back.keyframes.every((k) => NODES.every((n) => finite(k.data[n]))), `wrote animation/Dragon Claw.bloxdmation: ${back.keyframes.length} keyframes, ${b64.length} characters`)
 // the same calls as the game gets, as code the editor's "import code" understands
 const asCode = steps.map((a, i) => i === 0
   ? 'let playerId = myId\napi.animateEntity(playerId, ' + JSON.stringify(a.schema) + ', 0, 1)'

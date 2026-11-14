@@ -16,24 +16,27 @@ right-click handlers working. Then type `!claw`.
 
 From other code: `dragonClaw(playerId)`.
 
-## What happens (1.95 s)
+## What happens (3.05 s)
 
 | Seconds | Player animation | Meshes and particles | Hit |
 |---|---|---|---|
-| 0.00–0.25 | Slow wind-up: right arm goes up and back | Claws appear on both hands (node meshes) | |
-| 0.25–0.35 | Fast strike: the arm rakes down across the body | From 0.30: three slash marks, 4.8 blocks tall, drawn top to bottom in 2 ticks with sparks at the tips | What stands right in front |
-| 0.35–0.60 | Follow-through, held for a moment | The marks hang for one tick with a flash, then shoot forward, fast at first and slowing down, as far as `range` (10 blocks) | Everything they pass, once |
-| 0.60–1.00 | Arms out, full turn in four quarter steps; the legs turn with the body | A ring is drawn round the player as they turn | |
-| 1.00–1.25 | Second wind-up: left arm goes up and back | The ring widens out to `spinRange` (6 blocks); a ring of 18 particles flies outward | Everything the ring reaches, once |
-| 1.25–1.35 | Fast strike the other way | Three more slash marks, crossing the first | |
-| 1.35–1.80 | Follow-through, then back to rest at 1.60 | These hang and fly forward too | Everything they pass, once |
-| 1.60–1.75 | Pose is reset | Claws are taken off | |
+| 0.00–0.40 | Wind-up: right arm goes up and back | Claws appear on both hands (node meshes) | |
+| 0.40–0.70 | The slash: the arm comes down across the body, starting slowly and speeding up | Three slash marks, 4.8 blocks tall, grow from top to bottom together with the arm, a bit more every tick, with sparks at the tips | From half way down: what stands right in front |
+| 0.70–0.90 | Follow-through | The marks hang with a flash | |
+| 0.75–1.30 | Arms go out (from 0.90) | The marks shoot forward, fast at first and slowing down, as far as `range` (10 blocks) | Everything they pass, once |
+| 1.05–1.65 | Full turn in four quarter steps; the legs turn with the body | A ring is drawn round the player, piece by piece, as they turn | |
+| 1.65–2.00 | Second wind-up: left arm goes up and back | The ring widens out to `spinRange` (6 blocks); a ring of 18 particles flies outward | Everything the ring reaches, once |
+| 2.00–2.30 | The second slash, the other way | Three more marks grow with the arm, crossing the first | From half way down |
+| 2.30–2.90 | Follow-through, then back to rest at 2.75 | These hang and fly forward too | Everything they pass, once |
+| 2.75–2.90 | Pose is reset | Claws are taken off | |
 
-At most 57 mesh entities at once and 100 api calls in one tick.
+At most 53 mesh entities at once and 72 api calls in one tick.
 
-The timing is in two tables: `CLAW_POSE` (first number of each row = the tick
-that pose is reached, 20 ticks a second) for the player, and `CLAW_STEP` for
-the meshes. The marks start one tick into each strike.
+The timing is in two tables (20 ticks a second). `CLAW_POSE`: the first number
+of each row is the tick that pose is reached. `CLAW_STEP`: when the marks and
+the ring start and end, plus `draw` (ticks a slash takes to be drawn, 6),
+`fly` (ticks it flies, 10) and `turn` (ticks of the spin, 12). Keep `draw`
+equal to the length of the arm's downswing in `CLAW_POSE`.
 
 ## Range
 
@@ -49,7 +52,7 @@ time in ticks (20 a second) and, per body part, its turn in degrees `[x, y, z]`,
 the same numbers the animation editor shows. A third value on a row is how far
 the whole body has turned (the spin).
 
-The game gets it as 12 small `api.animateEntity` calls, one from each pose to
+The game gets it as 14 small `api.animateEntity` calls, one from each pose to
 the next, of 600 to 750 characters each. The first version sent three calls of
 up to 2,600 characters and the game refused them ("argument is too large").
 Only rotations are sent, rounded to two decimals.
