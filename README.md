@@ -75,8 +75,8 @@ again while one stands, that one stays: remove it first.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 20,508 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 30,724 |
+| `world_code.js` | World Code | 20,126 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 30,342 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -119,7 +119,17 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 
 To change a part, change its row. To add one, add a row: the engine picks it up.
 
-The rows of `head` are all named `model`. In order they are: skull, snout, jaw,
+Every row in `DP_MESH` is named `M`. What each row is, in order:
+
+- `orb`: core, shell.
+- `beam`: one piece of beam.
+- `flare`: core, then the three rays.
+- `blast`: core.
+- `smoke`: puffs 1 to 8.
+- `body`: for each of the 12 segments from neck to tail tip, the segment itself,
+  then its spine, then (where it has them) its belly plate, side patches and side
+  fins. The last three rows are the tail fins, the tail's top fin and its tip.
+- `head`: skull, snout, jaw,
 horns, crest, eyes, cheek fins, brows, upper fangs, lower fangs, throat, whiskers,
 antlers, mane, pupils, teeth, tongue, nostrils, whisker tips, horn tips, back of
 the mane, cheek frills, chin, beard.
@@ -195,8 +205,8 @@ Code, meshes, aiming or damage.
   In `body`, forward is how far behind the head the part follows (negative). In
   `smoke`, it is where the puff ends up.
 - colour: a name from `DP_COL`. `"tint"` is the colour of the orb it belongs to.
-- name: a label for you to read; the code does not use it. Every row of `head` is
-  named `model`, so tell those rows apart by their order (the list below).
+- name: every row is named `M`. The code does not use the name, so tell rows
+  apart by their order, which is listed under "The meshes".
 - flag: `spin` turns by itself, `lit` is shaded instead of glowing. `m` makes the
   part twice, mirrored left and right (write it for the right side). `2` or `3`
   makes it only at that detail level or higher.
