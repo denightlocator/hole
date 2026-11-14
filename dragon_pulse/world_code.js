@@ -490,17 +490,18 @@ function dpHurt(c, at) {
 
 // ------------------------------------------------------ 8. CAST + CALLBACKS
 // Starts the move for a player. Returns true when it started.
-function dragonPulse(playerId) {
+// eye, dir: fire from this point this way instead of from the player's eyes.
+function dragonPulse(playerId, eye, dir) {
   var wait = DP_CFG.cooldown * 20 - (dpClock - (dpLast[playerId] === undefined ? -1e9 : dpLast[playerId]))
   if (wait > 0) {
     api.sendMessage(playerId, "Dragon Pulse is ready in " + Math.ceil(wait / 20) + " s", { color: "violet" })
     return false
   }
   if (dpCasts.length >= DP_CFG.maxCasts) return false
-  var face = api.getPlayerFacingInfo(playerId)
+  var face = eye ? { camPos: eye, dir: dir } : api.getPlayerFacingInfo(playerId)
   var f = dpNorm(face.dir)
   var B = dpBasis(f)
-  var eye = face.camPos
+  eye = face.camPos
   var c = {
     id: playerId,
     ph: 0, // phase

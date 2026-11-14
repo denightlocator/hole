@@ -25,11 +25,50 @@ If your World Code already has `tick`, `onPlayerChat` or `onPlayerAltAction`, do
 not paste the three callbacks at the bottom. Put the one line inside each into
 your own callback instead.
 
+## Goodra
+
+The Pokemon that fires the move in frame 01 is Goodra.
+[`dragon_pulse/goodra.js`](dragon_pulse/goodra.js) builds it from 124 Box meshes.
+
+![Goodra from four sides](dragon_pulse/preview/goodra.png)
+
+*Drawn by `dragon_pulse/tools/render_model.py` outside the game: a rough picture,
+not a screenshot.*
+
+Paste `goodra.js` into World Code **below** `world_code.js`. It also works alone.
+
+| Chat | What happens |
+|---|---|
+| `!goodra` | Goodra stands where you are, facing the way you look |
+| `!goodra pulse` | It fires Dragon Pulse from its mouth |
+| `!goodra off` | It is removed |
+
+Every mesh is one named row in `GOODRA_MESH`, in 11 groups: `head`, `face`,
+`antennae`, `neck`, `torso`, `belly`, `arms`, `legs`, `tail`, `spots`, `slime`.
+Parts that exist on both sides are written once and mirrored.
+
+`GOODRA_CFG` sets the size (`scale`, 0.6 is about 4 blocks tall) and the number of
+parts (`detail`): 1 is the body with 45 meshes, 2 adds face, spots and belly for
+89, 3 is everything with 124.
+
+Not tested in the game either. Two things to look at:
+
+- **Mesh limit.** The game does not publish how many mesh entities a world may
+  hold. If it refuses one, Goodra stops there and tells you in chat how many parts
+  are missing. Lower `detail` then.
+- **Mesh turning.** Goodra is turned to face you and some parts are tilted, with
+  the same call the dragon uses. If parts sit at odd angles, set `rotate: false`:
+  it then faces north, east, south or west and nothing is tilted.
+
+`!goodra off` removes the Goodra this World Code made. If you save World Code
+again while one stands, that one stays: remove it first.
+
 ## Size
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 22,639 | 512,000 |
+| `world_code.js` | World Code | 22,757 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 13,654 | 512,000 together: 36,412 |
 | `code_block.js` | Code Block | 164 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,362 | 32,000 |
 
@@ -118,10 +157,13 @@ It cannot show how the game draws it. Things to look at first in your world:
 |---|---|
 | `beam_blast_frames/` | The 20 reference frames |
 | `dragon_pulse/world_code.js` | The move. Paste into World Code |
+| `dragon_pulse/goodra.js` | Goodra. Paste into World Code below the move |
 | `dragon_pulse/code_block.js` | One line for a code block that casts it |
 | `dragon_pulse/studio/dragon_pulse.scene.json` | The particles as a Particle Studio scene |
 | `dragon_pulse/studio/particles_only.code_block.js` | That scene exported by the studio |
 | `dragon_pulse/studio/build_scene.mjs` | Writes the scene and checks it with the studio's code |
 | `dragon_pulse/tools/sim.mjs` | The test run: `node dragon_pulse/tools/sim.mjs --target` |
+| `dragon_pulse/tools/goodra_check.mjs` | The test of Goodra: `node dragon_pulse/tools/goodra_check.mjs` |
+| `dragon_pulse/tools/render_model.py` | Draws Goodra (needs Pillow) |
 | `dragon_pulse/tools/render.py` | Draws the test run (needs Pillow) |
 | `dragon_pulse/preview/` | The drawings |
