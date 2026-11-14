@@ -248,6 +248,12 @@ var DP_FX = {
   smoke: { tex: "square_particle", life: [1.2, 2], size: [1.5, 3], speed: [0.5, 2], grav: 0.8, col: ["smoke", "shade"], fade: [0.85, 0], blend: 1, drag: 0.2 },
   trail: { tex: "square_particle", life: [1, 1.6], size: [0.5, 1.1], speed: [0, 0.3], col: ["tint", "tint2"], fade: [0.7, 0], blend: 2 },
   spark: { tex: "glint", life: [0.5, 1], size: [0.25, 0.5], speed: [1, 4], col: ["purple", "magenta"], fade: [1, 0], blend: 2, drag: 0.2 },
+  ember: { tex: "square_particle", life: [0.9, 1.6], size: [0.12, 0.3], speed: [0.4, 1.8], grav: 2.5, col: ["tint", "tint2"], fade: [1, 0], blend: 2, hot: 1 },
+  streak: { tex: "glint", life: [0.2, 0.35], size: [0.2, 0.45], speed: [10, 16], col: ["white", "lilac"], fade: [1, 0], blend: 2, drag: 0.5, tight: 1 },
+  gather: { tex: "glint", life: [0.35, 0.5], size: [0.2, 0.4], speed: [5, 7], col: ["tint", "tint2"], fade: [0.4, 1], blend: 2, tight: 1 },
+  debris: { tex: "square_particle", life: [0.7, 1.2], size: [0.2, 0.5], speed: [8, 15], grav: -14, col: ["magenta", "purple"], fade: [1, 0], blend: 2, hot: 1 },
+  shock: { tex: "square_particle", life: [0.4, 0.6], size: [0.5, 1], speed: [12, 16], col: ["tint", "tint2"], fade: [1, 0], blend: 2, drag: 0.3, hot: 1 },
+  glow: { tex: "square_particle", life: [0.25, 0.4], size: [1.4, 2.6], speed: [0, 0.5], col: ["tint", "white"], fade: [0.35, 0], blend: 2 },
 }
 var DP_SKIN = [
   ["purple", "magenta"],
@@ -401,7 +407,9 @@ function dpBeam(c, base, k, tall, wide) {
   for (var n = 0; n < 3; n++) dpPut(c, "beam_ring" + n, top[2], "", dpAdd(base, [0, 1, 0], tall * ((n / 3 + c.t * 0.11) % 1)), null, k)
   dpFx("mote", base, 8, 1.4 * k, "magenta", "white", [0, 1, 0])
   dpFx("flash", dpAdd(base, [0, 1, 0], tall), 6, k)
-  if (c.t % 3 === 0) dpFx("ring", base, 14, 0.4)
+  dpFx("glow", dpAdd(base, [0, 1, 0], tall), 2, k, "magenta")
+  dpColumnFx(c, base, k, tall, wide || 1)
+  if (c.t % 2 === 0) dpRingFx("shock", base, 1.6 * k * (wide || 1), 3, 0.7, 0.1, "magenta", "lilac", 6, c.t)
 }
 
 function dpBurst(c, name, tag, at, k) {
@@ -417,6 +425,13 @@ function dpBoom(c, base, k, tall, e, ring) {
   dpFx("flash", base, 10, (2 + e * 0.5) * k)
   dpFx("impact", base, 8, 2 * k)
   if (e % 3 === 0) dpFx("wave", base, 14, 0.5)
+  if (e < 9) dpFx("debris", base, 7, 1.5 * k, "", "", [0, 1, 0])
+  if (e % 2 === 0) dpRingFx("shock", base, ring * (0.15 + e * 0.07), 4, 1, 0.08, e < 4 ? "lilac" : "magenta", "purple", 8, e * 0.4)
+  if (e === 0) {
+    dpFx("glow", base, 8, 2 * k, "lilac")
+    dpFx("glow", dpAdd(base, [0, 1, 0], tall), 6, 2 * k, "cyan")
+    dpRingFx("shock", dpAdd(base, [0, 1, 0], tall), 2 * k, 5, 1, 0, "cyan", "lilac", 6)
+  }
 }
 
 function dpShock(c, tag, at, rad, thick, col) {
@@ -447,17 +462,24 @@ function dpCircle(c) {
   }
 }
 
-function dpFx(look, pos, n, spread, tint, tint2, dir) {
+function dpFx(look, pos, n, spread, tint, tint2, dir, tall) {
   var L = DP_FX[look]
   var S = 0.6
   var a = DP_COL[L.col[0] === "tint" ? tint : L.col[0]]
   var b = DP_COL[L.col[1] === "tint" ? tint : L.col[1] === "tint2" ? tint2 : L.col[1]]
   var y = L.flat ? 0.04 : 1
+  var w = L.tight ? 0.06 : 0.25
+  var hot = DP_COL.white.concat(L.fade[0])
+  var grad = [
+    { timeFraction: L.hot ? 0.3 : 0, minColor: a.concat(L.fade[0]), maxColor: b.concat(L.fade[0]) },
+    { timeFraction: 1, minColor: a.concat(L.fade[1]), maxColor: b.concat(L.fade[1]) },
+  ]
+  if (L.hot) grad.unshift({ timeFraction: 0, minColor: hot, maxColor: hot })
   api.playParticleEffect({
-    dir1: dir ? dpAdd(dir, [1, 1, 1], -0.25) : [-1, -y, -1],
-    dir2: dir ? dpAdd(dir, [1, 1, 1], 0.25) : [1, y, 1],
-    pos1: [pos[0] - spread, pos[1] - spread, pos[2] - spread],
-    pos2: [pos[0] + spread, pos[1] + spread, pos[2] + spread],
+    dir1: dir ? dpAdd(dir, [1, 1, 1], -w) : [-1, -y, -1],
+    dir2: dir ? dpAdd(dir, [1, 1, 1], w) : [1, y, 1],
+    pos1: [pos[0] - spread, pos[1] - (tall ? 0 : spread), pos[2] - spread],
+    pos2: [pos[0] + spread, pos[1] + (tall || spread), pos[2] + spread],
     texture: L.tex,
     minLifeTime: L.life[0] * S,
     maxLifeTime: L.life[1] * S,
@@ -467,10 +489,7 @@ function dpFx(look, pos, n, spread, tint, tint2, dir) {
     maxSize: L.size[1],
     manualEmitCount: n,
     gravity: [0, (L.grav || 0) / (S * S), 0],
-    colorGradients: [
-      { timeFraction: 0, minColor: a.concat(L.fade[0]), maxColor: b.concat(L.fade[0]) },
-      { timeFraction: 1, minColor: a.concat(L.fade[1]), maxColor: b.concat(L.fade[1]) },
-    ],
+    colorGradients: grad,
     velocityGradients: [
       { timeFraction: 0, factor: 1, factor2: 1 },
       { timeFraction: 1, factor: L.drag || 1, factor2: L.drag || 1 },
@@ -478,6 +497,27 @@ function dpFx(look, pos, n, spread, tint, tint2, dir) {
     blendMode: L.blend,
     hideDist: DP_CFG.hideDist,
   })
+}
+
+function dpRingFx(look, pos, rad, n, out, lift, tint, tint2, pts, turn) {
+  pts = pts || 6
+  for (var i = 0; i < pts; i++) {
+    var a = (i / pts) * 6.2832 + (turn || 0)
+    var x = Math.cos(a)
+    var z = Math.sin(a)
+    dpFx(look, [pos[0] + x * rad, pos[1], pos[2] + z * rad], n, (rad * 3.2) / pts, tint, tint2, [x * out, lift, z * out], 0.3)
+  }
+}
+
+function dpColumnFx(c, base, k, tall, wide) {
+  var r = 1.5 * k * wide
+  dpFx("streak", base, 6, r, "", "", [0, 1, 0], tall)
+  dpFx("ember", base, 5, r * 1.6, "magenta", "lilac", null, tall)
+  for (var i = 0; i < 3; i++) {
+    var a = c.t * 0.7 + i * 2.094
+    var h = tall * ((c.t * 0.09 + i / 3) % 1)
+    dpFx("spark", [base[0] + Math.cos(a) * r * 1.3, base[1] + h, base[2] + Math.sin(a) * r * 1.3], 3, 0.2 * k, "", "", [-Math.sin(a), 0.6, Math.cos(a)])
+  }
 }
 
 var dpNext = (c) => {
@@ -509,6 +549,7 @@ function dpFly(c, pos) {
   var skin = DP_SKIN[c.t % DP_SKIN.length]
   dpFx("aura", pos, 5, 0.9 * k, skin[0], skin[1])
   dpFx("outline", pos, 3, 1.1 * k)
+  dpFx("streak", pos, 3, 0.8 * k, "", "", [-f[0], -f[1], -f[2]])
   var n = c.path.length
   var mid = c.path[Math.max(0, n - 2 - ((c.t * 3) % 9))]
   var skin2 = DP_SKIN[(c.t + 2) % DP_SKIN.length]
@@ -516,6 +557,7 @@ function dpFly(c, pos) {
   if (c.t % 2 === 0) dpFx("wisp", c.path[Math.max(0, n - 10)], 2, 0.6 * k)
   dpFx("trail", c.path[Math.max(0, n - 15)], 3, 0.5 * k, "purple", "magenta")
   dpFx("trail", c.path[Math.max(0, n - 22)], 2, 0.4 * k, "deep", "purple")
+  dpFx("ember", c.path[Math.max(0, n - 6 - ((c.t * 5) % 14))], 3, 0.8 * k, skin2[0], "lilac")
 }
 
 function dpSpiral(c, mid, rad, turn) {
@@ -534,6 +576,10 @@ var DP_PHASE = [
     var skin = DP_SKIN[c.t % DP_SKIN.length]
     dpFx("mote", c.home, c.t > T - 12 ? 8 : 3, 2.6, skin[0], skin[1], [0, 1, 0])
     if (c.t % 10 === 9) dpFx("ring", c.home, 10, 0.3)
+    if (c.t % 2 === 0) dpFx("ember", c.home, 3, 3.4, skin[0], "lilac", null, 0.4)
+    if (c.t % 3 === 0 && c.t > 12) dpRingFx("gather", dpAdd(c.home, [0, 1, 0], 0.5), 3.6, 2, -1, 0.05, "cyan", "magenta", 6, c.t * 0.3)
+    if (c.t > T - 16) dpFx("streak", c.home, 4, 0.5, "", "", [0, 1, 0], 0.5)
+    if (c.t > T - 6 && c.t % 2 === 0) dpFx("glow", dpAdd(c.home, [0, 1, 0], 0.7), 1, 0.3, "magenta")
     if (c.t === T - 24) dpSound("build", c.home)
     if (c.t >= T - 1) dpNext(c)
   },
@@ -546,6 +592,9 @@ var DP_PHASE = [
       dpGroup(c, "pillar", "pillar_", "", c.home, DP_UP, 1, true)
       dpFx("flash", c.home, 12, 1.5)
       dpFx("ring", c.home, 20, 0.4)
+      dpFx("glow", c.home, 5, 1.5, "magenta")
+      dpFx("debris", c.home, 10, 1.2, "", "", [0, 1, 0])
+      dpRingFx("shock", c.home, 1.5, 4, 1, 0.08, "magenta", "cyan", 8)
       dpSound("emerge", c.home)
     }
     c.ct = c.T + c.t
@@ -557,6 +606,8 @@ var DP_PHASE = [
     }
     if (c.t === 7) dpDrop(c, "pillar_")
     dpFx("mote", c.home, 6, 2.6, "magenta", "lilac", [0, 1, 0])
+    dpFx("streak", c.home, 4, 1.2, "", "", [0, 1, 0], h * 1.2)
+    if (c.t % 3 === 1) dpRingFx("shock", c.home, 1 + c.t * 0.35, 2, 0.6, 0.05, "purple", "magenta", 6, c.t)
     dpSpiral(c, mid, Math.min(2, h * 0.2), 0.5)
     if (mid[1] >= c.home[1] + c.reach) {
       dpDrop(c, "ring")
@@ -574,6 +625,9 @@ var DP_PHASE = [
     c.far = Math.max(1, dpLen(dpSub(goal, c.at)))
     dpFx("ring", goal, 14, 0.3)
     dpFx("impact", goal, 6, 0.5)
+    dpRingFx("gather", goal, 3.2, 4, -1, 0, "cyan", "white", 8)
+    dpFx("glow", goal, 2, 0.3, "cyan")
+    dpRingFx("shock", c.at, 1.5, 3, 1, 0, "lilac", "magenta", 6)
     dpSound("lock", c.at)
     dpSound("dive", c.at)
     dpNext(c)
@@ -604,6 +658,8 @@ var DP_PHASE = [
       var at = dpAt(goal, c.B, 0, c.t === 2 ? -0.8 : 0.9, c.t === 2 ? 0.2 : 0.7)
       dpBurst(c, "flare", tag, at, 1)
       dpFx("impact", at, 12, 0.3)
+      dpFx("glow", at, 3, 0.4, c.t === 2 ? "cyan" : "gold")
+      dpRingFx("shock", at, 0.6, 3, 1, 0, "lilac", c.t === 2 ? "cyan" : "gold", 6)
       dpSound("flare", at, c.t === 2 ? 1 : 1.2)
     }
     if (c.t === 6) dpDrop(c, "flareA_")
@@ -635,6 +691,8 @@ var DP_PHASE = [
     dpCloud(c, "smoke", b, 14, 24, 30, 0.04)
     if (c.t < 26 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5 * b), 7, 2.5 * b)
     if (c.t % 3 === 0) dpFx("spark", dpAt(c.goal, c.B, 0, 0, 0.5), 7, 2.5 * b)
+    if (c.t < 28) dpFx("ember", c.goal, 4, 3 * b, "magenta", "purple", null, 1)
+    if (c.t < 12 && c.t % 3 === 0) dpRingFx("smoke", c.goal, 2 + c.t * 0.5, 2, 0.6, 0.1, "", "", 6, c.t)
     if (c.t >= 35) c.ph = 99
   },
 
@@ -643,11 +701,15 @@ var DP_PHASE = [
     if (c.t === 0) {
       dpFx("flash", c.base, 20, 3)
       dpFx("wave", c.base, 20, 0.5)
+      dpFx("glow", c.base, 8, 2.5, "cyan")
+      dpRingFx("shock", c.base, 2, 6, 1, 0, "cyan", "magenta", 8)
+      dpRingFx("shock", c.base, 1, 4, 0.5, 1, "lilac", "magenta", 6, 0.5)
       dpSound("merge", c.base)
       dpSound("climb", c.base)
     }
     dpSpiral(c, [c.base[0], c.base[1] + h * 0.8, c.base[2]], Math.min(4, h * 0.4), 0.36)
     if (c.t % 4 === 0) dpFx("ring", c.at, 12, 0.5)
+    if (c.t % 3 === 0) dpRingFx("gather", c.at, 6, 3, -1, 0, "cyan", "magenta", 6, c.t)
     if (h * 0.8 >= c.reach) dpNext(c)
   },
 
@@ -684,6 +746,9 @@ var DP_PHASE = [
     if (c.t === 36) dpDrop(c, "dust_")
     if (c.t < 30 && c.t % 2 === 0) dpFx("smoke", c.ground, 10, 9 * b)
     if (c.t % 2 === 0) dpFx("spark", c.ground, 10, 10 * b)
+    if (c.t < 40) dpFx("ember", c.ground, 8, 11 * b, "magenta", "cyan", null, 3)
+    if (c.t < 20 && c.t % 3 === 0) dpRingFx("smoke", c.ground, wide, 3, 0.7, 0.15, "", "", 10, c.t)
+    if (c.t < 16 && c.t % 4 === 0) dpRingFx("shock", c.ground, wide * 1.2, 3, 1, 0.05, "purple", "magenta", 10, c.t)
     if (c.t >= 49) c.ph = 99
   },
 ]

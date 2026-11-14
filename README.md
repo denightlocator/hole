@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 30,893 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 41,109 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 47,142 |
+| `world_code.js` | World Code | 35,361 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 45,577 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 51,610 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -249,7 +249,22 @@ meshes of a standing Goodra count toward it, so the code never asks for a 400th.
 
 ## The particles
 
-The 11 particle looks are in `DP_FX` in `world_code.js`, in seconds and blocks.
+The 17 particle looks are in `DP_FX` in `world_code.js`, in seconds and blocks.
+
+| Look | Where it shows |
+|---|---|
+| `ember` | Small squares that start white, turn to colour and drift up: off the circle, off the dragon's body, around the beam, over the smoke |
+| `streak` | Fast thin glints in one direction: speed lines behind the dragon's head, lines racing up the pillar and the beam |
+| `gather` | Glints that fly inward from a ring: energy pulled into the circle, the lock-on closing on the target, the merged dragon charging |
+| `debris` | Bright bits thrown up that fall back: when the dragon breaks out of the floor and when the beam explodes |
+| `shock` | True rings that spread outward (see `dpRingFx`): at the foot of the beam, at the explosion, at the beam's top, around the stars, at the merge |
+| `glow` | A few large soft squares for one flash: beam tip, explosion, stars, lock-on, merge |
+
+`dpRingFx(look, pos, radius, count, out, lift, tint, tint2, points, turn)` plays a
+look from `points` places on a circle, each flying outward (`out` 1) or inward
+(`out` -1). `dpColumnFx` fills the beam's whole height with streaks and embers and
+winds three spark points up around it. One cast plays at most about 170 particles
+in a tick, two about 190.
 
 **The Particle Studio scene is out of date.** `dragon_pulse/studio/` still holds
 the first version of the move (orbs, beams, white dragon). It has not been rebuilt
@@ -361,6 +376,8 @@ list.
 | `blend` | 1 normal, 2 glow |
 | `drag` | Share of its speed left at the end. 1 keeps flying |
 | `flat` | 1: flies level, for rings |
+| `hot` | 1: starts white, then turns to its colours |
+| `tight` | 1: flies in a narrow cone, for streaks |
 
 `DP_ORBS` holds where each cloud orb flies: blocks behind the head (negative),
 to the right, and up. `DP_SKIN` holds the colour pairs the dragon shimmers in. `GOODRA_MOUTH`
@@ -384,8 +401,8 @@ It cannot show how the game draws it. Things to look at first in your world:
 - **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
   together and share `maxMeshes` (399). Two dragons need 371; a third at the same time is cut
   short.
-- **Speed.** At full detail one dragon makes up to 280 api calls per tick, two
-  up to 530. If the game stutters or stops the script, lower `detail`.
+- **Speed.** At full detail one dragon makes up to 290 api calls per tick, two
+  up to 540. If the game stutters or stops the script, lower `detail`.
 - **Killing.** The target is killed with `api.killLifeform`. If the game refuses
   that call, the code takes 99,999 health instead.
 - **The nuke** does not break blocks.

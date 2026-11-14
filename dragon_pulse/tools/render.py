@@ -98,7 +98,7 @@ def load(path):
                 rnd = lambda a, b: a + (b - a) * random.random()
                 dirv = [rnd(o['dir1'][i], o['dir2'][i]) for i in range(3)]
                 power = rnd(o['minEmitPower'], o['maxEmitPower']) * S
-                c0 = o['colorGradients'][0]; k = random.random()
+                c0 = o['colorGradients'][1 if len(o['colorGradients']) > 2 else 0]; k = random.random()
                 live.append(dict(born=f['t'], life=rnd(o['minLifeTime'], o['maxLifeTime']) / S,
                                  pos=[rnd(o['pos1'][i], o['pos2'][i]) for i in range(3)], vel=[v * power for v in dirv],
                                  grav=o['gravity'][1] * S * S, size=rnd(o['minSize'], o['maxSize']), blend=o['blendMode'],

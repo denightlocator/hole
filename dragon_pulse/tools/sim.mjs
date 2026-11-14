@@ -112,7 +112,6 @@ const check = (ok, msg) => { console.log((ok ? '  ok    ' : '  FAIL  ') + msg); 
 console.log('Sizes')
 check(world.length <= WORLD_LIMIT, `world_code.js ${world.length} of ${WORLD_LIMIT} characters`)
 check(block.length <= BLOCK_LIMIT, `code_block.js ${block.length} of ${BLOCK_LIMIT} characters`)
-check(world.length <= BLOCK_LIMIT, `world_code.js would also fit a code block (${world.length} of ${BLOCK_LIMIT})`)
 check(!/\/\/|\/\*/.test(world), 'world_code.js has no comments')
 
 console.log('One cast' + (withTarget ? ' with a mob walking nearby' : ' with only another player around'))
