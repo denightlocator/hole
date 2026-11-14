@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 24,539 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 34,754 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 40,786 |
+| `world_code.js` | World Code | 26,463 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 36,679 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 42,712 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -146,8 +146,8 @@ the table columns mean is written on this page instead.
 
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|
-| circle | The summoning circle draws itself ring by ring; the star in it turns | 38 flat meshes in 6 rings, rising sparks | 0.0–2.5 |
-| emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 100 meshes: a 42-part head and a 58-part body that follows the head's path | 2.5–3.15 |
+| circle | The summoning circle draws itself ring by ring; the star in it turns | 83 meshes in 13 rings: two outer rings with tick marks, an octagon, a turning six-pointed star, a hexagon and a square turning the other way, four spikes, six floating runes, six standing crystals, a halo above and a core; rising sparks | 0.0–2.5 |
+| emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 113 meshes: a 55-part head and a 58-part body that follows the head's path | 2.5–3.15 |
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | two 4-part star meshes, sparks | 4.7–5.3 |
@@ -158,7 +158,7 @@ After two dragons touch, the one that is left runs these steps instead:
 
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
-| mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 100 meshes, bigger | 1.2 s |
+| mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 113 meshes, bigger | 1.2 s |
 | nuke | A fireball with three rays grows until it reaches the ground; shock waves in the sky and on the ground. Everything within 22 blocks dies | 4 meshes that grow, flashes and waves | 0.8 s |
 | cloud | A mushroom cloud: a cap three times the size of the normal smoke on a stem down to the ground | 8 cap meshes, 5 stem meshes, smoke | 2.5 s |
 
@@ -177,7 +177,7 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | Group | Rows | What it is |
 |---|---|---|
 | `pillar` | 1 | The pillar of light when the dragon comes out |
-| `head` | 42 | Purple skull, snout and open jaw; two pairs of dark swept-back horns with magenta tips; brows, cyan eyes and pupils; a gem on the forehead; fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins and frills, chin spikes, beard |
+| `head` | 55 | Purple skull and a snout that narrows to the tip; open lower jaw with its own tip and hinges; dark horns in three pieces with magenta tips; a three-step crest; cyan eyes in dark sockets with slit pupils under heavy brows; a nose horn, snout ridge and forehead gem; big and small fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins with frill spikes, chin spikes, beard |
 | `body` | 58 | 12 segments from thick neck to thin tail, purple and dark purple in turn; a tall magenta spine on each, lilac belly plates, cyan stripes on both sides, a pair of wings with lilac tips, a pair of fins, tail fins |
 | `flare` | 4 | The star: a core and three rays |
 | `blast` | 1 | The white core of the explosion |
@@ -196,26 +196,30 @@ Every row in `DP_MESH` is named `M`. What each row is, in order:
   then its spine, then (where it has them) its belly plate, side stripes, and
   wings or fins. The wing tips follow the wings. The last three rows are the tail
   fins, the tail's top fin and its tip.
-- `head`: skull, snout, jaw, horns, crest, eyes, cheek fins, brows, upper fangs,
-  lower fangs, throat, whiskers, second horns, mane, pupils, teeth, tongue,
-  nostrils, whisker tips, horn tips, back of the mane, cheek frills, chin, beard,
-  forehead gem, snout ridge, chin spikes.
+- `head`: skull, snout, snout tip, jaw, horns, crest, eyes, cheek fins, jaw tip,
+  second horn pieces, front and back of the crest, eye sockets, brows, upper
+  fangs, lower fangs, throat, nose horn, snout ridge, whiskers, forehead gem,
+  mane, jaw hinges, horn tips, pupils, upper and lower frill spikes, small fangs,
+  teeth, tongue, nostrils, whisker tips, back of the mane, chin, beard, chin
+  spikes.
 
 The numbers are meshes made at full detail; parts on both sides are written once
-and mirrored. `detail` in `DP_CFG` sets how much of the dragon is made: 1 gives 27
-meshes, 2 gives 65, 3 gives 100.
+and mirrored. `detail` in `DP_CFG` sets how much of the dragon is made: 1 gives 28
+meshes, 2 gives 74, 3 gives 113.
 
 The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 
 ```
-[count, radius, length, width, colour, turn, up, tick, spin, flag]
+[count, radius, length, width, height, colour, turn, up, tick, spin, flag]
 ```
 
-- count boxes stand round the middle at radius, each length long and width wide.
+- count boxes stand round the middle at radius, each length long, width wide and
+  height tall.
 - turn: degrees the whole ring is turned. up: blocks above the floor.
 - tick: when the ring appears, in ticks (20 per second) after the cast.
 - spin: how far the ring turns each tick; 0 stands still.
-- flag `spin`: the boxes are cubes that turn by themselves (the six floating runes).
+- flag `spin`: the boxes turn by themselves (the runes and the core). Flag `r`:
+  the boxes point away from the middle instead of along the ring.
 
 ![The dragon laid out straight](dragon_pulse/preview/dragon.png)
 
@@ -224,8 +228,8 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 *Drawn outside the game with plain light so the parts can be told apart. In the
 game they glow.*
 
-One cast holds at most 138 meshes at once; two dragons about to merge hold up to
-276. All are deleted when the move ends.
+One cast holds at most 196 meshes at once (circle and dragon together, while it
+comes out); two dragons about to merge hold up to 388. All are deleted when the move ends.
 
 ## The particles
 
@@ -234,6 +238,26 @@ The 10 particle looks are in `DP_FX` in `world_code.js`, in seconds and blocks.
 **The Particle Studio scene is out of date.** `dragon_pulse/studio/` still holds
 the first version of the move (orbs, beams, white dragon). It has not been rebuilt
 for the summoning circle and the nuke.
+
+## The sounds
+
+`DP_SND` in `world_code.js` holds one row per moment. Each row is a list of
+sounds played together: `[name, volume, speed]`. Names are from the game's sound
+list.
+
+| Row | When | Sounds |
+|---|---|---|
+| `cast` | the cast | a low bell and a magic accent |
+| `ring` | each ring of the circle appears | a harp note, higher each time |
+| `pulse` | every half second while the circle is drawn | a low drum, faster in pitch each time |
+| `build` | 1.2 s before the dragon comes out | a rising tone |
+| `emerge` | the dragon comes out | a deep roar, an impact and a drum swish |
+| `lock`, `dive` | it has its target and dives | a roar, a beep and a swish |
+| `flare` | each star | a zap and a firecracker |
+| `blast` | the explosion | a cannon and a bass hit |
+| `merge`, `climb` | two dragons merge | a pulse, a very deep roar, a zap and a rising tone |
+| `nuke` | the nuke | three slowed-down blasts together |
+| `rumble` | the cloud | a slow low drum, five times |
 
 ## Settings
 
@@ -244,7 +268,7 @@ for the summoning circle and the nuke.
 | `chat` | Chat message that casts the move. `""` turns it off |
 | `item` | Held item that casts it on right click. `""` turns it off |
 | `range` | Blocks around the circle in which the dragon finds a target |
-| `summon` | Seconds the circle is drawn before the dragon comes out (1.7 at least) |
+| `summon` | Seconds the circle is drawn before the dragon comes out (2.3 at least) |
 | `circleDist` | Blocks in front of the caster where the circle appears |
 | `rise` | Blocks the dragon flies up out of the circle |
 | `hitPlayers` | `false`: the dragon only goes for mobs |
@@ -335,9 +359,9 @@ It cannot show how the game draws it. Things to look at first in your world:
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
   If parts of the dragon are missing, lower `detail`.
 - **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
-  together and share `maxMeshes` (300). Two dragons need 276.
-- **Speed.** At full detail one dragon makes about 190 api calls per tick, two
-  about 370. If the game stutters or stops the script, lower `detail`.
+  together and share `maxMeshes` (400). Two dragons need 388.
+- **Speed.** At full detail one dragon makes up to 250 api calls per tick, two
+  up to 460. If the game stutters or stops the script, lower `detail`.
 - **Killing.** The target is killed with `api.killLifeform`. If the game refuses
   that call, the code takes 99,999 health instead.
 - **The nuke** does not break blocks.
@@ -346,6 +370,8 @@ It cannot show how the game draws it. Things to look at first in your world:
 - **Roofs and walls.** Under a roof the dragon stops rising below it. It flies
   through blocks on its way to the target. The parts of it still below the floor
   only stay hidden if the floor is solid.
+- **Sounds.** I chose them by name; I could not listen to them. Change any row of
+  `DP_SND` that sounds wrong.
 - **Particle speed and blend.** Lifetimes and speeds assume the particle clock the
   studio measured (0.6 per second).
 

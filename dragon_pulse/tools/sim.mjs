@@ -22,12 +22,16 @@ const PARTICLE = ['dir1', 'dir2', 'pos1', 'pos2', 'texture', 'minLifeTime', 'max
   'maxEmitPower', 'minSize', 'maxSize', 'manualEmitCount', 'gravity', 'colorGradients', 'velocityGradients', 'blendMode']
 const TEXTURES = ['arrow', 'bubble', 'critical_hit', 'drift', 'effect_5', 'fishingFishSilhouette', 'generic_2',
   'glint', 'heart', 'scary_face', 'soul_0', 'square_particle', 'z-particle']
+// names from SOUNDS_AND_MUSIC.md of the official docs
+const SOUNDS = ['ominousBellHit', 'magicAccent2', 'harp_pling', 'lowDrum1', 'suspenseRiser', 'gorillaRoar1', 'hauntedHorrorImpact', 'bigDrumSwish1',
+  'bearRoar3', 'sonarBeep', 'drumSwish1', 'zapAccent2', 'firecracker1', 'cannonFire2', 'bassattack', 'futureStrangePulse', 'zapAccent1',
+  'cannonFire1', 'cannonFire3', 'lowDrum3']
 const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object' && v ? Object.values(v).every(finite) : typeof v !== 'number' || Number.isFinite(v))
 
 function makeApi(mob) {
   const meshes = new Map()
   let next = 1
-  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [] }
+  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [], sounds: new Set() }
   const pos = { caster: [0.5, 10, 0.5], other: [20.5, 10, 0.5], dummy: [-14.5, 10, 12.5] }
   const eyes = { caster: { camPos: [0.5, 11.6, 0.5], dir: [0.1, 0.12, 0.99] }, other: { camPos: [20.5, 11.6, 0.5], dir: [-0.1, 0.1, 0.99] } }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
@@ -43,7 +47,7 @@ function makeApi(mob) {
     getPlayerFacingInfo: (id) => eyes[id],
     getHeldItem: () => null,
     sendMessage: (id, m) => s.messages.push(m),
-    broadcastSound: () => { s.calls++ },
+    broadcastSound: (name, vol, rate, o) => { s.calls++; need(SOUNDS.includes(name), 'sound ' + name); need(vol >= 0 && vol <= 1 && rate > 0 && finite(o.playerIdOrPos), 'bad sound'); s.sounds.add(name) },
     attemptCreateMeshEntity: (type, o) => {
       s.calls++
       need(type === 'Box', 'mesh type ' + type)
@@ -117,7 +121,7 @@ const a = run(one)
 const F = a.frames
 const circle = of(F, 0)
 const flat = circle[circle.length - 1]
-check(flat.meshes.length === 38 && Math.max(...ys(flat)) < 10.6 && Math.min(...ys(flat)) > 10, `the summoning circle lies on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
+check(flat.meshes.length === 83 && Math.max(...ys(flat)) < 13 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
 const out = of(F, 1)
 check(out[0].t >= 40, `the dragon comes out after ${(out[0].t / 20).toFixed(2)} s`)
 check(Math.min(...ys(out[2])) < 10 && Math.max(...ys(out[out.length - 1])) > 10 + 14, `it comes up through the floor and dashes ${(Math.max(...ys(out[out.length - 1])) - 10).toFixed(1)} blocks into the air`)
@@ -130,6 +134,7 @@ check(!one.s.hurt.some((h) => h[1] === 'caster'), 'the caster is not hurt')
 check(F.length < 600, `the move ends by itself (${(F.length / 20).toFixed(2)} s)`)
 check(one.s.errors.length === 0, 'every api call is well formed' + (one.s.errors.length ? ': ' + [...new Set(one.s.errors)].join('; ') : ''))
 check(one.s.meshes.size === 0 && one.game.held() === 0, 'every mesh is deleted at the end')
+check(one.s.sounds.size >= 14, `${one.s.sounds.size} different sounds play, all of them names from the documentation`)
 check(one.s.peak <= one.game.DP_CFG.maxMeshes, `most meshes at once: ${one.s.peak}`)
 check(a.worst <= 260, `most api calls in one tick: ${a.worst}`)
 console.log('  Phases: ' + phases(F))
