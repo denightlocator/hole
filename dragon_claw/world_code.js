@@ -4,6 +4,8 @@ var CLAW_CFG = {
   range: 10,
   spinRange: 6,
   slashSize: 1.6,
+  spin: "side",
+  hop: 7,
   damage: 18,
   spinDamage: 10,
   knockback: 6,
@@ -136,7 +138,7 @@ var clawMeshes = 0
 
 function clawNodePose(row, node) {
   var r = (row[1][node] || [0, 0, 0]).slice()
-  if (CLAW_TURNS.indexOf(node) >= 0) r[1] += row[2] || 0
+  if (CLAW_TURNS.indexOf(node) >= 0) r[CLAW_CFG.spin === "side" ? 2 : 1] += row[2] || 0
   return r
 }
 
@@ -223,8 +225,9 @@ function clawBox(c, key, thick, long, col, pos, t, resize) {
     if (!id) return
     c.m[key] = id
     clawMeshes++
-    api.setEntityRotation(id, -Math.asin(Math.max(-1, Math.min(1, t[1]))), Math.atan2(t[0], t[2]), 0)
+    resize = 2
   } else if (resize) api.updateMeshEntity(id, "Box", box)
+  if (resize === 2) api.setEntityRotation(id, -Math.asin(Math.max(-1, Math.min(1, t[1]))), Math.atan2(t[0], t[2]), 0)
   api.setPosition(id, pos[0], pos[1], pos[2])
 }
 
@@ -306,20 +309,25 @@ function clawRing(c, age) {
   var rows = CLAW_MESH.ring
   var shown = Math.min(rows.length, Math.ceil(((age + 1) / CLAW_STEP.turn) * rows.length))
   var mid = clawAdd(c.pos, [0, 1, 0], 1)
+  var side = CLAW_CFG.spin === "side" && age < CLAW_STEP.turn
   var grow = Math.max(0, Math.min(1, (age - CLAW_STEP.turn) / 6))
-  var rad = 2.3 + grow * Math.max(0, clawReach(true) - 2.6)
+  var rad = side ? 1.9 : 2.3 + grow * Math.max(0, clawReach(true) - 2.6)
   var long = ((Math.PI * 2 * rad) / rows.length) * 1.1
+  var X = side ? c.R : [1, 0, 0]
+  var Y = side ? [0, 1, 0] : [0, 0, 1]
+  var how = age === CLAW_STEP.turn && CLAW_CFG.spin === "side" ? 2 : grow > 0
+  var spot = (a, r, wave) => clawAdd(clawAdd(clawAdd(mid, X, Math.cos(a) * r), Y, Math.sin(a) * r), [0, 1, 0], wave)
   for (var i = 0; i < shown; i++) {
-    var a = c.turn + (i / rows.length) * Math.PI * 2
-    var x = Math.cos(a)
-    var z = Math.sin(a)
-    var y = mid[1] + Math.sin(a * 2) * 0.12
+    var a = (side ? Math.PI / 2 : c.turn) + (i / rows.length) * Math.PI * 2
+    var t = clawAdd(clawAdd([0, 0, 0], X, -Math.sin(a)), Y, Math.cos(a))
+    var y = side ? 0 : Math.sin(a * 2) * 0.12
     var k = 1 + grow * 0.6
-    clawBox(c, "ring_" + i, rows[i][0] * k, long, rows[i][1], [mid[0] + x * rad, y, mid[2] + z * rad], [-z, 0, x], grow > 0)
-    if (i % 2 === 0) clawBox(c, "ring_g" + i, rows[i][0] * 1.35 * k, long * 1.6, i % 4 ? "deep" : "edge", [mid[0] + x * (rad - 0.2), y, mid[2] + z * (rad - 0.2)], [-z, 0, x], grow > 0)
+    clawBox(c, "ring_" + i, rows[i][0] * k, long, rows[i][1], spot(a, rad, y), t, how)
+    if (i % 2 === 0) clawBox(c, "ring_g" + i, rows[i][0] * 1.35 * k, long * 1.6, i % 4 ? "deep" : "edge", spot(a, rad - 0.2, y), t, how)
   }
-  var lead = c.turn + (shown / rows.length) * Math.PI * 2 + age * 0.9
-  clawFx([mid[0] + Math.cos(lead) * rad, mid[1], mid[2] + Math.sin(lead) * rad], [-Math.sin(lead) * 4, 0.4, Math.cos(lead) * 4], "white", "core", 0.3, 0.5, "critical_hit", 3, 0.12)
+  var lead = (side ? Math.PI / 2 : c.turn) + (shown / rows.length) * Math.PI * 2 + (side ? 0 : age * 0.9)
+  var tl = clawAdd(clawAdd([0, 0, 0], X, -Math.sin(lead) * 4), Y, Math.cos(lead) * 4)
+  clawFx(spot(lead, rad, 0), tl, "white", "core", 0.3, 0.5, "critical_hit", 3, 0.12)
   if (age === CLAW_STEP.turn) clawWave(c, mid, rad)
   clawSweep(c, "ring", true, rad + 0.6)
 }
@@ -412,7 +420,10 @@ function clawStep(c) {
     clawBurst(c, 1, t - T.slash1)
     clawDrop(c, "a")
   }
-  if (t === T.spin) clawSound("spin", c.pos)
+  if (t === T.spin) {
+    clawSound("spin", c.pos)
+    if (CLAW_CFG.spin === "side" && CLAW_CFG.hop) api.applyImpulse(c.id, 0, CLAW_CFG.hop, 0)
+  }
   if (t >= T.spin && t < T.dropSpin) clawRing(c, t - T.spin)
   if (t === T.dropSpin) clawDrop(c, "ring_")
   if (t >= T.slash2 && t < T.drop2) clawSlash(c, "b", -1, t - T.slash2)

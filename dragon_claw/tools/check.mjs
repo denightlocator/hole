@@ -109,7 +109,15 @@ check(lead(T.slash1 + T.draw) === lead(T.slash1 + T.draw - 1) && lead(T.slash1 +
 check(lead(T.slash1 + T.draw) < 3.6 && lead(T.drop1 - 1) > 9 && lead(T.drop1 - 1) <= 10, `the marks then fly forward: ${lead(T.slash1 + T.draw).toFixed(1)} blocks ahead when drawn, ${lead(T.drop1 - 1).toFixed(1)} when they end (range ${s.run.CLAW_CFG.range})`)
 const ringOf = (n) => at(n).filter((m) => Math.abs(m.r[0]) < 1e-9 && Math.abs(m.p[1] - 11) < 0.2)
 const radius = (n) => Math.max(...ringOf(n).map((m) => Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5)))
-check(ringOf(T.spin + T.turn - 1).length === 24 && Math.abs(radius(T.spin + 5) - 2.3) < 0.05 && radius(T.dropSpin - 1) > 5.3, `spin: a ring of 16 bright and 8 dark meshes is drawn round the player, then widens from ${radius(T.spin + 5).toFixed(1)} to ${radius(T.dropSpin - 1).toFixed(1)} blocks`)
+const loop = at(T.spin + T.turn - 1)
+const span = (k) => Math.max(...loop.map((m) => m.p[k])) - Math.min(...loop.map((m) => m.p[k]))
+check(loop.length === 24 && span(1) > 3.4 && span(0) > 3.4 && span(2) < 0.01, `side flip: a loop of 16 bright and 8 dark meshes is drawn upright round the player as they roll over (${span(0).toFixed(1)} wide, ${span(1).toFixed(1)} tall)`)
+check(ringOf(T.spin + T.turn).length === 24 && radius(T.dropSpin - 1) > 5.3, `on landing the loop drops flat and widens to ${radius(T.dropSpin - 1).toFixed(1)} blocks`)
+const old = game()
+old.run.CLAW_CFG.spin = 'turn'
+old.g.dragonClaw('caster')
+const oldRun = play(old)
+check(old.errors.length === 0 && oldRun.frames[T.spin + 5].meshes.every((m) => Math.abs(m.r[0]) < 1e-9) && old.anims.filter((a) => a.schema && a.t >= T.spin && a.t < T.spin + T.turn).every((a) => Math.abs(a.schema.nodeAnimations.TorsoNode.timeline[1].rotation[1] - a.schema.nodeAnimations.TorsoNode.timeline[0].rotation[1] - Math.PI / 2) < 0.02), 'with spin set to "turn" it is the flat 360 turn and flat ring again')
 check(at(T.slash2 + T.draw - 1).filter((m) => Math.abs(m.r[0]) > 0.2).length >= 30, 'second claw: three more slash marks')
 const slope = (n) => { const m = at(n).filter((q) => Math.abs(q.r[0]) > 0.2); const a = m[0], b = m[8]; return Math.sign((b.p[0] - a.p[0]) * (b.p[1] - a.p[1])) }
 check(slope(T.slash1 + T.draw - 1) === -slope(T.slash2 + T.draw - 1), 'the two claws cross: one runs down to the left, the other down to the right')
@@ -130,7 +138,8 @@ const end = (a, n) => a.schema.nodeAnimations[n]?.timeline[1].rotation ?? [0, 0,
 const start = (a, n) => a.schema.nodeAnimations[n]?.timeline[0].rotation ?? [0, 0, 0]
 check(steps.every((a, i) => !i || NODES.every((n) => [0, 2].every((k) => Math.abs(start(a, n)[k] - end(steps[i - 1], n)[k]) < 0.011) && Math.abs(Math.sin(start(a, n)[1]) - Math.sin(end(steps[i - 1], n)[1])) < 0.02)), 'each one starts in the pose the one before ended in')
 const spin = steps.filter((a) => a.t >= T.spin && a.t < T.spin + T.turn)
-check(spin.length === 4 && spin.every((a, i) => Math.abs(end(a, 'TorsoNode')[1] - start(a, 'TorsoNode')[1] - Math.PI / 2) < 0.02 && Math.abs(end(a, 'LegLeftMesh')[1] - end(a, 'TorsoNode')[1]) < 0.02), 'the spin is four quarter turns of the torso, and the legs turn with it')
+check(spin.length === 4 && spin.every((a, i) => Math.abs(end(a, 'TorsoNode')[2] - start(a, 'TorsoNode')[2] - Math.PI / 2) < 0.02 && Math.abs(end(a, 'LegLeftMesh')[2] - end(a, 'TorsoNode')[2]) < 0.02), 'the side flip is four quarter rolls of the torso, sideways, and the legs go round with it')
+check(s.pushes.some((p) => p.id === 'caster' && p.t === T.spin), 'the player is pushed up into the air when the flip starts')
 check(Math.min(...steps.map((a) => end(a, 'ArmRightMesh')[0])) < -2.5 && Math.min(...steps.slice(8).map((a) => end(a, 'ArmLeftMesh')[0])) < -2.5, 'the right arm is raised for the first claw and the left arm for the second')
 
 console.log('Node meshes')
