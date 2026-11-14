@@ -127,7 +127,7 @@ strip.resize((W * 2, H * 3 // 2)).save(os.path.join(out, 'timeline.png'))
 # Six moments from close by. The last two are two dragons that met.
 tick_of = lambda frames, ph, i: [f['t'] for f in frames if f['ph'] == ph][i]
 shots = [(one, one_live, 0, -1, 34), (one, one_live, 1, 11, 60), (one, one_live, 2, 8, 80),
-         (one, one_live, 5, 29, 60), (one, one_live, 5, 36, 70), (two, two_live, 7, 14, 110)]
+         (one, one_live, 5, 29, 110), (one, one_live, 5, 36, 130), (two, two_live, 7, 14, 110)]
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, (frames, live, ph, at, back) in enumerate(shots):
     t = tick_of(frames, ph, at)

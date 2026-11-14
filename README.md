@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 44,585 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,801 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,834 |
+| `world_code.js` | World Code | 44,561 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,777 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,810 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 
@@ -151,8 +151,10 @@ instead of 2.5 and its rings turn 2.4 times slower. The times in the table below
 are from the old size: add 3.35 s to each after the circle (emerge 6.0, seek
 6.7, dive 7.3, coil 8.1, beam 8.7, smoke 11.15, end about 12.9 s). Heights and
 widths in the table are also from the old size, except where a row says
-otherwise: the beam is twice as thick, the explosion twice as wide (blast
-radius 24) and the nuke 1.5 times as big (radius 60).
+otherwise: the beam and the explosion are three times the old size, like the dragon
+(beam 144 blocks tall and about 25 across, burst about 61 blocks across, blast
+radius 48), and the nuke follows the merged dragon (beam up to 43 blocks thick,
+burst about 134 blocks across, radius 96).
 
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|

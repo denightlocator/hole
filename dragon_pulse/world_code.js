@@ -13,14 +13,14 @@ var DP_CFG = {
   boom: 1,
   beam: 0.5,
   hold: 0.8,
-  radius: 24,
+  radius: 48,
   knockback: 24,
   hurtCaster: false,
   merge: true,
   mergeDist: 4,
   megaScale: 1.6,
   megaRise: 20,
-  nukeRadius: 60,
+  nukeRadius: 96,
   nukeDamage: 400,
   nukeKnockback: 30,
   rotate: true,
@@ -917,9 +917,9 @@ var DP_PHASE = [
 
   function (c) {
     var goal = dpGoal(c)
-    var b = DP_CFG.boom * Math.max(1, DP_CFG.size / 1.5)
+    var b = DP_CFG.boom * DP_CFG.size
     if (c.t === 0) dpDrop(c, "")
-    var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 72 * DP_CFG.boom, DP_CFG.radius, 1, b)
+    var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 48 * b, DP_CFG.radius, 1, b)
     if (st === 1) {
       dpSound("blast", goal)
       dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
@@ -929,7 +929,7 @@ var DP_PHASE = [
 
   function (c) {
     if (c.t === 0) dpDrop(c, "blast_")
-    var b = 1.2 * DP_CFG.boom * Math.max(1, DP_CFG.size / 1.5)
+    var b = 1.2 * DP_CFG.boom * DP_CFG.size
     if (c.t % 8 === 0 && c.t < 17) dpShape("puff", [c.goal[0], c.goal[1] + 1.5 * b + c.t * 0.1, c.goal[2]], dpBall(c.t ? 14 : 26), (2.2 - c.t * 0.08) * b, 1.2, "", "", 0.8)
     if (c.t === 0) dpShape("puff", [c.goal[0], c.goal[1] + 0.5, c.goal[2]], dpRing(20), 2 * b, 4)
     if (c.t < 26 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5 * b), 7, 2.5 * b)
@@ -958,11 +958,11 @@ var DP_PHASE = [
   },
 
   function (c) {
-    var b = DP_CFG.boom * Math.max(1, DP_CFG.size / 2)
+    var b = (DP_CFG.boom * DP_CFG.size * DP_CFG.megaScale) / 2.2
     if (c.t === 0) {
       dpDrop(c, "")
       c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
-      c.tall = c.at[1] - c.ground[1] + 50
+      c.tall = c.at[1] - c.ground[1] + 24 * b
       c.goal = c.ground
     }
     var st = dpFinale(c, c.ground, 4.5 * b, c.tall, DP_CFG.nukeRadius, 1.2, 3 * b)
@@ -974,7 +974,7 @@ var DP_PHASE = [
   },
 
   function (c) {
-    var b = DP_CFG.boom * Math.max(1, DP_CFG.size / 2)
+    var b = (DP_CFG.boom * DP_CFG.size * DP_CFG.megaScale) / 2.2
     if (c.t === 0) dpDrop(c, "blast_")
     if (c.t % 8 === 0 && c.t < 33) dpSound("rumble", c.ground, 1 - c.t * 0.01)
     var wide = (4 + 16 * (1 - Math.pow(1 - Math.min(1, (c.t + 1) / 26), 2))) * b
