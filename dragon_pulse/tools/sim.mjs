@@ -109,7 +109,7 @@ function load(mob) {
 function dots(m) {
   if (!m.ring || !m.p) return []
   if (m.ring.emitterShape === 'box') return [{ width: 0.9, height: 0.9, depth: 0.9, diffuseColor: [0, 0, 0], emissiveColor: [20, 8, 30], p: m.p, r: [0, 0, 0], particle: true, vortex: true }]
-  const n = Math.round(m.ring.emitRate / 4)
+  const n = Math.round(m.ring.emitRate / 8)
   const col = m.ring.colorGradients[1].minColor.slice(0, 3)
   return Array.from({ length: n }, (_, i) => ({ width: 0.18, height: 0.18, depth: 0.18, diffuseColor: [0, 0, 0], emissiveColor: col, p: [m.p[0] + Math.cos(i * 6.2832 / n) * m.ring.width / 2, m.p[1], m.p[2] + Math.sin(i * 6.2832 / n) * m.ring.depth / 2], r: [0, 0, 0], particle: true }))
 }

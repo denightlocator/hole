@@ -29,6 +29,7 @@ var DP_CFG = {
   maxMeshes: 399,
   nodes: "",
   ringParticles: true,
+  ringDensity: 3,
   vortex: true,
 }
 
@@ -556,11 +557,11 @@ function dpEmitter(rad, col) {
   return {
     texture: "square_particle",
     minLifeTime: 0.24,
-    maxLifeTime: 0.36,
+    maxLifeTime: 0.45,
     minEmitPower: 0.05,
     maxEmitPower: 0.25,
     minSize: 0.12,
-    maxSize: 0.24,
+    maxSize: 0.3,
     gravity: [0, 0.4, 0],
     velocityGradients: [{ timeFraction: 0, factor: 1, factor2: 1 }],
     colorGradients: [
@@ -573,7 +574,7 @@ function dpEmitter(rad, col) {
     width: rad * 2,
     depth: rad * 2,
     height: 0.08,
-    emitRate: Math.round(30 + rad * 40),
+    emitRate: Math.round((30 + rad * 40) * DP_CFG.ringDensity),
     emitterShape: "ring",
   }
 }

@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 43,849 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,065 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,098 |
+| `world_code.js` | World Code | 43,889 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,105 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,138 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 
@@ -330,6 +330,10 @@ with `emitterShape: "ring"`: the game itself keeps emitting particles round the
 ring, so each circle is one entity and needs no calls after it is made. The main
 circle on the floor is still meshes. `dpEmitter(radius, colour)` builds the
 options; rows of `DP_CIRCLE` with flag `e` use it.
+
+`ringDensity` in `DP_CFG` (3) sets how many particles the circles give off: the
+largest gives off about 460 a second and the smallest about 160. Raise it for
+thicker rings, lower it if the game slows down.
 
 Set `ringParticles: false` in `DP_CFG` to get the mesh circles back. The code
 also switches back by itself if the game throws an error when the first emitter
