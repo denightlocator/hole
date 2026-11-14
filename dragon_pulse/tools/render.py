@@ -133,3 +133,12 @@ for i, (frames, live, ph, at, back) in enumerate(shots):
     t = tick_of(frames, ph, at)
     sheet.paste(draw(frames, t, live, follow(frames, t, back)), ((i % 3) * W, (i // 3) * H))
 sheet.save(os.path.join(out, 'moments.png'))
+
+# With a third dump (sim.mjs --clash --dump): three moments of !clash.
+if len(sys.argv) > 4:
+    cl, cl_live = load(sys.argv[4])
+    clash = Image.new('RGB', (W * 3, H))
+    for i, (ph, at, back) in enumerate([(1, 12, 75), (7, 9, 60), (3, -2, 60)]):
+        t = tick_of(cl, ph, at)
+        clash.paste(draw(cl, t, cl_live, follow(cl, t, back)), (i * W, 0))
+    clash.save(os.path.join(out, 'clash.png'))

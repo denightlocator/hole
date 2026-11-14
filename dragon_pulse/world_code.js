@@ -1,5 +1,7 @@
 var DP_CFG = {
   chat: "!dp",
+  clash: "!clash",
+  clashGap: 50,
   item: "",
   range: 40,
   summon: 2.5,
@@ -817,6 +819,11 @@ function dpSpiral(c, mid, rad, turn) {
 
 var DP_PHASE = [
   function (c) {
+    if (c.wait > 0) {
+      c.wait--
+      c.t = -1
+      return
+    }
     var T = (c.T = Math.max(46, Math.round(DP_CFG.summon * 20)))
     c.ct = c.t
     if (c.t === 0) dpSound("cast", c.home)
@@ -837,10 +844,10 @@ var DP_PHASE = [
   function (c) {
     var h = c.t + 1
     var s = c.k
-    var mid = [c.home[0], c.home[1] + (h * 1.25 - 2) * s, c.home[2]]
+    var mid = [c.home[0], c.home[1] + (h * 1.25 - 2) * s * c.d, c.home[2]]
     if (c.t === 0) {
-      c.path = [[mid[0], mid[1] - 1.5 * s, mid[2]]]
-      dpGroup(c, "pillar", "pillar_", "", c.home, DP_UP, s, true)
+      c.path = [[mid[0], mid[1] - 1.5 * s * c.d, mid[2]]]
+      dpGroup(c, "pillar", "pillar_", "", c.d < 0 ? dpAdd(c.home, [0, -1, 0], 14 * s) : c.home, DP_UP, s, true)
       dpFx("flash", c.home, 12, 1.5 * s)
       dpFx("ring", c.home, 20, 0.4 * s)
       dpFx("glow", c.home, 5, 1.5, "crimson")
@@ -856,7 +863,7 @@ var DP_PHASE = [
     dpFx("streak", c.home, 4, 1.2 * s, "", "", [0, 1, 0], h * 1.2 * s)
     if (c.t % 3 === 1) dpRingFx("shock", c.home, (1 + c.t * 0.35) * s, 2, 0.6, 0.05, "blood", "crimson", 6, c.t)
     dpSpiral(c, mid, Math.min(2, h * 0.2) * s, 0.5)
-    if (mid[1] >= c.home[1] + c.reach) {
+    if ((mid[1] - c.home[1]) * c.d >= c.reach) {
       dpDrop(c, "ring")
       dpDrop(c, "pillar_")
       dpNext(c)
@@ -864,7 +871,7 @@ var DP_PHASE = [
   },
 
   function (c) {
-    var top = [c.home[0], c.home[1] + c.reach + Math.sin(c.t * 0.5) * 0.8 * c.k, c.home[2]]
+    var top = [c.home[0], c.home[1] + c.reach * c.d + Math.sin(c.t * 0.5) * 0.8 * c.k, c.home[2]]
     dpSpiral(c, top, Math.min(3.5, 2 + c.t * 0.15) * c.k, 0.45)
     if (c.t < 11) return
     if (!c.target) c.target = dpPick(c.id, c.home)
@@ -918,6 +925,12 @@ var DP_PHASE = [
   function (c) {
     var goal = dpGoal(c)
     var b = DP_CFG.boom * DP_CFG.size
+    if (c.clash && c.k > DP_CFG.size) {
+      c.at = goal
+      c.ph = 8
+      c.t = -1
+      return
+    }
     if (c.t === 0) dpDrop(c, "")
     var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 72 * b, DP_CFG.radius, 1, b)
     if (st === 1) {
@@ -954,7 +967,15 @@ var DP_PHASE = [
     dpSpiral(c, [c.base[0], c.base[1] + h * 0.8 * z, c.base[2]], Math.min(4, h * 0.4) * z, 0.36)
     if (c.t % 4 === 0) dpFx("ring", c.at, 12, 0.5)
     if (c.t % 3 === 0) dpRingFx("gather", c.at, 6, 3, -1, 0, "cyan", "magenta", 6, c.t)
-    if (h * 0.8 * z >= c.reach) dpNext(c)
+    if (h * 0.8 * z < c.reach) return
+    if (!c.clash) return dpNext(c)
+    c.far = Math.max(1, dpLen(dpSub(dpGoal(c), c.at)))
+    dpFx("ring", c.goal, 20, 0.6)
+    dpRingFx("gather", c.goal, 6, 4, -1, 0, "cyan", "white", 10)
+    dpSound("lock", c.at, 0.6)
+    dpSound("dive", c.at, 0.6)
+    c.ph = 3
+    c.t = -1
   },
 
   function (c) {
@@ -1057,8 +1078,8 @@ function dpPick(casterId, from, f) {
   return f ? pick(mobs.concat(players)) : pick(mobs) || pick(players)
 }
 
-function dragonPulse(playerId, eye, dir) {
-  if (dpCasts.length >= DP_CFG.maxCasts) return false
+function dragonPulse(playerId, eye, dir, clash) {
+  if (dpCasts.length + (clash ? 2 : 1) > DP_CFG.maxCasts) return false
   var face = eye ? { camPos: eye, dir: dir } : api.getPlayerFacingInfo(playerId)
   var f = dpNorm(face.dir)
   eye = face.camPos
@@ -1067,25 +1088,37 @@ function dragonPulse(playerId, eye, dir) {
   if (dpSolid(spot[0], spot[1], spot[2])) spot = eye
   var drop = dpFree(spot, [0, -1, 0], 16)
   var home = [spot[0], drop < 16 ? Math.floor(spot[1] - drop) + 1.06 : spot[1] - 1.5, spot[2]]
-  dpCasts.push({
-    id: playerId,
-    ids: [playerId],
-    ph: 0,
-    t: 0,
-    m: {},
-    k: DP_CFG.size,
-    hung: {},
-    B: dpBasis(flat),
-    home: home,
-    at: home,
-    ang: Math.atan2(flat[2], flat[0]),
-    reach: Math.max(6, dpFree(dpAdd(home, [0, 1, 0], 1), [0, 1, 0], DP_CFG.rise * DP_CFG.size) - 2),
-    target: dpPick(playerId, eye, f),
-    goal: dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5)),
-    path: [],
-  })
+  var room = (blocks) => dpFree(dpAdd(home, [0, 1, 0], 1), [0, 1, 0], blocks)
+  var gap = clash ? Math.max(12, room(DP_CFG.clashGap + 3) - 3) : 0
+  var target = dpPick(playerId, eye, f)
+  var goal = dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5))
+  for (var n = 0; n < (clash ? 2 : 1); n++) {
+    var at = n ? dpAdd(home, [0, 1, 0], gap) : home
+    dpCasts.push({
+      id: playerId,
+      ids: [playerId],
+      ph: 0,
+      t: 0,
+      m: {},
+      k: DP_CFG.size,
+      d: n ? -1 : 1,
+      clash: !!clash,
+      wait: n * 3,
+      hung: {},
+      B: dpBasis(flat),
+      home: at,
+      at: at,
+      ang: Math.atan2(flat[2], flat[0]),
+      reach: clash ? gap / 2 : Math.max(6, room(DP_CFG.rise * DP_CFG.size) - 2),
+      target: target,
+      goal: goal,
+      path: [],
+    })
+  }
   return true
 }
+var dragonClash = (playerId, eye, dir) => dragonPulse(playerId, eye, dir, true)
+globalThis.dragonClash = dragonClash
 globalThis.dragonPulse = dragonPulse
 
 var dpFlying = (c) => (c.ph >= 1 && c.ph <= 4) || c.ph === 7
@@ -1114,6 +1147,7 @@ function dpMerge() {
       dpDrop(b, "")
       dpCasts.splice(j, 1)
       a.ids = a.ids.concat(b.ids)
+      a.clash = a.clash || b.clash
       dpFx("flash", a.at, 16, 2)
       if (a.ph === 7) continue
       var mid = dpAdd(a.at, dpSub(b.at, a.at), 0.5)
@@ -1123,7 +1157,7 @@ function dpMerge() {
       a.t = 0
       a.at = a.base = mid
       a.path = [[mid[0], mid[1] - 2 * DP_CFG.size, mid[2]]]
-      a.reach = Math.max(8, dpFree(mid, [0, 1, 0], DP_CFG.megaRise * DP_CFG.size) - 2)
+      a.reach = a.clash ? 12 * DP_CFG.size : Math.max(8, dpFree(mid, [0, 1, 0], DP_CFG.megaRise * DP_CFG.size) - 2)
     }
   }
 }
@@ -1151,6 +1185,7 @@ tick = () => {
 
 onPlayerChat = (playerId, message) => {
   var words = message.trim().toLowerCase().split(/\s+/)
+  if (DP_CFG.clash && words[0] === DP_CFG.clash && !words[1]) return dragonClash(playerId), false
   if (!DP_CFG.chat || words[0] !== DP_CFG.chat) return
   if (words[1] === "nodes") {
     DP_CFG.nodes = words[2] === "box" || words[2] === "person" ? words[2] : ""

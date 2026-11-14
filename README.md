@@ -133,14 +133,34 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 44,562 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,778 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,811 |
+| `world_code.js` | World Code | 45,781 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 55,997 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 62,030 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 
 The files to paste hold no `//` comments, to save space. What the settings and
 the table columns mean is written on this page instead.
+
+## `!clash`
+
+![three moments of !clash](dragon_pulse/preview/clash.png)
+
+`!clash` summons two dragons that fly into each other and become the giant one.
+
+1. Two ritual circles appear in front of you: one on the floor and one 50 blocks
+   straight above it (`clashGap` in `DP_CFG`; less if there is a roof).
+2. One dragon comes up out of the floor circle and one comes down out of the sky
+   circle. They meet half way and merge.
+3. The giant dragon spirals up for a moment, then dives onto the player or mob
+   you were looking at when you typed the command, coils round it, and the nuke
+   goes off there.
+
+The target is whoever was nearest your crosshair, within about 20° and `range`
+blocks, at the moment of the command. With nobody there, the giant dives onto
+the spot you looked at. The nuke kills everything within `nukeRadius` blocks
+except you. `!clash` needs room for two casts (`maxCasts`). From code:
+`dragonClash(playerId)`. Set `clash: ""` to turn the command off.
 
 ## How the move runs
 
@@ -407,6 +427,8 @@ list.
 |---|---|
 | `chat` | Chat message that casts the move. `""` turns it off |
 | `item` | Held item that casts it on right click. `""` turns it off |
+| `clash` | Chat command for the clash, `""` for none |
+| `clashGap` | Blocks between the two circles of the clash, one above the other |
 | `range` | Blocks around the circle in which the dragon finds a target |
 | `summon` | Seconds the circle is drawn before the dragon comes out (2.3 at least). The rings appear and turn slower the longer this is |
 | `circleDist` | Blocks in front of the caster where the circle appears |

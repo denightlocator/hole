@@ -101,7 +101,7 @@ function load(mob) {
   const g = {}
   // world code assigns tick = ..., so give it those names to assign to
   const game = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerAltAction;\n' + world +
-    '\nreturn { tick, onPlayerChat, onPlayerAltAction, dpCasts, DP_CFG, held: () => dpMeshes }')(s.api, g)
+    '\nreturn { tick, onPlayerChat, onPlayerAltAction, dpCasts, DP_CFG, held: () => dpMeshes, reset: () => { dpMeshes = 0 } }')(s.api, g)
   return { s, g, game }
 }
 
@@ -126,15 +126,17 @@ function place(m, off) {
 function run({ s, game }, limit = 600) {
   const frames = []
   let worst = 0
+  let worstAt = 0
   while (game.dpCasts.length && frames.length < limit) {
     const before = s.calls
     s.now = frames.length
     const ph = Math.max(...game.dpCasts.map((c) => c.ph))
     game.tick(50)
+    if (s.calls - before > worst) worstAt = frames.length
     worst = Math.max(worst, s.calls - before)
     frames.push({ t: frames.length, ph, casts: game.dpCasts.length, meshes: [...s.meshes.values()].flatMap((m) => [{ ...m.o, p: m.p, r: m.r }, ...dots(m), ...m.hung.map((h) => ({ ...h.o, p: place(m, h.off), r: [(m.r?.[0] || 0) + h.rot[0], (m.r?.[1] || 0) + h.rot[1], 0], node: true }))]), entities: s.meshes.size, fx: s.particles.splice(0) })
   }
-  return { frames, worst }
+  return { frames, worst, worstAt }
 }
 const phases = (frames) => frames.filter((f, i) => !i || frames[i - 1].ph !== f.ph).map((f) => NAMES[f.ph] + ' @' + (f.t / 20).toFixed(2) + 's').join(', ')
 const ys = (f) => f.meshes.filter((m) => m.p).map((m) => m.p[1])
@@ -240,6 +242,37 @@ check(nd.s.errors.length === 0 && nd.s.meshes.size === 0 && nd.game.held() === 0
 console.log(`  most mesh entities at once: ${nd.s.peak} (without node meshes ${one.s.peak}); node meshes attached: ${nd.s.hung}; most api calls in one tick: ${c.worst}`)
 check(nd.game.onPlayerChat('caster', '!dp nodes off') === false && nd.game.DP_CFG.nodes === '', '!dp nodes off goes back to mesh entities')
 
-if (dumpAt >= 0) fs.writeFileSync(args[dumpAt + 1], JSON.stringify(args.includes('--nodes') ? N : dumpMerge ? M : F))
+console.log('!clash')
+const cl = load(false)
+check(cl.game.onPlayerChat('caster', '!clash') === false && cl.game.dpCasts.length === 2, '!clash starts two dragons and is hidden from chat')
+cl.game.dpCasts.length = 0
+for (const m of [...cl.s.meshes.keys()]) cl.s.meshes.delete(m)
+cl.game.reset()
+const aim = [20, -1.2, 0].map((v) => v / Math.hypot(20, 1.2))
+cl.g.dragonClash('caster', [0.5, 11.6, 0.5], aim)
+const homes = cl.game.dpCasts.map((c) => c.home)
+check(Math.abs(homes[1][1] - homes[0][1] - 50) < 0.01 && homes[0][0] === homes[1][0] && homes[0][2] === homes[1][2], `the two circles are ${(homes[1][1] - homes[0][1]).toFixed(0)} blocks apart, one straight above the other`)
+check(cl.game.dpCasts.every((c) => c.target === 'other'), 'both aim at the player the caster looked at')
+const e = run(cl)
+const C = e.frames
+const cm = of(C, 7)
+const em = of(C, 1)
+const lows = em.map((f) => Math.min(...ys(f)))
+check(em.length > 10 && Math.max(...ys(em[em.length - 1])) < homes[1][1] + 10 && Math.min(...ys(em[4])) < homes[0][1] + 12, 'one comes up out of the floor circle and one comes down out of the sky circle')
+check(cm.length > 0 && cm[0].casts === 1 && Math.abs(Math.max(...ys(cm[0])) - homes[0][1] - 25) < 12, `they fly into each other and merge half way up, at ${(cm[0]?.t / 20).toFixed(2)} s`)
+check(Math.max(...cm[cm.length - 1].meshes.map((m) => m.width)) > 3, 'the merged dragon is the giant one')
+const cd = C.filter((f, i) => f.ph === 3 && i > cm[0].t)
+const headOf = (f) => f.meshes.filter((m) => m.width > 3 && m.width < 3.2 && m.depth > 3 && m.depth < 3.2)[0]
+const near = (f) => Math.hypot(headOf(f).p[0] - 20.5, headOf(f).p[2] - 0.5)
+check(cd.length > 3 && near(cd[cd.length - 1]) < near(cd[0]) && near(cd[cd.length - 1]) < 8, `the giant dives onto that player (${near(cd[0]).toFixed(0)} blocks away, then ${near(cd[cd.length - 1]).toFixed(0)})`)
+const cn = of(C, 8)
+check(cn.length > 30 && cl.s.hurt.some((h) => h[0] === 'kill' && h[1] === 'other') && !cl.s.hurt.some((h) => h[1] === 'caster'), 'the nuke goes off on the target: it is killed, the caster is not hurt')
+const beamX = cn[10].meshes.filter((m) => m.height > 20)[0]
+check(Math.hypot(beamX.p[0] - 20.5, beamX.p[2] - 0.5) < 1, 'the beam stands where the target is')
+check(cl.s.errors.length === 0 && cl.game.dpCasts.length === 0 && cl.s.meshes.size === 0 && cl.game.held() === 0, 'every call is well formed and everything is deleted at the end' + [...new Set(cl.s.errors)].join('; '))
+check(cl.s.peak < 400 && cl.s.refused === 0 && e.worst <= 580, `at most ${cl.s.peak} meshes at once and ${e.worst} api calls in one tick (at ${(e.worstAt / 20).toFixed(2)} s)`)
+console.log('  Phases: ' + phases(C) + `, ends ${(C.length / 20).toFixed(2)} s`)
+
+if (dumpAt >= 0) fs.writeFileSync(args[dumpAt + 1], JSON.stringify(args.includes('--clash') ? C : args.includes('--nodes') ? N : dumpMerge ? M : F))
 if (fail.length) { console.log(`\n${fail.length} check(s) failed`); process.exit(1) }
 console.log('\nAll checks passed')
