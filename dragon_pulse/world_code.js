@@ -28,6 +28,7 @@ var DP_CFG = {
   detail: 3,
   maxMeshes: 399,
   nodes: "",
+  ringParticles: true,
 }
 
 var DP_COL = {
@@ -60,12 +61,12 @@ var DP_CIRCLE = [
   [4, 0.42, 0.84, 0.1, 0.06, "blood", 0, 0.06, 24, 0.12],
   [4, 4.7, 1.5, 0.2, 0.06, "blood", 0, 0, 27, 0, "r"],
   [4, 4.35, 0.8, 0.12, 0.06, "wine", 45, 0, 29, 0, "r"],
-  [8, 3.1, 2.57, 0.1, 0.08, "blood", 0, 1.2, 31, 0.05, "k"],
-  [8, 2.6, 2.15, 0.1, 0.08, "wine", 22.5, 2.4, 33, -0.06, "k"],
-  [8, 2.1, 1.74, 0.1, 0.08, "crimson", 0, 3.6, 35, 0.07],
-  [8, 1.6, 1.33, 0.1, 0.08, "blood", 22.5, 4.8, 37, -0.08],
-  [6, 1.1, 1.27, 0.1, 0.08, "wine", 0, 6, 39, 0.09],
-  [4, 0.6, 1.2, 0.1, 0.08, "crimson", 0, 7.2, 41, -0.1],
+  [8, 3.1, 2.57, 0.1, 0.08, "blood", 0, 1.2, 31, 0.05, "ke"],
+  [8, 2.6, 2.15, 0.1, 0.08, "wine", 22.5, 2.4, 33, -0.06, "ke"],
+  [8, 2.1, 1.74, 0.1, 0.08, "crimson", 0, 3.6, 35, 0.07, "ke"],
+  [8, 1.6, 1.33, 0.1, 0.08, "blood", 22.5, 4.8, 37, -0.08, "ke"],
+  [6, 1.1, 1.27, 0.1, 0.08, "wine", 0, 6, 39, 0.09, "ke"],
+  [4, 0.6, 1.2, 0.1, 0.08, "crimson", 0, 7.2, 41, -0.1, "ke"],
   [1, 0, 0.5, 0.5, 0.5, "crimson", 0, 0.7, 44, 0, "spink"],
   [1, 0, 1.1, 1.1, 0.08, "void", 0, 0.08, 44, 0.2, "k"],
 ]
@@ -400,7 +401,9 @@ function dpBeam(c, base, k, tall, wide, two) {
   dpBars(c, "beam", "beam_", base, k, w, tall)
   if (two) dpBars(c, "beam2", "beam_b", base, k, w, tall * two)
   var top = DP_MESH.beamTop
-  dpPut(c, "beam_tip", top[0], "", dpAdd(base, [0, 1, 0], tall), null, k)
+  dpSize = 2 * k
+  dpShape("ray", dpAdd(base, [0, 1, 0], tall), dpBall(10), 1.1 * k, 0)
+  dpSize = 1
   dpPut(c, "beam_base", top[1], "", dpAdd(base, [0, 1, 0], 0.1), null, k)
   for (var n = 0; n < 3; n++) dpPut(c, "beam_ring" + n, top[2], "", dpAdd(base, [0, 1, 0], tall * ((n / 3 + c.t * 0.11) % 1)), null, k)
   dpFx("mote", base, 8, 1.4 * k, "magenta", "white", [0, 1, 0])
@@ -498,6 +501,34 @@ function dpRigid(c, name, tag, pos, B, k) {
   if (id && c.fresh) dpRows(name).forEach((r) => dpHang(id, r, k, [r[6] * k, r[7] * k, r[5] * k], 0))
 }
 
+function dpEmitter(rad, col) {
+  var a = DP_COL[col]
+  var b = DP_COL.crimson
+  return {
+    texture: "square_particle",
+    minLifeTime: 0.24,
+    maxLifeTime: 0.36,
+    minEmitPower: 0.05,
+    maxEmitPower: 0.25,
+    minSize: 0.12,
+    maxSize: 0.24,
+    gravity: [0, 0.4, 0],
+    velocityGradients: [{ timeFraction: 0, factor: 1, factor2: 1 }],
+    colorGradients: [
+      { timeFraction: 0, minColor: b.concat(1), maxColor: b.concat(1) },
+      { timeFraction: 0.3, minColor: a.concat(1), maxColor: b.concat(1) },
+      { timeFraction: 1, minColor: a.concat(0), maxColor: a.concat(0) },
+    ],
+    blendMode: 2,
+    hideDist: DP_CFG.hideDist,
+    width: rad * 2,
+    depth: rad * 2,
+    height: 0.08,
+    emitRate: Math.round(30 + rad * 40),
+    emitterShape: "ring",
+  }
+}
+
 function dpCircle(c) {
   var node = DP_CFG.nodes
   for (var a = 0; a < DP_CIRCLE.length; a++) {
@@ -507,6 +538,21 @@ function dpCircle(c) {
     if (age < 0) continue
     if (age === 0) dpSound("ring", c.home, 0.8 + a * 0.07)
     var radial = dpFlag(row, "r")
+    if (DP_CFG.ringParticles && dpFlag(row, "e")) {
+      if (!c.m["ring" + a + "_e"] && dpMeshes + dpOther() < DP_CFG.maxMeshes) {
+        try {
+          var e = api.attemptCreateMeshEntity("ParticleEmitter", dpEmitter(r[1], r[5]))
+          if (e) {
+            c.m["ring" + a + "_e"] = e
+            dpMeshes++
+            api.setPosition(e, c.home[0], c.home[1] + r[7], c.home[2])
+          }
+        } catch (err) {
+          DP_CFG.ringParticles = false
+        }
+      }
+      if (DP_CFG.ringParticles) continue
+    }
     if (node) {
       var id = dpCarrier(c, "ringc" + r[9], c.home, null, -r[9] * c.ct)
       if (!id || c.hung[a]) continue

@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 39,281 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 49,497 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 55,530 |
+| `world_code.js` | World Code | 40,662 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 50,878 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 56,911 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 
@@ -146,12 +146,12 @@ the table columns mean is written on this page instead.
 
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|
-| circle | The summoning circle draws itself ring by ring; the star in it turns. Then six more circles appear above it, one after another going up, each smaller than the one below and turning the other way | 124 meshes in 19 rings: a smooth 16-sided outer band with a thin inner band, dashes and dots between them like runes, an octagon, a turning six-pointed star whose points touch it, a hexagon and a square turning the other way, eight spikes outside, a core over a turning plate, and a 7-block-tall cone of six circles above; rising sparks | 0.0–2.5 |
+| circle | The summoning circle draws itself ring by ring; the star in it turns. Then six more circles appear above it, one after another going up, each smaller than the one below and turning the other way | 88 mesh entities: 82 meshes in 13 rings for the main circle and 6 ring particle emitters for the circles above it; a smooth 16-sided outer band with a thin inner band, dashes and dots between them like runes, an octagon, a turning six-pointed star whose points touch it, a hexagon and a square turning the other way, eight spikes outside, a core over a turning plate, and a 7-block-tall cone of six circles above; rising sparks | 0.0–2.5 |
 | emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 113 meshes: a 55-part head and a 58-part body that follows the head's path. The five cloud orbs beside it and the trail behind it are particles | 2.5–3.15 |
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | no meshes: each star is 48 particles placed along 12 rays, plus sparks | 4.7–5.3 |
-| beam | The dragon turns into a massive black beam that shoots 72 blocks straight up from the target | 10 meshes: a black core and four thin red and purple beams that grow, a red ball on the tip, a disc at the foot, three collars travelling up; rising sparks | 5.35–5.85 |
+| beam | The dragon turns into a massive black beam that shoots 72 blocks straight up from the target | 9 meshes: a black core and four thin red and purple beams that grow, a ball of particles on the tip, a disc at the foot, three collars travelling up; rising sparks | 5.35–5.85 |
 | second beam | A second beam rises around the first in a fifth of a second and waits: the two throb and slowly thicken (about 9 blocks across) while light is pulled in at the foot and down from the tip | 8 more meshes: four near-black bars on the corners and four thin red bars outside the first beam; gathering glints, a red glow | 5.85–6.65 |
 | collapse | It all comes down: both beams sink from the top into the ground in 0.3 s and get twice as thick while they do | the same 18 meshes; streaks racing down | 6.65–6.95 |
 | blast | It explodes on the ground: a spiked star bursts out to 20 blocks across, three shock rings of particles widen at three heights out to the blast radius, then the star shrinks away. The target is killed at the first moment, others within 16 blocks are hurt and pushed | 8 meshes: the star (`blast`). The rings are 40, 32 and 24 particles, each placed on its circle; flashes, debris, embers, shock waves | 6.95–7.8 |
@@ -228,7 +228,8 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 - spin: how far the ring turns each tick; 0 stands still.
 - flag `spin`: the boxes turn by themselves (the runes and the core). Flag `r`:
   the boxes point away from the middle instead of along the ring. Flag `k`: the
-  ring stays while the dragon comes out.
+  ring stays while the dragon comes out. Flag `e`: the ring is a particle emitter
+  instead of meshes.
 
 ![The dragon laid out straight](dragon_pulse/preview/dragon.png)
 
@@ -237,8 +238,8 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 *Drawn outside the game with plain light so the parts can be told apart. In the
 game they glow.*
 
-The move stays under 400 meshes. One cast holds at most 153 meshes at once (circle and dragon together, while it
-comes out); two dragons about to merge hold up to 302. To fit, the
+The move stays under 400 meshes. One cast holds at most 143 meshes at once (circle and dragon together, while it
+comes out); two dragons about to merge hold up to 282. To fit, the
 circle is cut down to 40 meshes (outer band, star, core and the two lowest of
 the circles above: the rings with flag `k`) at the moment the dragon starts to come out. `maxMeshes` is 399, and the
 meshes of a standing Goodra count toward it, so the code never asks for a 400th. All are deleted when the move ends.
@@ -251,9 +252,9 @@ group becomes one mesh entity that carries the rest:
 
 | | Mesh entities | With node meshes |
 |---|---|---|
-| Summoning circle | 124 | 9 (one per turning speed) carrying 124 node meshes |
+| Summoning circle | 88 | 11 (5 carriers with 82 node meshes, and the 6 ring emitters) |
 | Dragon head | 55 | 1 carrying 55 |
-| One cast at most | 153 | 68 |
+| One cast at most | 143 | 70 |
 
 The body, orbs and trail bend along the flight path piece by piece, so they stay
 mesh entities. With node meshes on, the whole circle stays while the dragon comes
@@ -298,7 +299,8 @@ in a tick, two about 190.
 
 Some effects that used to be meshes are now built from particles that are each
 placed at an exact point with an exact speed, the way the Particle Studio does
-it. That frees 30 meshes on the dragon and up to 50 more at the end of the move.
+it. That frees 30 meshes on the dragon, 36 in the ritual circle and up to 50 more at
+the end of the move.
 
 | Effect | Before | Now |
 |---|---|---|
@@ -306,6 +308,8 @@ it. That frees 30 meshes on the dragon and up to 50 more at the end of the move.
 | Trail behind the tail | 10 meshes | 5 particles a tick along the path, each smaller than the one before |
 | The two bite stars | 12 meshes | 48 particles on 12 rays that fly outward, the far ones faster |
 | Shock rings of the blast | 30 meshes | 40, 32 and 24 particles on three circles that widen to the blast radius |
+| The six circles above the ritual circle | 42 meshes | 6 ring particle emitters, one entity each (see below) |
+| The ball on the beam's tip | 1 mesh | 10 particles on a small sphere, drawn again every tick |
 | Smoke and dust | 20 meshes | smoke on spheres that swell and rise, dust on a widening ring |
 
 The dragon, the ritual circle, the beams and the star of the blast are still
@@ -318,6 +322,20 @@ second. `dpBall(n)` gives `n` directions spread evenly over a sphere and
 `dpRing(n, turn)` gives `n` round a circle. The looks are `cloud`, `ray`,
 `front` and `puff` in `DP_FX`. The cost is one api call per particle; a tick
 makes at most about 100 particle calls.
+
+### Ring particle emitters
+
+The six circles above the main ritual circle are `ParticleEmitter` mesh entities
+with `emitterShape: "ring"`: the game itself keeps emitting particles round the
+ring, so each circle is one entity and needs no calls after it is made. The main
+circle on the floor is still meshes. `dpEmitter(radius, colour)` builds the
+options; rows of `DP_CIRCLE` with flag `e` use it.
+
+Set `ringParticles: false` in `DP_CFG` to get the mesh circles back. The code
+also switches back by itself if the game throws an error when the first emitter
+is made. Not tested in the game: how thick and how bright the rings look depends
+on how the game draws the emitter, and may need the numbers in `dpEmitter`
+changed (`emitRate`, `minSize`, `maxSize`, life).
 
 ### The Particle Studio scene
 
@@ -477,7 +495,7 @@ It cannot show how the game draws it. Things to look at first in your world:
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
   If parts of the dragon are missing, lower `detail`.
 - **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
-  together and share `maxMeshes` (399). Two dragons need 302; a third at the same time is cut
+  together and share `maxMeshes` (399). Two dragons need 282; a third at the same time is cut
   short.
 - **Speed.** At full detail one dragon makes up to 330 api calls per tick, two
   up to 540. If the game stutters or stops the script, lower `detail`.
