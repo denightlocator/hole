@@ -124,10 +124,10 @@ for i in range(12):
     strip.paste(draw(one, int(n * i / 12), one_live, wide), ((i % 4) * W, (i // 4) * H))
 strip.resize((W * 2, H * 3 // 2)).save(os.path.join(out, 'timeline.png'))
 
-# Six moments from close by. The last three are two dragons that met.
+# Six moments from close by. The last two are two dragons that met.
 tick_of = lambda frames, ph, i: [f['t'] for f in frames if f['ph'] == ph][i]
-shots = [(one, one_live, 0, -1, 9), (one, one_live, 1, 9, 14), (one, one_live, 5, 8, 50),
-         (one, one_live, 5, -1, 40), (two, two_live, 8, -1, 150), (two, two_live, 9, 16, 90)]
+shots = [(one, one_live, 0, -1, 9), (one, one_live, 1, 9, 14), (one, one_live, 3, -3, 26),
+         (one, one_live, 5, 13, 50), (two, two_live, 8, 16, 90), (two, two_live, 9, 16, 60)]
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, (frames, live, ph, at, back) in enumerate(shots):
     t = tick_of(frames, ph, at)

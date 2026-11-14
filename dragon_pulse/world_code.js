@@ -25,7 +25,7 @@ var DP_CFG = {
   hideDist: 160,
   maxCasts: 4,
   detail: 3,
-  maxMeshes: 400,
+  maxMeshes: 460,
 }
 
 var DP_COL = {
@@ -166,6 +166,26 @@ var DP_MESH = {
     ["M", 0.2, 0.2, 0.6, "lilac", -15, 0, 0, "3"],
   ],
 
+  trail: [
+    ["M", 0.6, 0.3, 1, "lilac", -15.8, 0, 0],
+    ["M", 0.55, 0.28, 1, "purple", -16.8, 0, 0],
+    ["M", 0.5, 0.25, 1, "magenta", -17.8, 0, 0, "2"],
+    ["M", 0.44, 0.22, 1, "purple", -18.8, 0, 0],
+    ["M", 0.38, 0.19, 1, "deep", -19.8, 0, 0, "2"],
+    ["M", 0.32, 0.16, 1, "purple", -20.8, 0, 0],
+    ["M", 0.26, 0.13, 1, "deep", -21.8, 0, 0, "2"],
+    ["M", 0.2, 0.1, 1, "deep", -22.8, 0, 0],
+    ["M", 0.14, 0.08, 1, "night", -23.8, 0, 0, "2"],
+    ["M", 0.09, 0.06, 1, "night", -24.8, 0, 0],
+  ],
+
+  orb: [
+    ["M", 0.8, 0.8, 0.8, "lilac", 0, 0, 0, "spin"],
+    ["M", 0.75, 0.65, 0.75, "smoke", 0.45, 0.3, 0.25, "lit2"],
+    ["M", 0.65, 0.55, 0.65, "smoke", -0.45, -0.3, 0.3, "lit2"],
+    ["M", 0.5, 0.45, 0.5, "shade", 0, 0.1, -0.5, "lit3"],
+  ],
+
   flare: [
     ["M", 1, 1, 1, "white", 0, 0, 0, "spin"],
     ["M", 3.2, 0.36, 0.36, "gold", 0, 0, 0],
@@ -188,20 +208,6 @@ var DP_MESH = {
     ["M", 2.8, 0.26, 2.8, "lilac", 0, 0, 0, "spin"],
   ],
 
-  blast: [
-    ["M", 2.8, 2.8, 2.8, "magenta", 0, 0, 0, "spin"],
-    ["M", 3.6, 2, 2, "white", 0, 0, 0],
-    ["M", 2, 3.6, 2, "white", 0, 0, 0],
-    ["M", 2, 2, 3.6, "white", 0, 0, 0],
-    ["M", 10, 0.6, 0.6, "magenta", 0, 0, 0],
-    ["M", 0.6, 10, 0.6, "purple", 0, 0, 0],
-    ["M", 0.6, 0.6, 10, "cyan", 0, 0, 0],
-    ["M", 0.45, 0.45, 7.5, "lilac", 0, 0, 0, "a"],
-    ["M", 0.45, 0.45, 7.5, "lilac", 0, 0, 0, "b"],
-    ["M", 0.45, 0.45, 7.5, "lilac", 0, 0, 0, "c"],
-    ["M", 0.45, 0.45, 7.5, "lilac", 0, 0, 0, "d"],
-  ],
-
   smoke: [
     ["M", 2.6, 2.3, 2.6, "smoke", 0.4, -2.6, 1.4, "lit"],
     ["M", 2.9, 2.5, 2.9, "smoke", -0.3, 2.4, 1.8, "lit"],
@@ -217,22 +223,16 @@ var DP_MESH = {
     ["M", 1.6, 1.6, 1.6, "magenta", 0, 0, 1.4, "spin"],
   ],
 
-  cap: [
-    ["M", 3.4, 2.2, 3.4, "smoke", 0, 0, 2.2, "lit"],
-    ["M", 2.6, 2, 2.6, "smoke", 1.9, 1.9, 1.3, "litm"],
-    ["M", 2.6, 2, 2.6, "smoke", -1.9, 1.9, 1.3, "litm"],
-    ["M", 2.4, 1.8, 2.4, "shade", 2.9, 0, 0.6, "lit"],
-    ["M", 2.4, 1.8, 2.4, "shade", -2.9, 0, 0.6, "lit"],
-    ["M", 2.4, 1.8, 2.4, "shade", 0, 2.9, 0.6, "litm"],
-    ["M", 1.8, 1.3, 1.8, "shade", 3.1, 3.1, -0.2, "litm"],
-    ["M", 1.8, 1.3, 1.8, "shade", -3.1, 3.1, -0.2, "litm"],
-    ["M", 3, 0.8, 3, "magenta", 0, 0, 0, "spin"],
-  ],
-
-  stem: [["M", 3.2, 4.4, 3.2, "shade", 0, 0, 0, "lit"]],
-
   dust: [["M", 2.6, 1.6, 2.6, "smoke", 0, 0, 0, "lit"]],
 }
+
+var DP_ORBS = [
+  [-3.5, 2.2, 1],
+  [-7, -2.3, 0.4],
+  [-10.5, 2, -0.5],
+  [-14, -1.9, 0.9],
+  [-17.5, 1.5, 0.2],
+]
 
 var DP_DIAG = { a: [1, 1, 1], b: [-1, 1, 1], c: [1, 1, -1], d: [-1, 1, -1] }
 
@@ -246,6 +246,7 @@ var DP_FX = {
   ring: { tex: "square_particle", life: [0.35, 0.5], size: [0.3, 0.5], speed: [14, 18], col: ["white", "magenta"], fade: [1, 0], blend: 2, drag: 0.3, flat: 1 },
   wave: { tex: "square_particle", life: [0.6, 0.85], size: [0.8, 1.5], speed: [30, 42], col: ["white", "magenta"], fade: [1, 0], blend: 2, drag: 0.4, flat: 1 },
   smoke: { tex: "square_particle", life: [1.2, 2], size: [1.5, 3], speed: [0.5, 2], grav: 0.8, col: ["smoke", "shade"], fade: [0.85, 0], blend: 1, drag: 0.2 },
+  trail: { tex: "square_particle", life: [1, 1.6], size: [0.5, 1.1], speed: [0, 0.3], col: ["tint", "tint2"], fade: [0.7, 0], blend: 2 },
   spark: { tex: "glint", life: [0.5, 1], size: [0.25, 0.5], speed: [1, 4], col: ["purple", "magenta"], fade: [1, 0], blend: 2, drag: 0.2 },
 }
 var DP_SKIN = [
@@ -293,7 +294,7 @@ function dpRows(name) {
   var key = name + DP_CFG.detail
   if (dpRowCache[key]) return dpRowCache[key]
   var out = []
-  DP_MESH[name].forEach((r) => {
+  ;(DP_MESH[name] || []).forEach((r) => {
     var level = dpFlag(r, "3") ? 3 : dpFlag(r, "2") ? 2 : 1
     if (level > DP_CFG.detail) return
     if (!dpFlag(r, "m")) return out.push(r)
@@ -301,7 +302,11 @@ function dpRows(name) {
     left[6] = -r[6]
     out.push(r, left)
   })
-  if (name === "body") out.sort((a, b) => b[5] - a[5])
+  if (name === "tail") {
+    out = dpRows("trail").slice()
+    DP_ORBS.forEach((o) => dpRows("orb").forEach((r) => out.push(["M", r[1], r[2], r[3], r[4], r[5] + o[0], r[6] + o[1], r[7] + o[2], r[8]])))
+  }
+  if (name === "body" || name === "tail") out.sort((a, b) => b[5] - a[5])
   return (dpRowCache[key] = out)
 }
 
@@ -361,8 +366,8 @@ function dpDrop(c, tag) {
   }
 }
 
-function dpBody(c) {
-  var rows = dpRows("body")
+function dpAlong(c, name) {
+  var rows = dpRows(name)
   var P = c.path
   var j = P.length - 1
   var walked = 0
@@ -377,14 +382,15 @@ function dpBody(c) {
     }
     if (walked + seg < back) return
     var f = dpNorm(dpSub(P[j], P[j - 1]))
-    dpPut(c, "body_" + i, r, "", dpAt(P[j], dpBasis(f), walked - back, r[6] * c.k, r[7] * c.k), f, c.k)
+    dpPut(c, name + "_" + i, r, "", dpAt(P[j], dpBasis(f), walked - back, r[6] * c.k, r[7] * c.k), f, c.k)
   }
 }
 
-function dpBeam(c, base, k, tall) {
+function dpBeam(c, base, k, tall, wide) {
+  var w = k * (wide || 1)
   dpRows("beam").forEach((r, i) => {
-    dpPut(c, "beam_" + i, r, "", dpAt(base, DP_UP, r[5] * k, r[6] * k, tall / 2), null, k)
-    var box = dpBox(r, "", k)
+    dpPut(c, "beam_" + i, r, "", dpAt(base, DP_UP, r[5] * w, r[6] * w, tall / 2), null, k)
+    var box = dpBox(r, "", w)
     box.height = tall
     if (c.m["beam_" + i]) api.updateMeshEntity(c.m["beam_" + i], "Box", box)
   })
@@ -402,6 +408,14 @@ function dpBurst(c, name, tag, at, k) {
     var d = DP_DIAG[r[8]]
     dpPut(c, tag + i, r, "", at, d ? dpNorm(d) : null, k)
   })
+}
+
+function dpBoom(c, base, k, tall, e, ring) {
+  dpBeam(c, base, k, tall, e < 4 ? 1 + e * 0.6 : Math.max(0.12, 2.8 - (e - 3) * 0.3))
+  dpShock(c, "beam_s", dpAdd(base, [0, 1, 0], 0.4), ring * (0.15 + e * 0.08), 0.5 * k, "magenta")
+  dpFx("flash", base, 10, (2 + e * 0.5) * k)
+  dpFx("impact", base, 8, 2 * k)
+  if (e % 3 === 0) dpFx("wave", base, 14, 0.5)
 }
 
 function dpShock(c, tag, at, rad, thick, col) {
@@ -489,7 +503,8 @@ function dpFly(c, pos) {
   c.path.push(pos)
   if (c.path.length > 60) c.path.shift()
   dpGroup(c, "head", "head_", "", pos, dpBasis(f), k)
-  dpBody(c)
+  dpAlong(c, "body")
+  dpAlong(c, "tail")
   var skin = DP_SKIN[c.t % DP_SKIN.length]
   dpFx("aura", pos, 5, 0.9 * k, skin[0], skin[1])
   dpFx("outline", pos, 3, 1.1 * k)
@@ -498,6 +513,8 @@ function dpFly(c, pos) {
   var skin2 = DP_SKIN[(c.t + 2) % DP_SKIN.length]
   dpFx("aura", mid, 4, 0.7 * k, skin2[0], skin2[1])
   if (c.t % 2 === 0) dpFx("wisp", c.path[Math.max(0, n - 10)], 2, 0.6 * k)
+  dpFx("trail", c.path[Math.max(0, n - 15)], 3, 0.5 * k, "purple", "magenta")
+  dpFx("trail", c.path[Math.max(0, n - 22)], 2, 0.4 * k, "deep", "purple")
 }
 
 function dpSpiral(c, mid, rad, turn) {
@@ -590,33 +607,25 @@ var DP_PHASE = [
   function (c) {
     var goal = dpGoal(c)
     var b = DP_CFG.boom
-    var wait = Math.round(DP_CFG.beam * 20)
+    var wait = Math.max(1, Math.round(DP_CFG.beam * 20))
     var e = c.t - wait
+    var base = [goal[0], goal[1] - 1, goal[2]]
     if (c.t === 0) {
       dpDrop(c, "")
-      if (wait) dpSound("beam", goal)
+      dpSound("beam", goal)
     }
-    if (e < 0) return dpBeam(c, [goal[0], goal[1] - 1, goal[2]], b, (48 * (c.t + 1)) / wait)
+    if (e < 0) return dpBeam(c, base, b, (48 * b * (c.t + 1)) / wait)
     if (e === 0) {
-      dpDrop(c, "beam_")
-      dpBurst(c, "blast", "blast_", goal, b)
-      dpFx("flash", goal, 20, 3 * b)
-      dpFx("ring", goal, 24, 0.4)
-      dpFx("wave", goal, 20, 0.5)
-      dpFx("impact", goal, 18, 2 * b)
       dpSound("blast", goal)
       dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
     }
-    if (e && e % 2 === 0) dpResize(c, "blast", "blast_", "", b * (1 + e * 0.3))
-    dpShock(c, "blast_s", goal, b * (2.5 + e * 1.8), 0.5 * b, "magenta")
-    dpFx("flash", goal, 10, (3 + e * 0.6) * b)
-    if (e % 3 === 0) dpFx("wave", goal, 12, 0.5)
-    if (e >= 8) dpNext(c)
+    dpBoom(c, base, b, 48 * b, e, DP_CFG.radius)
+    if (e >= 12) dpNext(c)
   },
 
   function (c) {
-    if (c.t === 0) dpDrop(c, "blast_")
-    var b = 2 * DP_CFG.boom
+    if (c.t === 0) dpDrop(c, "beam_")
+    var b = 1.2 * DP_CFG.boom
     dpCloud(c, "smoke", b, 14, 24, 30, 0.04)
     if (c.t < 26 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5 * b), 7, 2.5 * b)
     if (c.t % 3 === 0) dpFx("spark", dpAt(c.goal, c.B, 0, 0, 0.5), 7, 2.5 * b)
@@ -637,50 +646,38 @@ var DP_PHASE = [
   },
 
   function (c) {
-    var wait = Math.round(DP_CFG.beam * 24)
-    var k = 2.6 * DP_CFG.boom
+    var wait = Math.max(1, Math.round(DP_CFG.beam * 24))
+    var k = 3 * DP_CFG.boom
     var e = c.t - wait
     if (c.t === 0) {
       dpDrop(c, "")
-      c.goal = c.at
       c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
-      if (wait) dpSound("beam", c.ground, 0.7)
+      c.tall = c.at[1] - c.ground[1] + 40
+      c.goal = c.ground
+      dpSound("beam", c.ground, 0.7)
     }
-    if (e < 0) return dpBeam(c, c.ground, 2.2 * DP_CFG.boom, ((c.goal[1] - c.ground[1] + 30) * (c.t + 1)) / wait)
+    if (e < 0) return dpBeam(c, c.ground, k, (c.tall * (c.t + 1)) / wait)
     if (e === 0) {
-      dpDrop(c, "beam_")
-      dpBurst(c, "blast", "nuke_", c.goal, k)
-      dpSound("nuke", c.goal)
+      dpSound("nuke", c.ground)
       dpHurt(c, c.ground, DP_CFG.nukeRadius, DP_CFG.nukeDamage, DP_CFG.nukeKnockback, true)
     }
-    if (e && e % 3 === 0) dpResize(c, "blast", "nuke_", "", k * (1 + e * 0.2))
-    dpShock(c, "nuke_s", c.goal, k * (3 + e * 1.6), 1.6 * DP_CFG.boom, "magenta")
-    dpShock(c, "nuke_g", dpAdd(c.ground, [0, 1, 0], 0.6), DP_CFG.boom * (4 + e * 2.2), 1.2 * DP_CFG.boom, "lilac")
-    dpFx("flash", c.goal, 18, (5 + e) * DP_CFG.boom)
-    dpFx("wave", c.goal, 16, 0.5)
+    dpBoom(c, c.ground, k, c.tall, e, DP_CFG.nukeRadius)
     dpFx("wave", c.ground, 16, 0.5)
-    dpFx("impact", c.goal, 14, 6 * DP_CFG.boom)
-    if (e >= 15) dpNext(c)
+    if (e >= 12) dpNext(c)
   },
 
   function (c) {
-    if (c.t === 0) dpDrop(c, "nuke_")
-    if (c.t % 8 === 0 && c.t < 33) dpSound("rumble", c.ground, 1 - c.t * 0.01)
     var b = DP_CFG.boom
-    dpCloud(c, "cap", 4 * b, 20, 34, 42, 0.05)
-    var out = Math.min(1, (c.t + 1) / 12)
+    if (c.t === 0) dpDrop(c, "beam_")
+    if (c.t % 8 === 0 && c.t < 33) dpSound("rumble", c.ground, 1 - c.t * 0.01)
+    dpCloud(c, "smoke", 2.4 * b, 20, 34, 42, 0.05)
     var wide = (4 + 16 * (1 - Math.pow(1 - Math.min(1, (c.t + 1) / 26), 2))) * b
     for (var i = 0; i < 8 && c.t < 36; i++) {
-      if (i < 5) dpPut(c, "stem_" + i, DP_MESH.stem[0], "", dpAdd(c.ground, dpSub(c.goal, c.ground), ((i + 0.5) / 5) * out), null, b * (2.2 - i * 0.22))
       dpPut(c, "dust_" + i, DP_MESH.dust[0], "", [c.ground[0] + Math.cos(i * 0.785 + 0.4) * wide, c.ground[1] + 1.6 * b, c.ground[2] + Math.sin(i * 0.785 + 0.4) * wide], null, 1.8 * b)
     }
-    if (c.t === 36) {
-      dpDrop(c, "stem_")
-      dpDrop(c, "dust_")
-    }
-    if (c.t < 36 && c.t % 2 === 0) dpFx("smoke", c.goal, 10, 13 * DP_CFG.boom)
-    if (c.t < 30 && c.t % 2 === 1) dpFx("smoke", c.ground, 10, 9 * DP_CFG.boom)
-    if (c.t % 2 === 0) dpFx("spark", c.goal, 10, 14 * DP_CFG.boom)
+    if (c.t === 36) dpDrop(c, "dust_")
+    if (c.t < 30 && c.t % 2 === 0) dpFx("smoke", c.ground, 10, 9 * b)
+    if (c.t % 2 === 0) dpFx("spark", c.ground, 10, 10 * b)
     if (c.t >= 49) c.ph = 99
   },
 ]

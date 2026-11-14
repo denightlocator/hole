@@ -31,7 +31,7 @@ const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object
 function makeApi(mob) {
   const meshes = new Map()
   let next = 1
-  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [], sounds: new Set(), hurtAt: [], now: 0 }
+  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [], sounds: new Set(), looks: new Set(), hurtAt: [], now: 0 }
   const pos = { caster: [0.5, 10, 0.5], other: [20.5, 10, 0.5], dummy: [-14.5, 10, 12.5] }
   const eyes = { caster: { camPos: [0.5, 11.6, 0.5], dir: [0.1, 0.12, 0.99] }, other: { camPos: [20.5, 11.6, 0.5], dir: [-0.1, 0.1, 0.99] } }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
@@ -68,6 +68,7 @@ function makeApi(mob) {
       need(finite(o), 'particle option is not a number')
       need(TEXTURES.includes(o.texture), 'texture ' + o.texture)
       need(o.colorGradients.every((g) => g.minColor.length === 4 && g.maxColor.length === 4), 'colour needs 4 numbers')
+      s.looks.add([o.minLifeTime, o.maxLifeTime].map((v) => +(v / 0.6).toFixed(2)).join(','))
       s.particles.push(o)
     },
     applyImpulse: (id, x, y, z) => { need(finite([x, y, z]), 'bad impulse'); s.hurt.push(['push', id]) },
@@ -137,7 +138,7 @@ check(one.s.errors.length === 0, 'every api call is well formed' + (one.s.errors
 check(one.s.meshes.size === 0 && one.game.held() === 0, 'every mesh is deleted at the end')
 check(one.s.sounds.size >= 14, `${one.s.sounds.size} different sounds play, all of them names from the documentation`)
 check(one.s.peak <= one.game.DP_CFG.maxMeshes, `most meshes at once: ${one.s.peak}`)
-check(a.worst <= 260, `most api calls in one tick: ${a.worst}`)
+check(a.worst <= 300, `most api calls in one tick: ${a.worst}`)
 console.log('  Phases: ' + phases(F))
 
 console.log('Two dragons that meet')
@@ -154,17 +155,21 @@ const big = Math.max(...mega[mega.length - 1].meshes.map((m) => m.width))
 check(big > 3, `the merged dragon is ${two.game.DP_CFG.megaScale} times the size (skull ${big.toFixed(1)} blocks wide)`)
 check(Math.max(...ys(mega[mega.length - 1])) - Math.max(...ys(mega[0])) > 12, `it climbs ${(Math.max(...ys(mega[mega.length - 1])) - Math.max(...ys(mega[0]))).toFixed(1)} blocks`)
 const nuke = of(M, 8)
+const fly = of(F, 3)
+const last = fly[fly.length - 1]
+check(last.meshes.length === 113 + 30 && one.s.looks.has('1,1.6'), `cloud orbs and a tapering trail follow the dragon (${last.meshes.length - 113} more meshes) with particles that fade`)
 const tall = (f) => Math.max(0, ...f.meshes.map((m) => m.height))
 const bl = of(F, 5)
 check(tall(bl[0]) < tall(bl[4]) && tall(bl[9]) > 40 && bl[9].meshes.length === 10 && !one.s.hurtAt.some((t) => t < bl[10].t), `a beam shoots ${tall(bl[9]).toFixed(0)} blocks up for ${(10 / 20).toFixed(2)} s before the blast; nobody is hurt until it ends`)
-check(nuke[11].meshes.length === 10 && tall(nuke[11]) > 50 && nuke[12].meshes.length === 31, `the nuke also starts with a beam (${tall(nuke[11]).toFixed(0)} blocks tall)`)
-check(nuke.length > 0 && Math.max(...nuke[nuke.length - 1].meshes.map((m) => m.height)) > 100 && nuke[nuke.length - 1].meshes.length === 31, `it explodes into a nuke (${Math.max(...nuke[nuke.length - 1].meshes.map((m) => m.height)).toFixed(0)} blocks tall)`)
+check(nuke[11].meshes.length === 10 && tall(nuke[11]) > 50 && nuke[12].meshes.length === 20, `the nuke is a beam too (${tall(nuke[11]).toFixed(0)} blocks tall)`)
+const widest = Math.max(...nuke.flatMap((f) => f.meshes.filter((m) => m.height > 20).map((m) => m.width)))
+check(widest > 10 && !M.some((f) => f.meshes.some((m) => m.width > 12 && m.height > 12 && m.depth > 12)), `the nuke is a beam ${widest.toFixed(1)} blocks thick with a ring on the ground, and there is no fireball`)
 check(two.s.hurt.some((h) => h[0] === 'kill' && h[1] === 'dummy'), 'the nuke kills the mob under it')
 check(!two.s.hurt.some((h) => h[1] === 'caster' || h[1] === 'other'), 'neither caster is hurt')
 check(two.s.errors.length === 0, 'every api call is well formed' + (two.s.errors.length ? ': ' + [...new Set(two.s.errors)].join('; ') : ''))
 check(two.game.dpCasts.length === 0 && two.s.meshes.size === 0 && two.game.held() === 0, 'it ends and every mesh is deleted')
 check(two.s.peak <= two.game.DP_CFG.maxMeshes, `most meshes at once: ${two.s.peak}`)
-check(b.worst <= 520, `most api calls in one tick: ${b.worst}`)
+check(b.worst <= 580, `most api calls in one tick: ${b.worst}`)
 console.log('  Phases: ' + phases(M))
 
 if (dumpAt >= 0) fs.writeFileSync(args[dumpAt + 1], JSON.stringify(dumpMerge ? M : F))
