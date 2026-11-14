@@ -16,21 +16,26 @@ right-click handlers working. Then type `!claw`.
 
 From other code: `dragonClaw(playerId)`.
 
-## What happens (1.55 s)
+## What happens (1.7 s)
 
 | Seconds | Player animation | Meshes and particles | Hit |
 |---|---|---|---|
-| 0.00–0.45 | Right arm goes up and back, then rakes down across the body | Claws appear on both hands (node meshes). Three slash marks of 7 meshes each are drawn in front, top to bottom, with sparks at the tips | 0.25 s: everything in front, within `range` |
-| 0.45–0.85 | Arms out, full turn in four quarter steps; the legs go round with the body | A ring of 14 meshes is drawn round the player as they turn; a ring of 18 particles flies outward | 0.65 s: everything all round, within `spinRange` |
-| 0.85–1.35 | Left arm goes up and back, then rakes down the other way | Three more slash marks, crossing the first | 1.10 s: everything in front |
+| 0.00–0.45 | Right arm goes up and back, then rakes down across the body | Claws appear on both hands (node meshes). Three slash marks are drawn in front, top to bottom, with sparks at the tips | |
+| 0.25–0.70 | | The three marks fly forward as far as `range` (10 blocks), trailing sparks, and burst at the end | Everything they pass, once |
+| 0.45–0.85 | Arms out, full turn in four quarter steps; the legs turn with the body | A ring is drawn round the player as they turn | |
+| 0.75–1.00 | | The ring widens out to `spinRange` (6 blocks); a ring of 18 particles flies outward | Everything the ring reaches, once |
+| 0.85–1.35 | Left arm goes up and back, then rakes down the other way | Three more slash marks, crossing the first | |
+| 1.10–1.55 | | These fly forward too | Everything they pass, once |
 | 1.35–1.50 | Pose is reset | Claws are taken off | |
 
-At most 21 mesh entities at once and 50 api calls in one tick.
+At most 57 mesh entities at once and 82 api calls in one tick.
 
 ## Range
 
-`CLAW_MAX_RANGE` is 15. Whatever `range` and `spinRange` are set to, nothing
-further than 15 blocks is hit.
+`range` is how far the claw marks fly (10) and `spinRange` how far the ring
+widens (6). `CLAW_MAX_RANGE` is 15: whatever the two are set to, nothing
+further than 15 blocks is reached or hit. A claw mark hits what is within 2.2
+blocks to either side of its path.
 
 ## The animation
 
@@ -65,8 +70,8 @@ themselves: send the changed file and the numbers can be carried over.
 |---|---|
 | `chat` | Chat command, `""` for none |
 | `item` | Name of a held item that casts it on right click, `""` for none |
-| `range` | Blocks in front that the two claws reach (15 at most) |
-| `spinRange` | Blocks all round that the spin reaches (15 at most) |
+| `range` | Blocks the claw marks fly forward (15 at most) |
+| `spinRange` | Blocks the ring of the spin widens to (15 at most) |
 | `damage`, `spinDamage` | Damage of each claw and of the spin |
 | `knockback` | Push on everything that is hit |
 | `lunge` | Push forward on the player at each claw, 0 for none |
@@ -83,10 +88,11 @@ timings in ticks in `CLAW_STEP`.
 
 | Group | Rows | What |
 |---|---|---|
-| `talon` | 7 | One slash mark from end to end: place along it (-1 to 1), thickness, colour |
-| `mark` | 3 | The three marks of one claw: sideways offset, length, thickness |
-| `ring` | 14 | The ring of the spin: place round it, thickness, colour |
-| `hand` | 4 | Node meshes on each arm: three talons, then a wide blade |
+| `talon` | 9 | The bright core of one slash mark from end to end: place along it (-1 to 1), thickness, colour |
+| `glow` | 5 | The wider, darker edge behind that core |
+| `mark` | 3 | The three marks of one claw: sideways offset, length, thickness. One claw is 3 × (9 + 5) = 42 meshes |
+| `ring` | 16 | The ring of the spin: thickness, colour. Every second piece gets a darker piece behind it (24 meshes) |
+| `hand` | 7 | Node meshes on each arm: three talons of two pieces each (the tip bent forward), then a wide blade |
 
 The blade is attached last on purpose. The documentation only shows one node
 mesh per body part; if the game keeps only the last one, the blade is what

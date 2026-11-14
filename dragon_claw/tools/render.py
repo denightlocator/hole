@@ -71,7 +71,7 @@ def mesh_box(m):
 def draw(tick, eye, title):
     img = Image.new('RGB', (W, H), (24, 28, 40))
     d = ImageDraw.Draw(img)
-    look = (PLAYER[0], PLAYER[1] + 1.1, PLAYER[2] + 0.8)
+    look = (PLAYER[0], PLAYER[1] + 1.1, PLAYER[2] + (0.8 if eye[2] > PLAYER[2] else 3.5))
     fwd = tuple(look[i] - eye[i] for i in range(3))
     n = math.sqrt(sum(v * v for v in fwd)); fwd = tuple(v / n for v in fwd)
     right = (fwd[2], 0, -fwd[0]); n = math.hypot(right[0], right[2]); right = (right[0] / n, 0, right[2] / n)
@@ -96,10 +96,10 @@ def draw(tick, eye, title):
     d.text((8, 6), title, fill=(230, 235, 245))
     return img
 
-T = [(3, 'wind up, right claw'), (6, 'first claw'), (14, 'the 360 spin'), (20, 'wind up, left claw'), (23, 'second claw'), (25, 'second claw, from above')]
+T = [(3, 'wind up, right claw'), (6, 'first claw'), (11, 'first claw flies on; the spin starts'), (17, 'the ring widens'), (23, 'second claw'), (28, 'second claw flies on')]
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, (tick, title) in enumerate(T):
-    eye = (PLAYER[0] + 3.2, PLAYER[1] + 2.4, PLAYER[2] + 5.6) if i < 5 else (PLAYER[0] + 0.5, PLAYER[1] + 7, PLAYER[2] - 1.5)
+    eye = (PLAYER[0] + 7.5, PLAYER[1] + 4.2, PLAYER[2] - 3.5) if i in (2, 3, 5) else (PLAYER[0] + 3.2, PLAYER[1] + 2.4, PLAYER[2] + 5.6)
     sheet.paste(draw(tick, eye, '%.2f s  %s' % (tick / 20, title)), ((i % 3) * W, (i // 3) * H))
 sheet.save(sys.argv[2])
 print('wrote', sys.argv[2])

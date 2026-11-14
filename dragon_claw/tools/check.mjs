@@ -24,12 +24,12 @@ function game(before = '') {
   const meshes = new Map()
   let next = 1
   const s = { meshes, calls: 0, errors: [], hurt: [], anims: [], hands: [], sounds: new Set(), peak: 0, particles: 0, pushes: [], now: 0 }
-  // the caster looks along +Z; "front" is 3 blocks ahead, "behind" 3 back, "far" 16 ahead, "edge" 14.5 ahead
-  const pos = { caster: [0.5, 10, 0.5], front: [0.5, 10, 3.5], behind: [0.5, 10, -2.5], far: [0.5, 10, 16.5], edge: [0.5, 10, 15] }
+  // the caster looks along +Z; "front" is 3 blocks ahead, "behind" 3 back, "mid" 9 ahead, "edge" 14.5 ahead, "far" 16 ahead
+  const pos = { caster: [0.5, 10, 0.5], front: [0.5, 10, 3.5], behind: [0.5, 10, -2.5], mid: [0.5, 10, 9.5], far: [0.5, 10, 16.5], edge: [0.5, 10, 15] }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
   s.pos = pos
   s.api = {
-    getPlayerIds: () => ['caster', 'front', 'far', 'edge'], getMobIds: () => ['behind'], getHeldItem: () => null,
+    getPlayerIds: () => ['caster', 'front', 'mid', 'far', 'edge'], getMobIds: () => ['behind'], getHeldItem: () => null,
     getPosition: (id) => { if (!pos[id]) throw new Error('no entity'); return pos[id] },
     getPlayerFacingInfo: () => ({ camPos: [0.5, 11.6, 0.5], dir: [0, -0.2, 0.98] }),
     sendMessage: () => {},
@@ -47,6 +47,7 @@ function game(before = '') {
       s.peak = Math.max(s.peak, meshes.size)
       return id
     },
+    updateMeshEntity: (id, type, o) => { s.calls++; need(meshes.has(id) && type === 'Box' && Object.keys(o).every((k) => BOX.includes(k)) && finite(o) && o.width > 0 && o.depth > 0, 'bad update'); if (meshes.has(id)) meshes.get(id).o = o },
     setPosition: (id, x, y, z) => { s.calls++; need(meshes.has(id) && finite([x, y, z]), 'bad setPosition'); meshes.get(id).p = [x, y, z] },
     setEntityRotation: (id, x, y, z) => { s.calls++; need(meshes.has(id) && finite([x, y, z]), 'bad rotation'); meshes.get(id).r = [x, y, z] },
     deleteMeshEntity: (id) => { s.calls++; need(meshes.delete(id), 'deleted twice') },
@@ -96,17 +97,20 @@ const { frames, worst } = play(s)
 const T = s.run.CLAW_STEP
 check(frames.length === T.end + 1, `it lasts ${(frames.length / 20).toFixed(2)} s`)
 check(s.errors.length === 0, 'every api call is well formed ' + [...new Set(s.errors)].join('; '))
-const count = (a, b) => Math.max(...frames.slice(a, b).map((f) => f.meshes.length))
-check(count(T.slash1, T.drop1) === 21 && frames[T.slash1].meshes.length === 9, 'first claw: three slash marks of 7 meshes each, drawn from one end to the other in 3 ticks')
-check(frames[T.spin + 6].meshes.length === 14 && frames[T.spin].meshes.length === 2, 'spin: a ring of 14 meshes drawn round the player as they turn')
-check(count(T.slash2, T.drop2) >= 21, 'second claw: three more slash marks')
-const xs = (f) => f.meshes.map((m) => m.p[0] - 0.5)
-const slope = (f) => { const m = f.meshes.filter((q) => q.depth > 0.55 && q.depth < 0.7); const a = m[0], b = m[6]; return Math.sign((b.p[0] - a.p[0]) * (b.p[1] - a.p[1])) }
-check(slope(frames[T.slash1 + 3]) === -slope(frames[T.slash2 + 3]), 'the two claws cross: one runs down to the left, the other down to the right')
-const ahead = frames[T.slash1 + 3].meshes.map((m) => m.p[2] - 0.5)
-check(Math.min(...ahead) > 1 && Math.max(...ahead) < 3.5, `the marks hang ${Math.min(...ahead).toFixed(1)} to ${Math.max(...ahead).toFixed(1)} blocks in front of the player`)
-check(s.meshes.size === 0 && s.run.held() === 0 && s.peak <= 40, `every mesh is deleted at the end; at most ${s.peak} at once`)
-check(worst <= 120, `most api calls in one tick: ${worst}; particles in the whole move: ${s.particles}`)
+const at = (n) => frames[n].meshes
+const marks = (n) => at(n).filter((m) => Math.abs(m.r[0]) > 0.05 || m.p[1] > 11.4 || m.p[1] < 10.9)
+check(at(T.slash1).length === 15 && at(T.slash1 + 2).length === 42, 'first claw: three slash marks, each 9 bright meshes on 5 wider dark ones, drawn from one end to the other in 3 ticks')
+const zs = (n) => at(n).filter((m) => m.depth < 1.2 && m.width < 0.45).map((m) => m.p[2] - 0.5)
+const lead = (n) => Math.max(...at(n).filter((m) => Math.abs(m.r[0]) > 0.2).map((m) => m.p[2] - 0.5))
+check(lead(T.slash1 + 2) < 2.5 && lead(T.drop1 - 1) > 9 && lead(T.drop1 - 1) <= 10, `the marks then fly forward: ${lead(T.slash1 + 2).toFixed(1)} blocks ahead when drawn, ${lead(T.drop1 - 1).toFixed(1)} when they end (range ${s.run.CLAW_CFG.range})`)
+const ringOf = (n) => at(n).filter((m) => Math.abs(m.r[0]) < 1e-9 && Math.abs(m.p[1] - 11) < 0.2)
+const radius = (n) => Math.max(...ringOf(n).map((m) => Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5)))
+check(ringOf(T.spin + 7).length === 24 && Math.abs(radius(T.spin + 5) - 2.3) < 0.05 && radius(T.dropSpin - 1) > 5.3, `spin: a ring of 16 bright and 8 dark meshes is drawn round the player, then widens from ${radius(T.spin + 5).toFixed(1)} to ${radius(T.dropSpin - 1).toFixed(1)} blocks`)
+check(at(T.slash2 + 2).filter((m) => Math.abs(m.r[0]) > 0.2).length >= 30, 'second claw: three more slash marks')
+const slope = (n) => { const m = at(n).filter((q) => Math.abs(q.r[0]) > 0.2); const a = m[0], b = m[8]; return Math.sign((b.p[0] - a.p[0]) * (b.p[1] - a.p[1])) }
+check(slope(T.slash1 + 2) === -slope(T.slash2 + 2), 'the two claws cross: one runs down to the left, the other down to the right')
+check(s.meshes.size === 0 && s.run.held() === 0 && s.peak <= 110, `every mesh is deleted at the end; at most ${s.peak} at once`)
+check(worst <= 160, `most api calls in one tick: ${worst}; particles in the whole move: ${s.particles}`)
 check(s.sounds.size >= 6, `${s.sounds.size} different sounds, all names from the documentation`)
 
 console.log('The animation')
@@ -127,21 +131,22 @@ check(Math.min(...steps.map((a) => end(a, 'ArmRightMesh')[0])) < -2.5 && Math.mi
 
 console.log('Node meshes')
 const on = s.hands.filter((h) => h.on), off = s.hands.filter((h) => !h.on)
-check(on.length === 8 && on.every((h) => h.t === 0) && new Set(on.map((h) => h.node)).size === 2, 'claws are attached to both arms at the start: 4 node meshes each')
-check(on[3].o.width > 0.25 && on[7].o.width > 0.25, 'the last one on each arm is the wide blade, so a claw shows even if the game keeps one mesh per node')
-check(off.length === 2 && off.every((h) => h.t === T.end), 'and taken off again at the end')
+check(on.length === 14 && on.every((h) => h.t === 0) && new Set(on.map((h) => h.node)).size === 2, 'claws are attached to both arms at the start: 7 node meshes each (three talons of two pieces, and a blade)')
+check(on[6].o.width > 0.25 && on[13].o.width > 0.25, 'the last one on each arm is the wide blade, so a claw shows even if the game keeps one mesh per node')
+check(off.length === 2 && off.every((h) => h.t === T.rest + 3), 'and taken off again when the player is back at rest')
 
 console.log('Hits')
 const hitsOf = (id) => s.hurt.filter((h) => h.id === id)
-check(hitsOf('front').length === 3 && hitsOf('front').map((h) => h.t).join() === [T.hit1, T.hitSpin, T.hit2].join(), `a player 3 blocks in front is hit by both claws and the spin (${hitsOf('front').map((h) => h.n).join(', ')})`)
-check(hitsOf('behind').length === 1 && hitsOf('behind')[0].t === T.hitSpin, 'a mob 3 blocks behind is only hit by the spin')
+check(hitsOf('front').length === 3, `a player 3 blocks in front is hit by both claws and the spin (${hitsOf('front').map((h) => h.n + ' at ' + (h.t / 20).toFixed(2) + ' s').join(', ')})`)
+check(hitsOf('behind').length === 1 && hitsOf('behind')[0].n === -s.run.CLAW_CFG.spinDamage, 'a mob 3 blocks behind is only hit by the spin')
+check(hitsOf('mid').length === 2 && hitsOf('mid').every((h) => h.n === -s.run.CLAW_CFG.damage) && hitsOf('mid')[0].t > hitsOf('front')[0].t, `a player 9 blocks in front is hit by both flying claws, later than the near one (${hitsOf('mid').map((h) => (h.t / 20).toFixed(2) + ' s').join(', ')})`)
 check(hitsOf('far').length === 0 && hitsOf('edge').length === 0 && hitsOf('caster').length === 0, 'players 14.5 and 16 blocks away and the caster are not hit')
 const big = game()
 big.run.CLAW_CFG.range = 50
 big.run.CLAW_CFG.spinRange = 50
 big.g.dragonClaw('caster')
 play(big)
-check(big.hurt.some((h) => h.id === 'edge') && !big.hurt.some((h) => h.id === 'far'), 'with range set to 50 it still stops at 15 blocks: 14.5 is hit, 16 is not')
+check(big.hurt.some((h) => h.id === 'edge') && !big.hurt.some((h) => h.id === 'far') && big.errors.length === 0, 'with range set to 50 it still stops at 15 blocks: 14.5 is hit, 16 is not')
 const quiet = game()
 quiet.api.animateEntity = () => { throw new Error('argument is too large') }
 quiet.api.sendMessage = (id, m) => quiet.said = m
