@@ -38,30 +38,30 @@ var DP_MESH = {
   beam: [["ray", 0.3, 0.3, 1.2, "tint", 0, 0, 0]],
 
   head: [
-    ["skull", 1.5, 1.25, 1.6, "white", 0, 0, 0],
-    ["snout", 1.05, 0.6, 1.3, "white", 1.35, 0, 0.18],
-    ["jaw", 0.9, 0.26, 1.35, "pink", 1.2, 0, -0.58],
-    ["horn", 0.26, 0.26, 1.2, "violet", -1.05, 0.5, 0.8, "m"],
-    ["crest", 0.3, 0.5, 1, "orange", -0.35, 0, 0.85],
-    ["eye", 0.3, 0.3, 0.3, "cyan", 0.5, 0.78, 0.25, "m"],
-    ["fin", 0.2, 0.7, 0.95, "blue", -0.45, 0.98, -0.05, "m"],
-    ["brow", 0.5, 0.2, 0.75, "violet", 0.5, 0.55, 0.68, "m2"],
-    ["fangUp", 0.14, 0.32, 0.14, "white", 1.85, 0.36, -0.24, "m2"],
-    ["fangLow", 0.12, 0.26, 0.12, "white", 1.72, 0.3, -0.34, "m2"],
-    ["throat", 0.6, 0.3, 0.45, "gold", 0.72, 0, -0.28, "2"],
-    ["whisker", 0.12, 0.12, 1.3, "cyan", 1.05, 0.82, -0.05, "m2"],
-    ["antler", 0.2, 0.6, 0.2, "violet", -1.35, 0.5, 1.15, "m2"],
-    ["mane", 0.9, 0.5, 0.5, "pink", -1, 0, 0.55, "2"],
-    ["pupil", 0.12, 0.2, 0.2, "white", 0.56, 0.92, 0.25, "m3"],
-    ["teeth", 0.08, 0.14, 0.9, "white", 1.2, 0.44, -0.18, "m3"],
-    ["tongue", 0.4, 0.1, 0.95, "orange", 1.15, 0, -0.4, "3"],
-    ["nostril", 0.2, 0.16, 0.2, "pink", 1.92, 0.3, 0.5, "m3"],
-    ["whiskerTip", 0.1, 0.1, 1.2, "blue", -0.1, 1.15, -0.2, "m3"],
-    ["hornTip", 0.18, 0.18, 0.6, "pink", -1.9, 0.5, 0.95, "m3"],
-    ["maneBack", 0.6, 0.45, 0.5, "violet", -1.45, 0, 0.78, "3"],
-    ["cheekFrill", 0.14, 0.5, 0.6, "pink", -0.95, 1, 0.25, "m3"],
-    ["chin", 0.3, 0.3, 0.45, "violet", 1, 0, -0.82, "3"],
-    ["beard", 0.2, 0.45, 0.2, "violet", 0.68, 0, -0.98, "3"],
+    ["model", 1.5, 1.25, 1.6, "white", 0, 0, 0],
+    ["model", 1.05, 0.6, 1.3, "white", 1.35, 0, 0.18],
+    ["model", 0.9, 0.26, 1.35, "pink", 1.2, 0, -0.58],
+    ["model", 0.26, 0.26, 1.2, "violet", -1.05, 0.5, 0.8, "m"],
+    ["model", 0.3, 0.5, 1, "orange", -0.35, 0, 0.85],
+    ["model", 0.3, 0.3, 0.3, "cyan", 0.5, 0.78, 0.25, "m"],
+    ["model", 0.2, 0.7, 0.95, "blue", -0.45, 0.98, -0.05, "m"],
+    ["model", 0.5, 0.2, 0.75, "violet", 0.5, 0.55, 0.68, "m2"],
+    ["model", 0.14, 0.32, 0.14, "white", 1.85, 0.36, -0.24, "m2"],
+    ["model", 0.12, 0.26, 0.12, "white", 1.72, 0.3, -0.34, "m2"],
+    ["model", 0.6, 0.3, 0.45, "gold", 0.72, 0, -0.28, "2"],
+    ["model", 0.12, 0.12, 1.3, "cyan", 1.05, 0.82, -0.05, "m2"],
+    ["model", 0.2, 0.6, 0.2, "violet", -1.35, 0.5, 1.15, "m2"],
+    ["model", 0.9, 0.5, 0.5, "pink", -1, 0, 0.55, "2"],
+    ["model", 0.12, 0.2, 0.2, "white", 0.56, 0.92, 0.25, "m3"],
+    ["model", 0.08, 0.14, 0.9, "white", 1.2, 0.44, -0.18, "m3"],
+    ["model", 0.4, 0.1, 0.95, "orange", 1.15, 0, -0.4, "3"],
+    ["model", 0.2, 0.16, 0.2, "pink", 1.92, 0.3, 0.5, "m3"],
+    ["model", 0.1, 0.1, 1.2, "blue", -0.1, 1.15, -0.2, "m3"],
+    ["model", 0.18, 0.18, 0.6, "pink", -1.9, 0.5, 0.95, "m3"],
+    ["model", 0.6, 0.45, 0.5, "violet", -1.45, 0, 0.78, "3"],
+    ["model", 0.14, 0.5, 0.6, "pink", -0.95, 1, 0.25, "m3"],
+    ["model", 0.3, 0.3, 0.45, "violet", 1, 0, -0.82, "3"],
+    ["model", 0.2, 0.45, 0.2, "violet", 0.68, 0, -0.98, "3"],
   ],
 
   body: [
@@ -200,12 +200,9 @@ function dpRows(name) {
     var level = dpFlag(r, "3") ? 3 : dpFlag(r, "2") ? 2 : 1
     if (level > DP_CFG.detail) return
     if (!dpFlag(r, "m")) return out.push(r)
-    var right = r.slice()
     var left = r.slice()
-    right[0] = r[0] + "R"
-    left[0] = r[0] + "L"
     left[6] = -r[6]
-    out.push(right, left)
+    out.push(r, left)
   })
   if (name === "body") out.sort((a, b) => b[5] - a[5])
   return (dpRowCache[key] = out)
@@ -245,13 +242,13 @@ function dpGroup(c, name, tag, tint, pos, B, k, still) {
   var rows = dpRows(name)
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i]
-    dpPut(c, tag + r[0], r, tint, dpAt(pos, B, r[5] * k, r[6] * k, r[7] * k), still ? null : B[0])
+    dpPut(c, tag + i, r, tint, dpAt(pos, B, r[5] * k, r[6] * k, r[7] * k), still ? null : B[0])
   }
 }
 
 function dpResize(c, name, tag, tint, k) {
-  dpRows(name).forEach((r) => {
-    var id = c.m[tag + r[0]]
+  dpRows(name).forEach((r, i) => {
+    var id = c.m[tag + i]
     if (id) api.updateMeshEntity(id, "Box", dpBox(r, tint, k))
   })
 }
@@ -283,7 +280,7 @@ function dpBody(c) {
     if (walked + seg < -r[5]) return
     var f = dpNorm(dpSub(P[j], P[j - 1]))
     var B = dpBasis(f)
-    dpPut(c, "body_" + r[0], r, "", dpAt(P[j], B, -(-r[5] - walked), r[6], r[7]), f)
+    dpPut(c, "body_" + i, r, "", dpAt(P[j], B, -(-r[5] - walked), r[6], r[7]), f)
   }
 }
 
@@ -463,7 +460,7 @@ var DP_PHASE = [
     var rows = dpRows("smoke")
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i]
-      dpPut(c, "smoke_" + r[0], r, "", dpAt(goal, c.B, r[5] * out, r[6] * out, 0.3 + r[7] * out + c.t * 0.03))
+      dpPut(c, "smoke_" + i, r, "", dpAt(goal, c.B, r[5] * out, r[6] * out, 0.3 + r[7] * out + c.t * 0.03))
     }
     if (c.t === 18 || c.t === 23) dpResize(c, "smoke", "smoke_", "", k)
     if (c.t < 20 && c.t % 2 === 0) dpFx("smoke", dpAt(goal, c.B, 0, 0, 1.5), 5, 2.5)
