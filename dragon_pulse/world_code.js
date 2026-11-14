@@ -1,8 +1,9 @@
 // ============================================================================
 //  DRAGON PULSE  -  World Code (F8)
-//  Three orbs charge (violet / orange / cyan) -> three beams twist together
-//  -> they merge into a glowing serpent dragon that hunts its target, coils
-//  around it and detonates into a white blast and smoke.
+//  Three orbs charge (violet / orange / cyan) -> three beams fly up into the
+//  sky and twist together -> they merge into a glowing serpent dragon that
+//  dives onto the target it chose, coils around it and detonates into a
+//  white blast and smoke.
 //
 //  Cast it:  type  !dp  in chat,  hold the item named in DP_CFG.item and
 //            right click,  or run  dragonPulse(myId)  from a code block.
@@ -17,7 +18,10 @@ var DP_CFG = {
   chat: "!dp",      // chat message that casts the move ("" = off)
   item: "",         // held item that casts it on right click ("" = off)
   cooldown: 8,      // seconds between casts of one player
-  range: 40,        // blocks the dragon flies when nothing is in the way
+  range: 40,        // blocks around the caster in which the dragon finds a target
+  rise: 16,         // blocks the beams fly up before they become the dragon
+  lean: 0.3,        // how far the beams lean forward on the way up (0 = straight up)
+  hitPlayers: true, // false = the dragon only goes for mobs
   damage: 40,       // health taken at the centre of the blast
   radius: 6,        // blast radius in blocks
   knockback: 14,    // push away from the blast
@@ -180,7 +184,8 @@ var dpSound = (name, pos, vol, rate) => {
     api.broadcastSound(name, vol, rate, { playerIdOrPos: pos, maxHearDist: 70, refDistance: 12 })
   } catch (e) {}
 }
-var dpLifeforms = () => api.getPlayerIds().concat(api.getMobIds())
+// Everything the blast can hurt.
+var dpLifeforms = () => api.getMobIds().concat(api.getPlayerIds())
 
 // -------------------------------------------- 6. MESH + PARTICLE ENGINE
 var dpCasts = [] // casts that are running
@@ -317,7 +322,7 @@ function dpOrbAt(c, i, p) {
   var q = Math.max(0, p)
   var rad = 0.9 * (1 - q) + 0.7 * Math.sin(Math.PI * q)
   var ang = (DP_ORBS[i][1] * Math.PI) / 180 + q * Math.PI * 0.6
-  return dpAt(c.from, c.B, c.reach * q, Math.cos(ang) * rad, Math.sin(ang) * rad)
+  return dpAt(c.from, c.L, c.reach * q, Math.cos(ang) * rad, Math.sin(ang) * rad)
 }
 
 // Where the dragon is heading: its target if it has one, else a fixed point.
@@ -359,7 +364,7 @@ var DP_PHASE = [
     for (var i = 0; i < 3; i++) {
       var tint = DP_ORBS[i][0]
       var p = dpOrbAt(c, i, 0)
-      if (c.t === 0) dpGroup(c, "orb", "orb" + i + "_", tint, p, c.B, 1)
+      if (c.t === 0) dpGroup(c, "orb", "orb" + i + "_", tint, p, c.L, 1)
       if (c.t === 0 || c.t === 8) dpResize(c, "orb", "orb" + i + "_", tint, k)
       dpFx("orbGlow", p, 3, 0.3 * k, tint)
       if (c.t % 3 === i) dpFx("orbDust", p, 4, 0.7, tint)
@@ -367,7 +372,8 @@ var DP_PHASE = [
     if (c.t >= 15) dpNext(c)
   },
 
-  // 1 BEAMS (0.7 s): the orbs shoot off, twist round each other and meet.
+  // 1 BEAMS (0.7 s): the orbs shoot up into the sky, twist round each other
+  // and meet.
   function (c) {
     var T = 14
     var p = (c.t + 1) / T
@@ -390,14 +396,14 @@ var DP_PHASE = [
     if (c.t >= T - 1) dpNext(c)
   },
 
-  // 2 DRAGON: the beams flash into one and the dragon flies out of the
-  // flash, weaving and arching, after its target.
+  // 2 DRAGON: high up the beams flash into one and the dragon comes out of
+  // the flash, arches over and dives, weaving, onto its target.
   function (c) {
     if (c.t === 0) {
       dpDrop(c, "orb")
       dpDrop(c, "beam")
-      c.at = dpAt(c.from, c.B, c.reach, 0, 0) // the point the weaving is around
-      c.path = [dpAt(c.at, c.B, -0.6, 0, 0)]
+      c.at = dpAt(c.from, c.L, c.reach, 0, 0) // the point the weaving is around
+      c.path = [dpAt(c.at, c.L, -0.6, 0, 0)]
       c.far = Math.max(1, dpLen(dpSub(dpGoal(c), c.at)))
       dpFx("flash", c.at, 10, 0.6)
       dpFx("ring", c.at, 14, 0.3)
@@ -489,6 +495,46 @@ function dpHurt(c, at) {
 }
 
 // ------------------------------------------------------ 8. CAST + CALLBACKS
+// How many blocks from a point along dir are free of blocks, up to max.
+function dpFree(from, dir, max) {
+  for (var d = 1; d <= max; d++) {
+    try {
+      var name = api.getBlock(Math.floor(from[0] + dir[0] * d), Math.floor(from[1] + dir[1] * d), Math.floor(from[2] + dir[2] * d))
+      if (name && name !== "Air") return d
+    } catch (e) {}
+  }
+  return max
+}
+
+// The dragon chooses what it dives into:
+//   1 the mob or player the caster looks at,
+//   2 else the mob nearest to the caster,
+//   3 else the nearest other player (only with DP_CFG.hitPlayers).
+// Returns null when nothing is in range: the dragon then hits where the
+// caster looks.
+function dpPick(casterId, eye, f) {
+  var pick = (ids, aimed) => {
+    var best = null
+    var bestDist = DP_CFG.range
+    for (var i = 0; i < ids.length; i++) {
+      if (ids[i] === casterId) continue
+      try {
+        var p = api.getPosition(ids[i])
+        var v = dpSub([p[0], p[1] + 0.9, p[2]], eye)
+        var dist = dpLen(v)
+        if (dist >= bestDist || dist < 1) continue
+        if (aimed && (v[0] * f[0] + v[1] * f[1] + v[2] * f[2]) / dist < 0.94) continue
+        best = ids[i]
+        bestDist = dist
+      } catch (e) {}
+    }
+    return best
+  }
+  var mobs = api.getMobIds()
+  var players = DP_CFG.hitPlayers ? api.getPlayerIds() : []
+  return pick(mobs.concat(players), true) || pick(mobs, false) || pick(players, false)
+}
+
 // Starts the move for a player. Returns true when it started.
 // eye, dir: fire from this point this way instead of from the player's eyes.
 function dragonPulse(playerId, eye, dir) {
@@ -502,42 +548,22 @@ function dragonPulse(playerId, eye, dir) {
   var f = dpNorm(face.dir)
   var B = dpBasis(f)
   eye = face.camPos
+  // The beams go up into the sky, leaning a little the way the caster faces.
+  var flat = dpNorm([f[0], 0, f[2]])
+  var up = dpNorm([flat[0] * DP_CFG.lean, 1, flat[2] * DP_CFG.lean])
+  var from = dpAt(eye, B, 2.2, 0, 0.1)
   var c = {
     id: playerId,
     ph: 0, // phase
     t: 0, // tick of the phase
     m: {}, // mesh key -> entity id
-    B: B, // the frame of the cast: [forward, right, up]
-    from: dpAt(eye, B, 2.2, 0, 0.1), // middle of the three orbs
-    reach: 10, // blocks from there to where the beams merge
-    target: null,
-    goal: dpAt(eye, B, DP_CFG.range, 0, 0),
+    B: B, // the frame of the caster: [forward, right, up]
+    L: dpBasis(up), // the frame of the launch: forward is the way the beams fly
+    from: from, // middle of the three orbs
+    reach: Math.max(3, dpFree(from, up, DP_CFG.rise) - 2), // blocks up to where the beams merge
+    target: dpPick(playerId, eye, f),
+    goal: dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5)), // with no target: where the caster looks
     path: [],
-  }
-  // Something solid in the way: the beams merge and the dragon ends before it.
-  try {
-    var hit = api.raycastForBlock(eye, f)
-    var hp = hit && (hit.position || hit.pos || hit.point)
-    if (hp) {
-      var d = dpLen(dpSub([hp[0] + 0.5, hp[1] + 0.5, hp[2] + 0.5], eye))
-      if (d < DP_CFG.range) c.goal = dpAt(eye, B, Math.max(3, d - 1), 0, 0)
-      c.reach = Math.max(2, Math.min(10, d - 5))
-    }
-  } catch (e) {}
-  // The nearest player or mob the caster is looking at becomes the target.
-  var ids = dpLifeforms()
-  var best = DP_CFG.range
-  for (var i = 0; i < ids.length; i++) {
-    if (ids[i] === playerId) continue
-    try {
-      var p = api.getPosition(ids[i])
-      var v = dpSub([p[0], p[1] + 0.9, p[2]], eye)
-      var dist = dpLen(v)
-      if (dist < best && dist > 1 && (v[0] * f[0] + v[1] * f[1] + v[2] * f[2]) / dist > 0.9) {
-        best = dist
-        c.target = ids[i]
-      }
-    } catch (e) {}
   }
   dpLast[playerId] = dpClock
   dpCasts.push(c)

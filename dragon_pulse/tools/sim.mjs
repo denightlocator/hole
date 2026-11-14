@@ -12,7 +12,7 @@ const world = fs.readFileSync(path.join(dir, 'world_code.js'), 'utf8')
 const block = fs.readFileSync(path.join(dir, 'code_block.js'), 'utf8')
 
 const args = process.argv.slice(2)
-const withTarget = args.includes('--target')
+const withTarget = args.includes('--target') // a mob walks about, not where the caster looks
 const dumpAt = args.indexOf('--dump')
 
 const ALLOWED_BOX = ['width', 'height', 'depth', 'diffuseColor', 'emissiveColor', 'autoRotate', 'hideDist']
@@ -26,18 +26,18 @@ function makeApi() {
   const meshes = new Map()
   let next = 1
   const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [] }
-  const pos = { caster: [0.5, 10, 0.5], dummy: [3.5, 12, 30.5] }
+  const pos = { caster: [0.5, 10, 0.5], dummy: [-14.5, 10, 12.5] }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
   s.api = {
-    getPlayerIds: () => (withTarget ? ['caster', 'dummy'] : ['caster']),
-    getMobIds: () => [],
+    getPlayerIds: () => ['caster'],
+    getMobIds: () => (withTarget ? ['dummy'] : []),
+    getBlock: (x, y, z) => { need(Number.isInteger(x + y + z), 'getBlock needs whole numbers'); return y < 10 ? 'Grass Block' : 'Air' },
     getPosition: (id) => {
       if (id === 'dummy') pos.dummy = [pos.dummy[0] + 0.12, pos.dummy[1], pos.dummy[2]] // it walks
       if (!pos[id]) throw new Error('no entity ' + id)
       return pos[id]
     },
     getPlayerFacingInfo: () => ({ camPos: [0.5, 11.6, 0.5], dir: [0.1, 0.12, 0.99] }),
-    raycastForBlock: () => null,
     getHeldItem: () => null,
     sendMessage: (id, m) => s.messages.push(m),
     broadcastSound: () => { s.calls++ },
@@ -83,7 +83,7 @@ check(world.length <= WORLD_LIMIT, `world_code.js ${world.length} of ${WORLD_LIM
 check(block.length <= BLOCK_LIMIT, `code_block.js ${block.length} of ${BLOCK_LIMIT} characters`)
 check(world.length <= BLOCK_LIMIT, `world_code.js would also fit a code block (${world.length} of ${BLOCK_LIMIT})`)
 
-console.log('Cast' + (withTarget ? ' at a walking target' : ' at nothing'))
+console.log('Cast' + (withTarget ? ' with a mob walking nearby' : ' with nothing around'))
 check(game.onPlayerChat('caster', 'hello') === undefined, 'other chat messages pass through')
 check(game.onPlayerChat('caster', '!dp') === false, '!dp starts the move and is hidden from chat')
 check(typeof g.dragonPulse === 'function', 'dragonPulse is reachable from code blocks')
@@ -101,6 +101,11 @@ while (game.dpCasts.length && ticks < 400) {
   frames.push({ t: ticks, ph, meshes: [...s.meshes.values()].map((m) => ({ ...m.o, p: m.p, r: m.r })), fx: s.particles.splice(0) })
   ticks++
 }
+const top = Math.max(...frames.filter((f) => f.ph === 1).flatMap((f) => f.meshes.map((m) => m.p ? m.p[1] : 0)))
+check(top > 11.6 + 10, `the beams fly up into the sky (${(top - 11.6).toFixed(1)} blocks above the caster's eyes)`)
+const dive = frames.filter((f) => f.ph === 2)
+const headY = (f) => Math.max(...f.meshes.slice(0, 1).map((m) => m.p[1]))
+check(headY(dive[1]) - headY(dive[dive.length - 1]) > 8, `the dragon dives (${(headY(dive[1]) - headY(dive[dive.length - 1])).toFixed(1)} blocks down)`)
 check(ticks < 400, `the move ends by itself (${ticks} ticks, ${(ticks / 20).toFixed(2)} s)`)
 check(s.errors.length === 0, 'every api call is well formed' + (s.errors.length ? ': ' + [...new Set(s.errors)].join('; ') : ''))
 check(s.meshes.size === 0 && game.held() === 0, 'every mesh is deleted at the end')

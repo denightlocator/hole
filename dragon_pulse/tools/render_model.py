@@ -71,7 +71,7 @@ def view(angle, height, title):
 far = max(meshes, key=lambda m: m['p'][0] ** 2 + m['p'][2] ** 2 if m['p'][1] > 4.5 else 0)
 FACING = math.atan2(far['p'][0], far['p'][2])
 sheet = Image.new('RGB', (W * 2, H * 2))
-for i, (ang, hgt, title) in enumerate([(35, 3, 'front right'), (90, 1, 'right side'), (180, 3, 'back'), (-30, 6, 'front left, from above')]):
+for i, (ang, hgt, title) in enumerate([(35, 3, 'front right'), (90, 1, 'right side'), (180, 3, 'back'), (-25, -1.5, 'front left, from the ground')]):
     sheet.paste(view(ang, hgt, f'{title}  ({len(meshes)} meshes)'), ((i % 2) * W, (i // 2) * H))
 sheet.save(sys.argv[2])
 print('wrote', sys.argv[2])

@@ -18,8 +18,13 @@ rough picture, not a screenshot.*
      into it and click it;
    - set `item` in `DP_CFG` to an item name, hold that item and right click.
 
-The move fires the way you look. If you look at a player or mob within 40 blocks,
-the dragon hunts it; otherwise it flies until it reaches a wall or its range.
+The beams fly up into the sky, become the dragon there, and the dragon dives onto
+the target it chose:
+
+1. the mob or player you are looking at;
+2. otherwise the mob nearest to you within 40 blocks;
+3. otherwise the nearest other player (`hitPlayers: false` turns this off);
+4. with nothing in range, the spot you are looking at.
 
 If your World Code already has `tick`, `onPlayerChat` or `onPlayerAltAction`, do
 not paste the three callbacks at the bottom. Put the one line inside each into
@@ -28,7 +33,7 @@ your own callback instead.
 ## Goodra
 
 The Pokemon that fires the move in frame 01 is Goodra.
-[`dragon_pulse/goodra.js`](dragon_pulse/goodra.js) builds it from 124 Box meshes.
+[`dragon_pulse/goodra.js`](dragon_pulse/goodra.js) builds it from 125 Box meshes.
 
 ![Goodra from four sides](dragon_pulse/preview/goodra.png)
 
@@ -48,8 +53,11 @@ Every mesh is one named row in `GOODRA_MESH`, in 11 groups: `head`, `face`,
 Parts that exist on both sides are written once and mirrored.
 
 `GOODRA_CFG` sets the size (`scale`, 0.6 is about 4 blocks tall) and the number of
-parts (`detail`): 1 is the body with 45 meshes, 2 adds face, spots and belly for
-89, 3 is everything with 124.
+parts (`detail`): 1 is the body and eyes with 51 meshes, 2 adds face, spots and
+belly for 92, 3 is everything with 125.
+
+The eyes stand out from the head and glow, so they show from the ground and at
+night.
 
 Not tested in the game either. Two things to look at:
 
@@ -67,10 +75,10 @@ again while one stands, that one stays: remove it first.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 22,757 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 13,654 | 512,000 together: 36,412 |
+| `world_code.js` | World Code | 23,986 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 13,828 | 512,000 together: 37,815 |
 | `code_block.js` | Code Block | 164 | 32,000 |
-| `studio/particles_only.code_block.js` | Code Block | 13,362 | 32,000 |
+| `studio/particles_only.code_block.js` | Code Block | 13,479 | 32,000 |
 
 ## What the frames show, and how it is built
 
@@ -79,14 +87,14 @@ The 20 frames cover 1.50 s to 6.25 s of the clip.
 | Frames | In the clip | In Bloxd | Seconds |
 |---|---|---|---|
 | 01–03 | Three orbs charge: violet, orange and cyan, each with a white core | 6 meshes (core + turning shell per orb), glow and dust particles | 0.0–0.8 |
-| 04–05 | Three beams with white cores shoot off side by side | The orbs fly off with 4 beam pieces each, particle streaks behind | 0.8–1.5 |
-| 06 | The beams merge into one white column with a magenta and blue edge | White flash and ring where the beams meet | 1.5 |
-| 07–11 | The energy becomes a serpent dragon: white body, mottled pink, violet, blue and orange, with a head and jaws. It arches up and chases the target | 27 meshes: a 10-part head and a 17-part body that bends along the path the head flew. Skin shimmer and white outline particles | 1.5–3.0 |
-| 12–16 | It wraps round the target; two yellow-orange stars flash | The dragon circles the target; two 4-part star meshes and gold sparks | 3.0–3.6 |
-| 17 | White explosion with thin arcs | White core mesh, flash, shock ring. Damage and knockback happen here | 3.6–3.8 |
-| 18–20 | Rolling white smoke with blue-grey shading, violet sparks left over | 8 smoke meshes that roll out and shrink, smoke and spark particles | 3.8–5.2 |
+| 04–05 | Three beams with white cores shoot up into the sky side by side | The orbs fly 16 blocks up with 4 beam pieces each, particle streaks behind | 0.8–1.5 |
+| 06 | The beams merge into one white column with a magenta and blue edge | White flash and ring where the beams meet, high up | 1.5 |
+| 07–11 | The energy becomes a serpent dragon: white body, mottled pink, violet, blue and orange, with a head and jaws. It arches over and dives after the target | 27 meshes: a 10-part head and a 17-part body that bends along the path the head flew. Skin shimmer and white outline particles | 1.5–3.3 |
+| 12–16 | It wraps round the target; two yellow-orange stars flash | The dragon circles the target; two 4-part star meshes and gold sparks | 3.3–3.9 |
+| 17 | White explosion with thin arcs | White core mesh, flash, shock ring. Damage and knockback happen here | 3.9–4.1 |
+| 18–20 | Rolling white smoke with blue-grey shading, violet sparks left over | 8 smoke meshes that roll out and shrink, smoke and spark particles | 4.1–5.5 |
 
-Seconds are for a cast at nothing. With a target the dragon arrives sooner or later.
+Seconds are for a cast with nothing in range. How long the dive takes depends on how far the target is.
 
 ## The meshes
 
@@ -120,15 +128,15 @@ press **Open** there and pick
 It holds the particles of all six phases in six groups, 598 particles, on the same
 timeline. Press Play to watch it.
 
-The studio shows particles only, not meshes, and its scene fires along one fixed
-direction from the code block. `studio/particles_only.code_block.js` is that scene
+The studio shows particles only, not meshes, and its scene always goes up from the
+code block and comes down 28 blocks away. `studio/particles_only.code_block.js` is that scene
 exported by the studio: a version of the move for one code block, without World
 Code, meshes, aiming or damage.
 
 ## Settings
 
 All in `DP_CFG` at the top of `world_code.js`: chat word, item, cooldown, range,
-damage, blast radius, knockback, whether the caster can be hurt, sounds, view
+how high the beams rise, whether the dragon goes for players, damage, blast radius, knockback, whether the caster can be hurt, sounds, view
 distance, and the caps on casts and meshes.
 
 ## Not tested in the game
@@ -146,8 +154,8 @@ It cannot show how the game draws it. Things to look at first in your world:
   If parts of the dragon are missing, lower `maxCasts`, or remove rows from `body`.
 - **Code block.** `code_block.js` calls a function defined in World Code. If your
   world reports that `dragonPulse` is not defined, use the chat word or the item.
-- **Walls.** The documentation does not describe what `api.raycastForBlock`
-  returns. If the dragon flies through walls, that reading is wrong.
+- **Roofs and walls.** Under a roof the beams stop below it. The dragon itself
+  flies through blocks on its way to the target.
 - **Particle speed and blend.** Lifetimes and speeds assume the particle clock the
   studio measured (0.6 per second).
 

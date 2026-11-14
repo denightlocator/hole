@@ -6,7 +6,7 @@
 //                                               own code, and write its export
 //                                               to particles_only.code_block.js
 //
-// The scene is fired along +Z from the crate. Seconds match world_code.js fired at nothing.
+// The scene goes up from the crate and comes down 28 blocks away along +Z. Seconds match world_code.js fired at nothing.
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -46,8 +46,8 @@ const aim = (d) => {
 }
 
 const FROM = [0.5, 2.6, 2.7] // middle of the three orbs
-const MERGE = [0.5, 2.6, 12.7] // where the beams meet
-const GOAL = [0.5, 3.6, 40.5] // where the dragon bites
+const MERGE = [0.5, 16, 6.7] // where the beams meet, up in the sky
+const GOAL = [0.5, 1.9, 28.5] // where the dragon bites, back on the ground
 const ORBS = [['violet', 210], ['orange', 90], ['cyan', 330]]
 const orbAt = (deg) => [FROM[0] + Math.cos((deg * Math.PI) / 180) * 0.9, FROM[1] + Math.sin((deg * Math.PI) / 180) * 0.9, FROM[2]]
 
@@ -68,16 +68,21 @@ for (const [col, deg] of ORBS) {
   add(g, `Beam ${col}: sparks`, 'line', { count: 12, pos: a.map((v, i) => v + d[i] / 2), rot: aim(d), scale: [len / 2, 1, 1], texture: 'glint', color: col, color2: 'white', size: [0.15, 0.3], seconds: 0.5, scatter: 1.5, start: 0.2 })
 }
 
-// 3 DRAGON 1.5 to 3.0 s: flash, then the serpent flies to the goal
+// 3 DRAGON 1.5 to 3.0 s: flash, then the serpent dives to the goal
 g = group('3 Dragon (1.5 s)', 1.5)
 add(g, 'Merge flash', 'sphere', { count: 16, pos: MERGE, scale: [0.6, 0.6, 0.6], color: 'white', size: [1.5, 3.5], seconds: 0.25, grow: 5 })
 add(g, 'Merge ring', 'circle', { count: 28, pos: MERGE, scale: [0.5, 0.5, 0.5], color: 'white', size: [0.3, 0.5], seconds: 0.4, grow: 14 })
-const fly = (GOAL[2] - MERGE[2] - 7) / 1.5 // blocks per second
-const body = { pos: [MERGE[0], MERGE[1] + 1.2, MERGE[2] + 7], rot: [0, 90, 0], seconds: 1.5, speed: [0, 0.8, fly] }
-add(g, 'Skin pink and violet', 'wave', { ...body, count: 30, params: { waves: 1.5, height: 0.3 }, scale: [7, 5, 1], color: 'pink', color2: 'violet', size: [0.6, 1.1] })
-add(g, 'Skin blue and orange', 'wave', { ...body, count: 22, params: { waves: 1.5, height: 0.3 }, scale: [7, 5, 1], color: 'blue', color2: 'orange', size: [0.5, 0.9], scatter: 0.5 })
-add(g, 'White outline', 'wave', { ...body, count: 30, params: { waves: 1.5, height: 0.3 }, scale: [7, 5, 1], texture: 'glint', color: 'white', size: [0.5, 0.9], scatter: 0.3 })
-add(g, 'Head glow', 'sphere', { ...body, count: 24, pos: [MERGE[0], MERGE[1] + 1.2, MERGE[2] + 14], scale: [1, 0.9, 1.2], color: 'white', color2: 'pink', size: [0.6, 1] })
+// the serpent is 14 blocks long, lies along the dive and flies down it
+const dive = GOAL.map((v, i) => v - MERGE[i])
+const far = Math.hypot(...dive)
+const along = dive.map((v) => v / far)
+const speed = along.map((v) => (v * (far - 14)) / 1.5) // blocks per second
+const body = { pos: MERGE.map((v, i) => v + along[i] * 7), rot: aim(dive), seconds: 1.5, speed }
+const wave = { ...body, params: { waves: 1.5, height: 0.3 }, scale: [7, 5, 1] }
+add(g, 'Skin pink and violet', 'wave', { ...wave, count: 30, color: 'pink', color2: 'violet', size: [0.6, 1.1] })
+add(g, 'Skin blue and orange', 'wave', { ...wave, count: 22, color: 'blue', color2: 'orange', size: [0.5, 0.9], scatter: 0.5 })
+add(g, 'White outline', 'wave', { ...wave, count: 30, texture: 'glint', color: 'white', size: [0.5, 0.9], scatter: 0.3 })
+add(g, 'Head glow', 'sphere', { ...body, count: 24, pos: MERGE.map((v, i) => v + along[i] * 14), rot: [0, 0, 0], scale: [1.1, 1.1, 1.1], color: 'white', color2: 'pink', size: [0.6, 1] })
 
 // 4 BITE 3.0 to 3.6 s: two yellow stars
 g = group('4 Bite (3.0 s)', 3)

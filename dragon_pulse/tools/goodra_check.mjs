@@ -19,7 +19,7 @@ function game(code, limit = Infinity) {
   const s = { meshes, messages: [], particles: 0, errors: [] }
   let next = 1
   s.api = {
-    getPlayerIds: () => ['p'], getMobIds: () => [], getHeldItem: () => null, raycastForBlock: () => null,
+    getPlayerIds: () => ['p'], getMobIds: () => [], getHeldItem: () => null, getBlock: () => 'Air',
     getPosition: () => [10.5, 20, 10.5],
     getPlayerFacingInfo: () => ({ camPos: [10.5, 21.6, 10.5], dir: [0.6, -0.2, 0.77] }),
     sendMessage: (id, m) => s.messages.push(m),

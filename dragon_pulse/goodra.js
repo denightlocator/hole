@@ -16,7 +16,7 @@
 var GOODRA_CFG = {
   chat: "!goodra",
   scale: 0.6,     // 1 = 6.8 blocks tall, 0.6 = about 4 blocks
-  detail: 3,      // 1 = body only (45 meshes), 2 = + face, spots, belly (89), 3 = everything (124)
+  detail: 3,      // 1 = body and eyes (51 meshes), 2 = + face, spots, belly (92), 3 = everything (125)
   rotate: true,   // turn the meshes. false = no turning: it then faces north, east, south or west
   perTick: 10,    // meshes made per tick while it is being built
   hideDist: 96,
@@ -43,31 +43,32 @@ var GOODRA_COL = {
 // tilt / turn / lean: degrees. tilt + leans its top forward, turn + turns it
 //   to its right, lean + leans its top to its right. Leave out for 0.
 // flags: "m" = make it twice, mirrored left and right (written for the right
-//   side). "2" or "3" = only at that detail level or higher.
+//   side). "2" or "3" = only at that detail level or higher. "g" = glows.
 var GOODRA_MESH = {
   // ---- head: a rounded block with a short blunt snout
   head: [
     ["skull", 1.5, 1.25, 1.5, "skin", 0.45, 0, 5.4],
     ["skullTop", 1.2, 0.25, 1.2, "light", 0.45, 0, 6.1],
     ["skullBack", 1.2, 1.0, 0.25, "skin", -0.4, 0, 5.45],
-    ["cheek", 0.2, 0.9, 1.1, "skin", 0.5, 0.82, 5.3, 0, 0, 0, "m"],
-    ["brow", 1.3, 0.14, 0.16, "skin", 1.22, 0, 5.98, 0, 0, 0, "2"],
-    ["snout", 1.2, 0.8, 0.6, "skin", 1.4, 0, 5.2],
-    ["snoutTip", 0.95, 0.6, 0.2, "skin", 1.78, 0, 5.22],
+    ["cheek", 0.2, 0.75, 1.1, "skin", 0.5, 0.82, 5.15, 0, 0, 0, "m"],
+    ["snout", 1.2, 0.7, 0.6, "skin", 1.4, 0, 5.1],
+    ["snoutTip", 0.95, 0.52, 0.2, "skin", 1.78, 0, 5.12],
     ["chin", 1.0, 0.25, 1.3, "under", 0.75, 0, 4.72],
     ["jawSide", 0.16, 0.3, 0.9, "skin", 1.0, 0.56, 4.85, 0, 0, 0, "m2"],
   ],
 
-  // ---- face: eyes, mouth, nostrils, cheek spots
+  // ---- face: big round eyes that stand out from the head and glow, so they
+  //      show from the ground and in the dark; mouth, nostrils, cheek spots
   face: [
-    ["eye", 0.42, 0.5, 0.1, "eye", 1.22, 0.44, 5.62, 0, 0, 0, "m2"],
-    ["eyeShine", 0.15, 0.16, 0.06, "white", 1.28, 0.52, 5.74, 0, 0, 0, "m2"],
-    ["pupil", 0.12, 0.2, 0.06, "dark", 1.28, 0.38, 5.56, 0, 0, 0, "m3"],
-    ["eyelid", 0.46, 0.06, 0.12, "under", 1.23, 0.44, 5.9, 0, 0, 0, "m3"],
-    ["mouth", 0.8, 0.06, 0.06, "dark", 1.88, 0, 5.02, 0, 0, 0, "2"],
-    ["smile", 0.06, 0.16, 0.06, "dark", 1.86, 0.42, 5.08, 0, 0, 0, "m3"],
-    ["nostril", 0.08, 0.08, 0.05, "dark", 1.89, 0.2, 5.38, 0, 0, 0, "m3"],
-    ["cheekSpot", 0.06, 0.34, 0.34, "spot", 0.7, 0.94, 5.22, 0, 0, 0, "m2"],
+    ["eye", 0.5, 0.6, 0.22, "eye", 1.26, 0.5, 5.75, 0, 0, 0, "mg"],
+    ["eyeSide", 0.14, 0.5, 0.45, "eye", 1.05, 0.95, 5.75, 0, 0, 0, "mg"],
+    ["pupil", 0.14, 0.28, 0.08, "dark", 1.39, 0.43, 5.7, 0, 0, 0, "m"],
+    ["eyeShine", 0.16, 0.18, 0.08, "white", 1.39, 0.6, 5.9, 0, 0, 0, "mg2"],
+    ["eyelid", 0.58, 0.07, 0.28, "under", 1.26, 0.5, 6.08, 0, 0, 0, "m3"],
+    ["mouth", 0.8, 0.06, 0.06, "dark", 1.88, 0, 4.94, 0, 0, 0, "2"],
+    ["smile", 0.06, 0.16, 0.06, "dark", 1.86, 0.42, 5.0, 0, 0, 0, "m3"],
+    ["nostril", 0.08, 0.08, 0.05, "dark", 1.89, 0.2, 5.3, 0, 0, 0, "m3"],
+    ["cheekSpot", 0.06, 0.34, 0.34, "spot", 0.7, 0.94, 5.18, 0, 0, 0, "m2"],
   ],
 
   // ---- antennae: the long pair hangs down the back and curls at the tip,
@@ -172,7 +173,7 @@ var GOODRA_MESH = {
 }
 
 // Where the mouth is: Dragon Pulse starts here. [forward, right, up]
-var GOODRA_MOUTH = [2.0, 0, 5.2]
+var GOODRA_MOUTH = [2.0, 0, 5.1]
 
 // ---------------------------------------------------------------- 4. ENGINE
 var goodra = null // the one that stands in the world: { ids, todo, pos, yaw }
@@ -185,7 +186,7 @@ function goodraParts() {
       var flags = r[11] || ""
       var level = flags.indexOf("3") >= 0 ? 3 : flags.indexOf("2") >= 0 ? 2 : 1
       if (level > GOODRA_CFG.detail) return
-      var part = { name: group + "." + r[0], size: [r[1], r[2], r[3]], col: r[4], at: [r[5], r[6], r[7]], rot: [r[8] || 0, r[9] || 0, r[10] || 0] }
+      var part = { name: group + "." + r[0], glow: flags.indexOf("g") >= 0, size: [r[1], r[2], r[3]], col: r[4], at: [r[5], r[6], r[7]], rot: [r[8] || 0, r[9] || 0, r[10] || 0] }
       if (flags.indexOf("m") < 0) return out.push(part)
       out.push(Object.assign({}, part, { name: part.name + "R" }))
       out.push(Object.assign({}, part, { name: part.name + "L", at: [r[5], -r[6], r[7]], rot: [part.rot[0], -part.rot[1], -part.rot[2]] }))
@@ -211,7 +212,7 @@ function goodraMake(g, part) {
     height: part.size[1] * k,
     depth: part.size[turned ? 0 : 2] * k,
     diffuseColor: col,
-    emissiveColor: col.map((v) => Math.round(v * 0.35)),
+    emissiveColor: part.glow ? col : col.map((v) => Math.round(v * 0.35)),
     hideDist: GOODRA_CFG.hideDist,
   })
   if (!id) return false
