@@ -31,7 +31,7 @@ const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object
 function makeApi(mob) {
   const meshes = new Map()
   let next = 1
-  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [], sounds: new Set() }
+  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [], sounds: new Set(), hurtAt: [], now: 0 }
   const pos = { caster: [0.5, 10, 0.5], other: [20.5, 10, 0.5], dummy: [-14.5, 10, 12.5] }
   const eyes = { caster: { camPos: [0.5, 11.6, 0.5], dir: [0.1, 0.12, 0.99] }, other: { camPos: [20.5, 11.6, 0.5], dir: [-0.1, 0.1, 0.99] } }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
@@ -72,7 +72,7 @@ function makeApi(mob) {
     },
     applyImpulse: (id, x, y, z) => { need(finite([x, y, z]), 'bad impulse'); s.hurt.push(['push', id]) },
     applyHealthChange: (id, n) => { need(Number.isInteger(n), 'damage must be an integer'); s.hurt.push(['hp', id, n]) },
-    killLifeform: (id) => { s.hurt.push(['kill', id]); s.dead.push(id) },
+    killLifeform: (id) => { s.hurtAt.push(s.now); s.hurt.push(['kill', id]); s.dead.push(id) },
   }
   return s
 }
@@ -92,6 +92,7 @@ function run({ s, game }, limit = 600) {
   let worst = 0
   while (game.dpCasts.length && frames.length < limit) {
     const before = s.calls
+    s.now = frames.length
     const ph = Math.max(...game.dpCasts.map((c) => c.ph))
     game.tick(50)
     worst = Math.max(worst, s.calls - before)
@@ -153,6 +154,10 @@ const big = Math.max(...mega[mega.length - 1].meshes.map((m) => m.width))
 check(big > 3, `the merged dragon is ${two.game.DP_CFG.megaScale} times the size (skull ${big.toFixed(1)} blocks wide)`)
 check(Math.max(...ys(mega[mega.length - 1])) - Math.max(...ys(mega[0])) > 12, `it climbs ${(Math.max(...ys(mega[mega.length - 1])) - Math.max(...ys(mega[0]))).toFixed(1)} blocks`)
 const nuke = of(M, 8)
+const tall = (f) => Math.max(0, ...f.meshes.map((m) => m.height))
+const bl = of(F, 5)
+check(tall(bl[0]) < tall(bl[4]) && tall(bl[9]) > 40 && bl[9].meshes.length === 5 && !one.s.hurtAt.some((t) => t < bl[10].t), `a beam shoots ${tall(bl[9]).toFixed(0)} blocks up for ${(10 / 20).toFixed(2)} s before the blast; nobody is hurt until it ends`)
+check(nuke[11].meshes.length === 5 && tall(nuke[11]) > 50 && nuke[12].meshes.length === 4, `the nuke also starts with a beam (${tall(nuke[11]).toFixed(0)} blocks tall)`)
 check(nuke.length > 0 && Math.max(...nuke[nuke.length - 1].meshes.map((m) => m.height)) > 100, `it explodes into a nuke (${Math.max(...nuke[nuke.length - 1].meshes.map((m) => m.height)).toFixed(0)} blocks tall)`)
 check(two.s.hurt.some((h) => h[0] === 'kill' && h[1] === 'dummy'), 'the nuke kills the mob under it')
 check(!two.s.hurt.some((h) => h[1] === 'caster' || h[1] === 'other'), 'neither caster is hurt')

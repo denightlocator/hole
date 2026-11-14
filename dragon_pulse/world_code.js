@@ -9,6 +9,7 @@ var DP_CFG = {
   kill: true,
   damage: 40,
   boom: 1,
+  beam: 0.5,
   radius: 10,
   knockback: 18,
   hurtCaster: false,
@@ -65,6 +66,7 @@ var DP_SND = {
   lock: [["bearRoar3", 1, 1.3], ["sonarBeep", 0.6, 1.6]],
   dive: [["drumSwish1", 1, 0.8]],
   flare: [["zapAccent2", 0.8, 1.3], ["firecracker1", 0.7, 1]],
+  beam: [["futureStrangePulse", 1, 1.6], ["zapAccent1", 1, 1.4]],
   blast: [["cannonFire2", 1, 0.7], ["bassattack", 1, 0.6]],
   merge: [["futureStrangePulse", 1, 1], ["gorillaRoar1", 1, 0.5], ["zapAccent1", 1, 0.6]],
   climb: [["suspenseRiser", 1, 1.5]],
@@ -169,6 +171,13 @@ var DP_MESH = {
     ["M", 3.0, 0.42, 0.42, "gold", 0, 0, 0],
     ["M", 0.42, 3.0, 0.42, "gold", 0, 0, 0],
     ["M", 0.42, 0.42, 3.0, "magenta", 0, 0, 0],
+  ],
+
+  beam: [
+    ["M", 1.3, 1, 1.3, "white", 0, 0, 0, "spin"],
+    ["M", 0.35, 1, 0.35, "magenta", 1.1, 0, 0],
+    ["M", 0.35, 1, 0.35, "magenta", -1.1, 0, 0],
+    ["M", 0.35, 1, 0.35, "cyan", 0, 1.1, 0, "m"],
   ],
 
   blast: [
@@ -342,6 +351,18 @@ function dpBody(c) {
     var f = dpNorm(dpSub(P[j], P[j - 1]))
     dpPut(c, "body_" + i, r, "", dpAt(P[j], dpBasis(f), walked - back, r[6] * c.k, r[7] * c.k), f, c.k)
   }
+}
+
+function dpBeam(c, base, k, tall) {
+  dpRows("beam").forEach((r, i) => {
+    dpPut(c, "beam_" + i, r, "", dpAt(base, DP_UP, r[5] * k, r[6] * k, tall / 2), null, k)
+    var box = dpBox(r, "", k)
+    box.height = tall
+    if (c.m["beam_" + i]) api.updateMeshEntity(c.m["beam_" + i], "Box", box)
+  })
+  dpFx("mote", base, 8, 1.4 * k, "magenta", "white", [0, 1, 0])
+  dpFx("flash", dpAdd(base, [0, 1, 0], tall), 6, k)
+  if (c.t % 3 === 0) dpFx("ring", base, 14, 0.4)
 }
 
 function dpCircle(c) {
@@ -518,8 +539,15 @@ var DP_PHASE = [
   function (c) {
     var goal = dpGoal(c)
     var b = DP_CFG.boom
+    var wait = Math.round(DP_CFG.beam * 20)
+    var e = c.t - wait
     if (c.t === 0) {
       dpDrop(c, "")
+      if (wait) dpSound("beam", goal)
+    }
+    if (e < 0) return dpBeam(c, [goal[0], goal[1] - 1, goal[2]], b, (48 * (c.t + 1)) / wait)
+    if (e === 0) {
+      dpDrop(c, "beam_")
       dpGroup(c, "blast", "blast_", "", goal, DP_UP, b, true)
       dpFx("flash", goal, 20, 3 * b)
       dpFx("ring", goal, 24, 0.4)
@@ -528,10 +556,10 @@ var DP_PHASE = [
       dpSound("blast", goal)
       dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
     }
-    if (c.t && c.t % 2 === 0) dpResize(c, "blast", "blast_", "", b * (1 + c.t * 0.3))
-    dpFx("flash", goal, 10, (3 + c.t * 0.6) * b)
-    if (c.t % 3 === 0) dpFx("wave", goal, 12, 0.5)
-    if (c.t >= 8) dpNext(c)
+    if (e && e % 2 === 0) dpResize(c, "blast", "blast_", "", b * (1 + e * 0.3))
+    dpFx("flash", goal, 10, (3 + e * 0.6) * b)
+    if (e % 3 === 0) dpFx("wave", goal, 12, 0.5)
+    if (e >= 8) dpNext(c)
   },
 
   function (c) {
@@ -557,20 +585,27 @@ var DP_PHASE = [
   },
 
   function (c) {
+    var wait = Math.round(DP_CFG.beam * 24)
+    var e = c.t - wait
     if (c.t === 0) {
       dpDrop(c, "")
       c.goal = c.at
       c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
+      if (wait) dpSound("beam", c.ground, 0.7)
+    }
+    if (e < 0) return dpBeam(c, c.ground, 2.2 * DP_CFG.boom, ((c.goal[1] - c.ground[1] + 30) * (c.t + 1)) / wait)
+    if (e === 0) {
+      dpDrop(c, "beam_")
       dpGroup(c, "nuke", "nuke_", "", c.goal, DP_UP, DP_CFG.boom, true)
       dpSound("nuke", c.goal)
       dpHurt(c, c.ground, DP_CFG.nukeRadius, DP_CFG.nukeDamage, DP_CFG.nukeKnockback, true)
     }
-    if (c.t && c.t % 3 === 0) dpResize(c, "nuke", "nuke_", "", DP_CFG.boom * (1 + c.t * 0.2))
-    dpFx("flash", c.goal, 18, (5 + c.t) * DP_CFG.boom)
+    if (e && e % 3 === 0) dpResize(c, "nuke", "nuke_", "", DP_CFG.boom * (1 + e * 0.2))
+    dpFx("flash", c.goal, 18, (5 + e) * DP_CFG.boom)
     dpFx("wave", c.goal, 16, 0.5)
     dpFx("wave", c.ground, 16, 0.5)
     dpFx("impact", c.goal, 14, 6 * DP_CFG.boom)
-    if (c.t >= 15) dpNext(c)
+    if (e >= 15) dpNext(c)
   },
 
   function (c) {

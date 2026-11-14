@@ -3,7 +3,7 @@
 The move from `beam_blast_frames/`, rebuilt for [bloxd.io](https://bloxd.io) with
 mesh entities, particles and code.
 
-![Six moments: circle, the dragon coming out, the dive, the merged dragon, the nuke, its cloud](dragon_pulse/preview/moments.png)
+![Six moments: circle, the dragon coming out, the beam, the blast, the nuke, its cloud](dragon_pulse/preview/moments.png)
 
 *Drawn by `dragon_pulse/tools/render.py` from a test run outside the game. It is a
 rough picture, not a screenshot.*
@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 27,011 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 37,226 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 43,258 |
+| `world_code.js` | World Code | 28,273 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 38,489 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 44,522 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -151,14 +151,16 @@ the table columns mean is written on this page instead.
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | two 4-part star meshes, sparks | 4.7–5.3 |
-| blast | A white fireball with three rays grows to 12 blocks across, the rays to 34. The target is killed, others within 10 blocks are hurt and pushed | 4 meshes that grow, flashes, shock waves | 5.3–5.8 |
-| smoke | Smoke rolls out twice as far as before and shrinks | 8 smoke meshes, smoke and sparks | 5.8–7.6 |
+| beam | The dragon turns into a beam that shoots 48 blocks straight up from the target | 5 meshes that grow: a white core and four thin beams round it; rising sparks | 5.35–5.85 |
+| blast | A white fireball with three rays grows to 12 blocks across, the rays to 34. The target is killed, others within 10 blocks are hurt and pushed | 4 meshes that grow, flashes, shock waves | 5.85–6.3 |
+| smoke | Smoke rolls out twice as far as before and shrinks | 8 smoke meshes, smoke and sparks | 6.3–8.1 |
 
 After two dragons touch, the one that is left runs these steps instead:
 
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
 | mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 113 meshes, bigger | 1.2 s |
+| beam | A thick beam shoots from the ground up through the dragon and 30 blocks past it | the same 5 meshes, 2.2 times as thick | 0.6 s |
 | nuke | A fireball with three rays grows until it reaches the ground; shock waves in the sky and on the ground. The fireball grows to 32 blocks across, its rays to 104. Everything within 34 blocks dies | 4 meshes that grow, flashes and waves | 0.8 s |
 | cloud | A mushroom cloud: a cap two and a half times the size of the normal smoke on a stem down to the ground | 8 cap meshes, 5 stem meshes, smoke | 2.5 s |
 
@@ -180,6 +182,7 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | `head` | 55 | Purple skull and a snout that narrows to the tip; open lower jaw with its own tip and hinges; dark horns in three pieces with magenta tips; a three-step crest; cyan eyes in dark sockets with slit pupils under heavy brows; a nose horn, snout ridge and forehead gem; big and small fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins with frill spikes, chin spikes, beard |
 | `body` | 58 | 12 segments from thick neck to thin tail, purple and dark purple in turn; a tall magenta spine on each, lilac belly plates, cyan stripes on both sides, a pair of wings with lilac tips, a pair of fins, tail fins |
 | `flare` | 4 | The star: a core and three rays |
+| `beam` | 5 | The beam before each explosion: a core and four thin beams |
 | `blast` | 4 | The fireball of the explosion and its three rays |
 | `smoke` | 8 | White and violet-grey puffs; also the cap of the mushroom cloud |
 | `nuke` | 4 | The fireball and its three rays |
@@ -190,6 +193,7 @@ To change a part, change its row. To add one, add a row: the engine picks it up.
 Every row in `DP_MESH` is named `M`. What each row is, in order:
 
 - `flare`: core, then the three rays.
+- `beam`: core, front, back, then the two side beams.
 - `blast`: fireball, then the three rays.
 - `smoke`: puffs 1 to 8.
 - `nuke`: fireball, then the three rays.
@@ -255,6 +259,7 @@ list.
 | `emerge` | the dragon comes out | a deep roar, an impact and a drum swish |
 | `lock`, `dive` | it has its target and dives | a roar, a beep and a swish |
 | `flare` | each star | a zap and a firecracker |
+| `beam` | the beam shoots up | a pulse and a zap |
 | `blast` | the explosion | a cannon and a bass hit |
 | `merge`, `climb` | two dragons merge | a pulse, a very deep roar, a zap and a rising tone |
 | `nuke` | the nuke | three slowed-down blasts together |
@@ -276,6 +281,7 @@ list.
 | `kill` | `true`: the target dies, and so does everything the nuke reaches. `false`: they take `damage` or `nukeDamage` |
 | `damage` | Health taken at the centre of the blast from everyone but the target |
 | `boom` | Size of every explosion and its smoke. 1 is as drawn here, 2 is twice as big. It does not change who is hit |
+| `beam` | Seconds the beam shoots up before the explosion. 0 turns the beam off |
 | `radius` | Blast radius in blocks |
 | `knockback` | Push away from the blast |
 | `hurtCaster` | `true`: blast and nuke also hit whoever cast the dragons |
