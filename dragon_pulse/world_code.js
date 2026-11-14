@@ -1,11 +1,11 @@
 var DP_CFG = {
   chat: "!dp",
   item: "",
-  range: 60,
-  summon: 6,
-  circleDist: 16,
-  size: 3,
-  circleSize: 3,
+  range: 40,
+  summon: 2.5,
+  circleDist: 4,
+  size: 1,
+  circleSize: 1,
   rise: 16,
   hitPlayers: true,
   kill: true,
@@ -13,19 +13,19 @@ var DP_CFG = {
   boom: 1,
   beam: 0.5,
   hold: 0.8,
-  radius: 48,
+  radius: 16,
   knockback: 24,
   hurtCaster: false,
   merge: true,
   mergeDist: 4,
-  megaScale: 1.6,
-  megaRise: 20,
-  nukeRadius: 96,
+  megaScale: 2.2,
+  megaRise: 22,
+  nukeRadius: 44,
   nukeDamage: 400,
   nukeKnockback: 30,
   rotate: true,
   sounds: true,
-  hideDist: 400,
+  hideDist: 160,
   maxCasts: 4,
   detail: 3,
   maxMeshes: 399,
@@ -919,7 +919,7 @@ var DP_PHASE = [
     var goal = dpGoal(c)
     var b = DP_CFG.boom * DP_CFG.size
     if (c.t === 0) dpDrop(c, "")
-    var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 48 * b, DP_CFG.radius, 1, b)
+    var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 72 * b, DP_CFG.radius, 1, b)
     if (st === 1) {
       dpSound("blast", goal)
       dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
@@ -962,7 +962,7 @@ var DP_PHASE = [
     if (c.t === 0) {
       dpDrop(c, "")
       c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
-      c.tall = c.at[1] - c.ground[1] + 24 * b
+      c.tall = c.at[1] - c.ground[1] + 50 * b
       c.goal = c.ground
     }
     var st = dpFinale(c, c.ground, 4.5 * b, c.tall, DP_CFG.nukeRadius, 1.2, 3 * b)

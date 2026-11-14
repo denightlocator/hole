@@ -27,7 +27,7 @@ there while it finds a target, then dives onto it and kills it. The target is:
 3. otherwise the nearest other player (`hitPlayers: false` turns this off);
 4. with nothing in range, the spot you were looking at.
 
-**Two dragons that touch merge.** One dragon 1.6 times the size is left. It climbs
+**Two dragons that touch merge.** One dragon 2.2 times the size is left. It climbs
 22 blocks and explodes as a giant beam (the nuke) that kills every mob and player within 44
 blocks, except the players who cast the two dragons. Dragons touch when their
 paths cross, for example when two players cast at each other at about the same
@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 44,561 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,777 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,810 |
+| `world_code.js` | World Code | 44,562 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,778 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,811 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 
@@ -144,22 +144,16 @@ the table columns mean is written on this page instead.
 
 ## How the move runs
 
-**Sizes and times now.** With `size: 3` and `circleSize: 3` the dragon is about
-60 blocks long with a head about 4 blocks wide, and the ritual circle is about
-28 blocks across with its top circle 22 blocks up. The ritual takes 6 seconds
-instead of 2.5 and its rings turn 2.4 times slower. The times in the table below
-are from the old size: add 3.35 s to each after the circle (emerge 6.0, seek
-6.7, dive 7.3, coil 8.1, beam 8.7, smoke 11.15, end about 12.9 s). Heights and
-widths in the table are also from the old size, except where a row says
-otherwise: the beam and the explosion are three times the old size, like the dragon
-(beam 144 blocks tall and about 25 across, burst about 61 blocks across, blast
-radius 48), and the nuke follows the merged dragon (beam up to 43 blocks thick,
-burst about 134 blocks across, radius 96).
+**Sizes.** `size` and `circleSize` in `DP_CFG` are 1, the normal size. Setting
+both to 3 gives a dragon about 60 blocks long and a circle about 28 blocks
+across; the flight, the beam and the explosion grow with `size`. For that size
+also raise `summon` (6), `circleDist` (16), `radius` (48), `nukeRadius` (96),
+`range` (60) and `hideDist` (400), and lower `megaScale` (1.6).
 
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|
 | circle | The summoning circle draws itself ring by ring; the star in it turns. Then six more circles appear above it, one after another going up, each smaller than the one below and turning the other way | 88 mesh entities: 82 meshes in 13 rings for the main circle and 6 ring particle emitters for the circles above it; a smooth 16-sided outer band with a thin inner band, dashes and dots between them like runes, an octagon, a turning six-pointed star whose points touch it, a hexagon and a square turning the other way, eight spikes outside, a core over a turning plate, and a 7-block-tall cone of six circles above; rising sparks | 0.0–2.5 |
-| emerge | A pillar of light, then the dragon comes up through the floor and spirals about 50 blocks up | 113 meshes: a 55-part head and a 58-part body that follows the head's path. The five cloud orbs beside it and the trail behind it are particles | 2.5–3.15 |
+| emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 113 meshes: a 55-part head and a 58-part body that follows the head's path. The five cloud orbs beside it and the trail behind it are particles | 2.5–3.15 |
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | no meshes: each star is 48 particles placed along 12 rays, plus sparks | 4.7–5.3 |
@@ -173,7 +167,7 @@ After two dragons touch, the one that is left runs these steps instead:
 
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
-| mega | The merged dragon, 1.6 times the size again (skull about 8 blocks wide), spirals about 50 blocks up | the same 113 meshes, bigger | 1.2 s |
+| mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 113 meshes, bigger | 1.2 s |
 | beam | A beam more than twice as thick again shoots from the ground up through the dragon and 50 blocks past it | the same 22 meshes, bigger | 0.6 s |
 | nuke | A second beam joins it and waits about a second, both sink into the ground (up to 15 blocks thick), then it explodes: a burst about 60 blocks across and three shock rings out to the kill radius. Everything within 44 blocks dies | the same meshes as the blast, three times the size | 2.2 s |
 | cloud | Smoke where the beam stood and rings of dust rolling out along the ground | no meshes: smoke balls of 40 and 24 particles and dust rings of 36 | 2.5 s |
