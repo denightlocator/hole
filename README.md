@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 39,217 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 49,433 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 55,466 |
+| `world_code.js` | World Code | 39,341 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 49,557 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 55,590 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -146,7 +146,7 @@ the table columns mean is written on this page instead.
 
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|
-| circle | The summoning circle draws itself ring by ring; the star in it turns | 104 meshes in 17 rings: a smooth 16-sided outer band with a thin inner band, dashes and dots between them like runes, an octagon, a turning six-pointed star whose points touch it, a hexagon and a square turning the other way, eight spikes outside, six pillars on the band with a turning cube floating over each, two halos above turning against each other, and a core over a turning plate; rising sparks | 0.0–2.5 |
+| circle | The summoning circle draws itself ring by ring; the star in it turns. Then six more circles appear above it, one after another going up, each smaller than the one below and turning the other way | 124 meshes in 19 rings: a smooth 16-sided outer band with a thin inner band, dashes and dots between them like runes, an octagon, a turning six-pointed star whose points touch it, a hexagon and a square turning the other way, eight spikes outside, a core over a turning plate, and a 7-block-tall cone of six circles above; rising sparks | 0.0–2.5 |
 | emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 143 meshes: a 55-part head, a 58-part body that follows the head's path, five cloud orbs beside it (20 meshes) and a trail of 10 pieces behind the tail that get thinner and darker; particles that fade out mark where it flew | 2.5–3.15 |
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
@@ -244,10 +244,10 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 *Drawn outside the game with plain light so the parts can be told apart. In the
 game they glow.*
 
-The move stays under 400 meshes. One cast holds at most 173 meshes at once (circle and dragon together, while it
-comes out); two dragons about to merge hold up to 333. To fit, the
-circle is cut down to 36 meshes (outer band, star, pillars and core: the rings
-with flag `k`) at the moment the dragon starts to come out. `maxMeshes` is 399, and the
+The move stays under 400 meshes. One cast holds at most 177 meshes at once (circle and dragon together, while it
+comes out); two dragons about to merge hold up to 341. To fit, the
+circle is cut down to 40 meshes (outer band, star, core and the two lowest of
+the circles above: the rings with flag `k`) at the moment the dragon starts to come out. `maxMeshes` is 399, and the
 meshes of a standing Goodra count toward it, so the code never asks for a 400th. All are deleted when the move ends.
 
 ## Node meshes (an experiment, off by default)
@@ -258,9 +258,9 @@ group becomes one mesh entity that carries the rest:
 
 | | Mesh entities | With node meshes |
 |---|---|---|
-| Summoning circle | 104 | 7 (one per turning speed) carrying 104 node meshes |
+| Summoning circle | 124 | 9 (one per turning speed) carrying 124 node meshes |
 | Dragon head | 55 | 1 carrying 55 |
-| One cast at most | 173 | 95 |
+| One cast at most | 177 | 95 |
 
 The body, orbs and trail bend along the flight path piece by piece, so they stay
 mesh entities. With node meshes on, the whole circle stays while the dragon comes
@@ -386,10 +386,10 @@ list.
 
 `DP_COL` holds every colour as red, green, blue from 0 to 255.
 
-- **The ritual** uses only the dark ones: `void` (black) for the pillars and the
-  plate, `wine` (dark purple-red) for the outer band and one halo, `blood` (dark
-  red) for most rings, and `crimson` (bright red) for the star, the cubes over
-  the pillars and the core. Its particles are red too (`DP_RITE`).
+- **The ritual** uses only the dark ones: `void` (black) for the plate, `wine`
+  (dark purple-red) for the outer band, `blood` (dark red) for most rings, and
+  `crimson` (bright red) for the star and the core. The circles above take those
+  three in turn. Its particles are red too (`DP_RITE`).
 - **The dragon** is dark purple (`deep`) and near-black (`night`) with black
   horns (`void`), magenta spines, crest and wings, bright violet (`volt`) belly
   plates, and red (`crimson`) eyes, whiskers and stripes. Its cloud orbs are dark
@@ -449,9 +449,9 @@ It cannot show how the game draws it. Things to look at first in your world:
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
   If parts of the dragon are missing, lower `detail`.
 - **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
-  together and share `maxMeshes` (399). Two dragons need 333; a third at the same time is cut
+  together and share `maxMeshes` (399). Two dragons need 341; a third at the same time is cut
   short.
-- **Speed.** At full detail one dragon makes up to 290 api calls per tick, two
+- **Speed.** At full detail one dragon makes up to 330 api calls per tick, two
   up to 540. If the game stutters or stops the script, lower `detail`.
 - **Killing.** The target is killed with `api.killLifeform`. If the game refuses
   that call, the code takes 99,999 health instead.

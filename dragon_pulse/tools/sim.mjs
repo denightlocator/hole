@@ -141,7 +141,7 @@ const a = run(one)
 const F = a.frames
 const circle = of(F, 0)
 const flat = circle[circle.length - 1]
-check(flat.meshes.length === 104 && Math.max(...ys(flat)) < 14 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
+check(flat.meshes.length === 124 && Math.max(...ys(flat)) < 18 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
 const out = of(F, 1)
 check(out[0].t >= 40, `the dragon comes out after ${(out[0].t / 20).toFixed(2)} s`)
 check(Math.min(...ys(out[2])) < 10 && Math.max(...ys(out[out.length - 1])) > 10 + 14, `it comes up through the floor and dashes ${(Math.max(...ys(out[out.length - 1])) - 10).toFixed(1)} blocks into the air`)
@@ -156,7 +156,7 @@ check(one.s.errors.length === 0, 'every api call is well formed' + (one.s.errors
 check(one.s.meshes.size === 0 && one.game.held() === 0, 'every mesh is deleted at the end')
 check(one.s.sounds.size >= 14, `${one.s.sounds.size} different sounds play, all of them names from the documentation`)
 check(one.s.peak < 400 && one.s.refused === 0, `under 400 meshes at once: at most ${one.s.peak}, and none was refused`)
-check(a.worst <= 300, `most api calls in one tick: ${a.worst}`)
+check(a.worst <= 350, `most api calls in one tick: ${a.worst}`)
 console.log('  Phases: ' + phases(F))
 
 console.log('Two dragons that meet')
@@ -199,7 +199,7 @@ const c = run(nd)
 const N = c.frames
 const nc = of(N, 0)
 const nflat = nc[nc.length - 1]
-check(nflat.entities === 7 && nflat.meshes.length === 104 + 7, `the circle is ${nflat.entities} mesh entities carrying ${nflat.meshes.length - nflat.entities} node meshes`)
+check(nflat.entities === 9 && nflat.meshes.length === 124 + 9, `the circle is ${nflat.entities} mesh entities carrying ${nflat.meshes.length - nflat.entities} node meshes`)
 const same = (a, b) => a.every((m) => b.some((o) => Math.hypot(...m.p.map((v, i) => v - o.p[i])) < 0.02 && Math.abs(m.width - o.width) < 1e-6))
 check(same(flat.meshes, nflat.meshes), 'every piece is where the mesh-entity circle has it')
 const nfly = of(N, 3)
