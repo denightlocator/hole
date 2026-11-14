@@ -96,7 +96,7 @@ def draw(tick, eye, title):
     d.text((8, 6), title, fill=(230, 235, 245))
     return img
 
-T = [(2, 'wind up, right claw'), (6, 'first claw'), (14, 'the 360 spin'), (20, 'wind up, left claw'), (24, 'second claw'), (26, 'second claw, from above')]
+T = [(3, 'wind up, right claw'), (6, 'first claw'), (14, 'the 360 spin'), (20, 'wind up, left claw'), (23, 'second claw'), (25, 'second claw, from above')]
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, (tick, title) in enumerate(T):
     eye = (PLAYER[0] + 3.2, PLAYER[1] + 2.4, PLAYER[2] + 5.6) if i < 5 else (PLAYER[0] + 0.5, PLAYER[1] + 7, PLAYER[2] - 1.5)

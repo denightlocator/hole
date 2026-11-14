@@ -16,14 +16,14 @@ right-click handlers working. Then type `!claw`.
 
 From other code: `dragonClaw(playerId)`.
 
-## What happens (1.6 s)
+## What happens (1.55 s)
 
 | Seconds | Player animation | Meshes and particles | Hit |
 |---|---|---|---|
 | 0.00–0.45 | Right arm goes up and back, then rakes down across the body | Claws appear on both hands (node meshes). Three slash marks of 7 meshes each are drawn in front, top to bottom, with sparks at the tips | 0.25 s: everything in front, within `range` |
-| 0.45–0.90 | Arms out, full turn in four quarter steps; the legs go round with the body | A ring of 14 meshes is drawn round the player as they turn; a ring of 18 particles flies outward | 0.65 s: everything all round, within `spinRange` |
-| 0.90–1.40 | Left arm goes up and back, then rakes down the other way | Three more slash marks, crossing the first | 1.15 s: everything in front |
-| 1.40–1.55 | Pose is reset | Claws are taken off | |
+| 0.45–0.85 | Arms out, full turn in four quarter steps; the legs go round with the body | A ring of 14 meshes is drawn round the player as they turn; a ring of 18 particles flies outward | 0.65 s: everything all round, within `spinRange` |
+| 0.85–1.35 | Left arm goes up and back, then rakes down the other way | Three more slash marks, crossing the first | 1.10 s: everything in front |
+| 1.35–1.50 | Pose is reset | Claws are taken off | |
 
 At most 21 mesh entities at once and 50 api calls in one tick.
 
@@ -35,19 +35,25 @@ further than 15 blocks is hit.
 ## The animation
 
 The poses are in `CLAW_POSE` in `world_code.js`: one row per keyframe, with the
-time in seconds and, per body part, its turn in degrees `[x, y, z]`, the same
-numbers the animation editor shows. A third value on a row is how far the whole
-body has turned (the spin).
+time in ticks (20 a second) and, per body part, its turn in degrees `[x, y, z]`,
+the same numbers the animation editor shows. A third value on a row is how far
+the whole body has turned (the spin).
 
-The game gets it as three `api.animateEntity` calls (first claw, spin, second
-claw) of 5 keyframes each, because the editor splits anything over 8 keyframes.
+The game gets it as 12 small `api.animateEntity` calls, one from each pose to
+the next, of 600 to 750 characters each. The first version sent three calls of
+up to 2,600 characters and the game refused them ("argument is too large").
+Only rotations are sent, rounded to two decimals.
+
+If the game refuses an animation call, the move goes on without the animation
+and the reason is shown to the caster in chat.
 
 To look at it or change it in the editor
 (https://tridentify.github.io/animation-editor/):
 
 - `animation/Dragon Claw.bloxdmation`: open it with the editor's file import.
 - `animation/animation_only.code_block.js`: the same animation as
-  `api.animateEntity` code, for the editor's "import code".
+  `api.animateEntity` code, for the editor's "import code". It is not meant
+  to be run in the game by itself.
 
 Both files are written by `node tools/check.mjs` from `CLAW_POSE`, so they
 always match the world code. Changes made in the editor do not come back by

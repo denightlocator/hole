@@ -66,7 +66,7 @@ function game(before = '') {
   }
   s.g = {}
   s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerAltAction;\n' + before + '\n' + code +
-    '\nreturn { tick, onPlayerChat, onPlayerAltAction, CLAW_CFG, CLAW_POSE, CLAW_CUTS, CLAW_NODES, CLAW_STEP, clawCasts, clawNodePose, clawSchema, held: () => clawMeshes }')(s.api, s.g)
+    '\nreturn { tick, onPlayerChat, onPlayerAltAction, CLAW_CFG, CLAW_POSE, CLAW_NODES, CLAW_STEP, clawCasts, clawNodePose, clawSchema, held: () => clawMeshes }')(s.api, s.g)
   return s
 }
 
@@ -98,7 +98,7 @@ check(frames.length === T.end + 1, `it lasts ${(frames.length / 20).toFixed(2)} 
 check(s.errors.length === 0, 'every api call is well formed ' + [...new Set(s.errors)].join('; '))
 const count = (a, b) => Math.max(...frames.slice(a, b).map((f) => f.meshes.length))
 check(count(T.slash1, T.drop1) === 21 && frames[T.slash1].meshes.length === 9, 'first claw: three slash marks of 7 meshes each, drawn from one end to the other in 3 ticks')
-check(frames[T.spin + 7].meshes.length === 14 && frames[T.spin].meshes.length === 2, 'spin: a ring of 14 meshes drawn round the player as they turn')
+check(frames[T.spin + 6].meshes.length === 14 && frames[T.spin].meshes.length === 2, 'spin: a ring of 14 meshes drawn round the player as they turn')
 check(count(T.slash2, T.drop2) >= 21, 'second claw: three more slash marks')
 const xs = (f) => f.meshes.map((m) => m.p[0] - 0.5)
 const slope = (f) => { const m = f.meshes.filter((q) => q.depth > 0.55 && q.depth < 0.7); const a = m[0], b = m[6]; return Math.sign((b.p[0] - a.p[0]) * (b.p[1] - a.p[1])) }
@@ -111,18 +111,19 @@ check(s.sounds.size >= 6, `${s.sounds.size} different sounds, all names from the
 
 console.log('The animation')
 const A = s.anims
-check(A.length === 4 && A[3].schema === null && A.map((a) => a.t).join() === [0, T.spin, T.swing2, T.rest].join(), `three animations start at ${A.slice(0, 3).map((a) => (a.t / 20).toFixed(2)).join(', ')} s and the pose is reset at ${(A[3].t / 20).toFixed(2)} s`)
-const lines = A.slice(0, 3).flatMap((a) => Object.values(a.schema.nodeAnimations).map((n) => n.timeline))
-check(lines.every((l) => l.length <= 8 && l[0].timeFraction === 0 && l[l.length - 1].timeFraction === 1 && l.every((p, i) => !i || p.timeFraction > l[i - 1].timeFraction)), 'no timeline has more than 8 keyframes; each runs from 0 to 1 in order')
-check(A.slice(0, 3).every((a) => Object.keys(a.schema.nodeAnimations).every((n) => NODES.includes(n)) && a.schema.loop === false && finite(a.schema)), 'only the six body nodes are animated, without looping')
-check(A.slice(0, 3).reduce((n, a) => n + a.schema.animationDurationMs, 0) === 1400, 'together they last 1.4 s')
-const torso = (n) => A[n].schema.nodeAnimations.TorsoNode.timeline.map((p) => +(p.rotation[1] * 180 / Math.PI).toFixed(0))
-check(torso(1).join() === '0,90,180,270,360', 'the spin turns the torso 0, 90, 180, 270, 360 degrees: a full turn in quarter steps')
-check(Math.abs(torso(2)[0]) < 1 && Math.abs(torso(2)[4]) < 1, 'the second claw starts and ends facing forward again')
-const arm = (n, node) => A[n].schema.nodeAnimations[node].timeline.map((p) => p.rotation[0])
-check(Math.min(...arm(0, 'ArmRightMesh')) < -2.5 && Math.min(...arm(2, 'ArmLeftMesh')) < -2.5, 'the right arm is raised for the first claw and the left arm for the second')
-const legs = A[1].schema.nodeAnimations.LegRightMesh.timeline
-check(legs.every((p) => Math.abs(Math.hypot(p.position[0] - 0.129, p.position[2]) - 0.129) < 0.001), 'the legs go round with the body during the spin')
+const P = s.run.CLAW_POSE
+const steps = A.slice(0, -1)
+check(A.length === P.length && A[A.length - 1].schema === null && steps.every((a, i) => a.t === P[i][0]), `${steps.length} small animations, one from each pose to the next, then the pose is reset at ${(A[A.length - 1].t / 20).toFixed(2)} s`)
+const sizes = steps.map((a) => JSON.stringify(a.schema).length)
+check(Math.max(...sizes) <= 800, `each call is small: ${Math.min(...sizes)} to ${Math.max(...sizes)} characters (the first version sent up to 2,600 at once)`)
+check(steps.every((a, i) => a.schema.animationDurationMs === (P[i + 1][0] - P[i][0]) * 50 && a.schema.loop === false && finite(a.schema)), 'each lasts exactly until the next one starts')
+check(steps.every((a) => Object.entries(a.schema.nodeAnimations).every(([n, v]) => NODES.includes(n) && v.timeline.length === 2 && v.timeline[0].timeFraction === 0 && v.timeline[1].timeFraction === 1 && Object.keys(v.timeline[0]).join() === 'timeFraction,rotation')), 'every body part has two keyframes, start and end, with a rotation only')
+const end = (a, n) => a.schema.nodeAnimations[n]?.timeline[1].rotation ?? [0, 0, 0]
+const start = (a, n) => a.schema.nodeAnimations[n]?.timeline[0].rotation ?? [0, 0, 0]
+check(steps.every((a, i) => !i || NODES.every((n) => [0, 2].every((k) => Math.abs(start(a, n)[k] - end(steps[i - 1], n)[k]) < 0.011) && Math.abs(Math.sin(start(a, n)[1]) - Math.sin(end(steps[i - 1], n)[1])) < 0.02)), 'each one starts in the pose the one before ended in')
+const spin = steps.filter((a) => a.t >= T.spin && a.t < 17)
+check(spin.length === 4 && spin.every((a, i) => Math.abs(end(a, 'TorsoNode')[1] - start(a, 'TorsoNode')[1] - Math.PI / 2) < 0.02 && Math.abs(end(a, 'LegLeftMesh')[1] - end(a, 'TorsoNode')[1]) < 0.02), 'the spin is four quarter turns of the torso, and the legs turn with it')
+check(Math.min(...steps.map((a) => end(a, 'ArmRightMesh')[0])) < -2.5 && Math.min(...steps.slice(8).map((a) => end(a, 'ArmLeftMesh')[0])) < -2.5, 'the right arm is raised for the first claw and the left arm for the second')
 
 console.log('Node meshes')
 const on = s.hands.filter((h) => h.on), off = s.hands.filter((h) => !h.on)
@@ -142,10 +143,11 @@ big.g.dragonClaw('caster')
 play(big)
 check(big.hurt.some((h) => h.id === 'edge') && !big.hurt.some((h) => h.id === 'far'), 'with range set to 50 it still stops at 15 blocks: 14.5 is hit, 16 is not')
 const quiet = game()
-quiet.api.animateEntity = () => { throw new Error('no such function') }
+quiet.api.animateEntity = () => { throw new Error('argument is too large') }
+quiet.api.sendMessage = (id, m) => quiet.said = m
 quiet.g.dragonClaw('caster')
 const q = play(quiet)
-check(q.frames.length === T.end + 1 && quiet.meshes.size === 0 && quiet.hurt.length > 0, 'if the game refuses the animation, the move still runs without it')
+check(q.frames.length === T.end + 1 && quiet.meshes.size === 0 && quiet.hurt.length > 0, `if the game refuses the animation, the move still runs without it and tells the caster why: "${quiet.said}"`)
 
 console.log('Together with other world code')
 const both = game('var seen = []; tick = () => seen.push("tick"); onPlayerChat = (id, m) => (m === "!dp" ? false : undefined)')
@@ -153,28 +155,27 @@ check(both.run.onPlayerChat('caster', '!dp') === false && both.run.onPlayerChat(
 
 console.log('Animation editor file')
 const keyframes = s.run.CLAW_POSE.map((row) => ({
-  time: row[0],
+  time: row[0] / 20,
   data: Object.fromEntries(s.run.CLAW_NODES.map((node) => {
-    const p = s.run.clawNodePose(row, node)
-    const r4 = (v) => Math.round(v * 10000) / 10000
-    return [node, { position: { x: r4(p.p[0]), y: 0, z: r4(p.p[2]) }, rotation: { x: p.r[0], y: p.r[1], z: p.r[2] } }]
+    const r = s.run.clawNodePose(row, node)
+    return [node, { position: { x: 0, y: 0, z: 0 }, rotation: { x: r[0], y: r[1], z: r[2] } }]
   })),
 }))
-const file = { format: 'bloxdmation', version: 3, animationLength: 1.4, loop: false, keyframes, speed: 1, name: 'Dragon Claw', lerp: 'linear' }
+const file = { format: 'bloxdmation', version: 3, animationLength: 1.35, loop: false, keyframes, speed: 1, name: 'Dragon Claw', lerp: 'linear' }
 const b64 = Buffer.from(JSON.stringify(file), 'utf8').toString('base64')
 const out = path.join(dir, 'animation', 'Dragon Claw.bloxdmation')
 fs.writeFileSync(out, b64)
 const back = JSON.parse(Buffer.from(fs.readFileSync(out, 'utf8').trim(), 'base64').toString('utf8'))
 check(back.format === 'bloxdmation' && back.version === 3 && back.keyframes.length === 13 && back.keyframes.every((k) => NODES.every((n) => finite(k.data[n]))), `wrote animation/Dragon Claw.bloxdmation: ${back.keyframes.length} keyframes, ${b64.length} characters`)
-// the same three calls as the game gets, as code the editor's "import code" understands
-const asCode = A.slice(0, 3).map((a, i) => i === 0
+// the same calls as the game gets, as code the editor's "import code" understands
+const asCode = steps.map((a, i) => i === 0
   ? 'let playerId = myId\napi.animateEntity(playerId, ' + JSON.stringify(a.schema) + ', 0, 1)'
   : 'addAnimation((speed) => {\n    api.animateEntity(playerId, ' + JSON.stringify(a.schema) + ', 0, speed)\n}, ' + a.t * 50 + ', 1)').join('\n\n')
 fs.writeFileSync(path.join(dir, 'animation', 'animation_only.code_block.js'), asCode + '\n')
 check(asCode.length <= 32000, `wrote animation/animation_only.code_block.js: ${asCode.length} characters`)
 
 if (args.includes('--dump')) {
-  fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames, pose: keyframes, cuts: s.run.CLAW_CUTS }))
+  fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames, pose: keyframes }))
 }
 if (fail.length) { console.log(`\n${fail.length} check(s) failed`); process.exit(1) }
 console.log('\nAll checks passed')

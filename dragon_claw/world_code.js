@@ -40,35 +40,32 @@ var CLAW_STEP = {
   drop1: 9,
   spin: 9,
   hitSpin: 13,
-  dropSpin: 19,
-  swing2: 18,
-  slash2: 21,
-  hit2: 23,
-  drop2: 27,
-  rest: 28,
-  end: 31,
+  dropSpin: 18,
+  slash2: 20,
+  hit2: 22,
+  drop2: 26,
+  rest: 27,
+  end: 30,
 }
-
-var CLAW_CUTS = [0, 0.45, 0.9, 1.4]
 
 var CLAW_POSE = [
   [0, {}],
-  [0.15, { TorsoNode: [-6, 22, 0], HeadMesh: [0, -15, 0], ArmRightMesh: [-155, 0, -30], ArmLeftMesh: [20, 0, 12], LegRightMesh: [12, 0, 0], LegLeftMesh: [-12, 0, 0] }],
-  [0.27, { TorsoNode: [14, -28, 0], HeadMesh: [0, 20, 0], ArmRightMesh: [-40, 0, 50], ArmLeftMesh: [30, 0, 15], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
-  [0.4, { TorsoNode: [10, -38, 0], HeadMesh: [0, 25, 0], ArmRightMesh: [15, 0, 35], ArmLeftMesh: [10, 0, 20], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
-  [0.45, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 0],
-  [0.5625, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 90],
-  [0.675, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 180],
-  [0.7875, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 270],
-  [0.9, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 360],
-  [1.03, { TorsoNode: [-6, -22, 0], HeadMesh: [0, 15, 0], ArmLeftMesh: [-155, 0, 30], ArmRightMesh: [20, 0, -12], LegLeftMesh: [12, 0, 0], LegRightMesh: [-12, 0, 0] }, 360],
-  [1.15, { TorsoNode: [14, 28, 0], HeadMesh: [0, -20, 0], ArmLeftMesh: [-40, 0, -50], ArmRightMesh: [30, 0, -15], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
-  [1.28, { TorsoNode: [10, 38, 0], HeadMesh: [0, -25, 0], ArmLeftMesh: [15, 0, -35], ArmRightMesh: [10, 0, -20], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
-  [1.4, {}, 360],
+  [3, { TorsoNode: [-6, 22, 0], HeadMesh: [0, -15, 0], ArmRightMesh: [-155, 0, -30], ArmLeftMesh: [20, 0, 12], LegRightMesh: [12, 0, 0], LegLeftMesh: [-12, 0, 0] }],
+  [5, { TorsoNode: [14, -28, 0], HeadMesh: [0, 20, 0], ArmRightMesh: [-40, 0, 50], ArmLeftMesh: [30, 0, 15], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
+  [8, { TorsoNode: [10, -38, 0], HeadMesh: [0, 25, 0], ArmRightMesh: [15, 0, 35], ArmLeftMesh: [10, 0, 20], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
+  [9, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 0],
+  [11, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 90],
+  [13, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 180],
+  [15, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 270],
+  [17, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 360],
+  [20, { TorsoNode: [-6, -22, 0], HeadMesh: [0, 15, 0], ArmLeftMesh: [-155, 0, 30], ArmRightMesh: [20, 0, -12], LegLeftMesh: [12, 0, 0], LegRightMesh: [-12, 0, 0] }, 360],
+  [22, { TorsoNode: [14, 28, 0], HeadMesh: [0, -20, 0], ArmLeftMesh: [-40, 0, -50], ArmRightMesh: [30, 0, -15], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
+  [25, { TorsoNode: [10, 38, 0], HeadMesh: [0, -25, 0], ArmLeftMesh: [15, 0, -35], ArmRightMesh: [10, 0, -20], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
+  [27, {}, 360],
 ]
 
 var CLAW_NODES = ["TorsoNode", "HeadMesh", "ArmRightMesh", "ArmLeftMesh", "LegLeftMesh", "LegRightMesh"]
-var CLAW_HIP = { LegRightMesh: -0.129, LegLeftMesh: 0.129 }
+var CLAW_TURNS = ["TorsoNode", "LegLeftMesh", "LegRightMesh"]
 
 var CLAW_MESH = {
   talon: [
@@ -115,50 +112,46 @@ var clawNorm = (a) => {
   var n = clawLen(a) || 1
   return [a[0] / n, a[1] / n, a[2] / n]
 }
-var clawRad = (deg) => Math.round(((deg * Math.PI) / 180) * 10000) / 10000
+var clawRad = (deg) => Math.round(((deg * Math.PI) / 180) * 100) / 100
 
 var clawCasts = []
 var clawMeshes = 0
 
 function clawNodePose(row, node) {
   var r = (row[1][node] || [0, 0, 0]).slice()
-  var turn = row[2] || 0
-  var p = [0, 0, 0]
-  if (node === "TorsoNode" || CLAW_HIP[node]) r[1] += turn
-  if (CLAW_HIP[node]) {
-    var a = (turn * Math.PI) / 180
-    p = [CLAW_HIP[node] * (Math.cos(a) - 1), 0, CLAW_HIP[node] * Math.sin(a)]
-  }
-  return { r: r, p: p }
+  if (CLAW_TURNS.indexOf(node) >= 0) r[1] += row[2] || 0
+  return r
 }
 
 function clawSchema(n) {
-  var from = CLAW_CUTS[n]
-  var to = CLAW_CUTS[n + 1]
-  var rows = CLAW_POSE.filter((row) => row[0] >= from - 1e-6 && row[0] <= to + 1e-6)
+  var a = CLAW_POSE[n]
+  var b = CLAW_POSE[n + 1]
   var nodes = {}
   CLAW_NODES.forEach((node) => {
-    var first = clawNodePose(rows[0], node)
-    var whole = 360 * Math.round(first.r[1] / 360)
-    var moved = false
-    var line = rows.map((row) => {
-      var q = clawNodePose(row, node)
-      var rot = [clawRad(q.r[0] * CLAW_CFG.flip), clawRad(q.r[1] - whole), clawRad(q.r[2])]
-      var pos = [Math.round(q.p[0] * 10000) / 10000, 0, -Math.round(q.p[2] * 10000) / 10000]
-      if (rot.some((v) => v) || pos.some((v) => v)) moved = true
-      return { timeFraction: Math.round(((row[0] - from) / (to - from)) * 1e6) / 1e6, position: pos, rotation: rot }
-    })
-    if (moved) nodes[node] = { timeline: line }
+    var p = clawNodePose(a, node)
+    var q = clawNodePose(b, node)
+    var whole = 360 * Math.round(p[1] / 360)
+    var rot = (r) => [clawRad(r[0] * CLAW_CFG.flip), clawRad(r[1] - whole), clawRad(r[2])]
+    var from = rot(p)
+    var to = rot(q)
+    if (!from.concat(to).some((v) => v)) return
+    nodes[node] = { timeline: [{ timeFraction: 0, rotation: from }, { timeFraction: 1, rotation: to }] }
   })
-  return { animationDurationMs: Math.round((to - from) * 1000), loop: false, nodeAnimations: nodes }
+  return { animationDurationMs: (b[0] - a[0]) * 50, loop: false, nodeAnimations: nodes }
 }
 
-function clawAnimate(c, n) {
+function clawAnimate(c) {
   if (!CLAW_CFG.animate) return
   try {
-    api.animateEntity(c.id, n === null ? null : clawSchema(n), 0, 1)
+    if (c.t === CLAW_STEP.rest) return api.animateEntity(c.id, null, 0, 1)
+    for (var n = 0; n < CLAW_POSE.length - 1; n++) {
+      if (CLAW_POSE[n][0] === c.t) api.animateEntity(c.id, clawSchema(n), 0, 1)
+    }
   } catch (e) {
     CLAW_CFG.animate = false
+    try {
+      api.sendMessage(c.id, "Dragon Claw animation stopped: " + e, { color: "orange" })
+    } catch (e2) {}
   }
 }
 
@@ -352,9 +345,9 @@ function clawStep(c) {
   var t = c.t
   var p = api.getPosition(c.id)
   c.pos = [p[0], p[1], p[2]]
+  clawAnimate(c)
   if (t === 0) {
     clawHands(c, true)
-    clawAnimate(c, 0)
     clawSound("ready", c.pos)
     clawFx(clawAdd(c.pos, [0, 1, 0], 1.2), null, "core", "edge", 0.3, 0.6, "glint", 10, 0.6)
   }
@@ -368,17 +361,13 @@ function clawStep(c) {
     clawBurst(c, 1, (T.drop1 - T.slash1 - 2) * 0.2)
     clawDrop(c, "a")
   }
-  if (t === T.spin) {
-    clawAnimate(c, 1)
-    clawSound("spin", c.pos)
-  }
+  if (t === T.spin) clawSound("spin", c.pos)
   if (t >= T.spin && t < T.dropSpin) clawRing(c, t - T.spin)
   if (t === T.hitSpin) {
     clawHit(c, true)
     clawWave(c)
   }
   if (t === T.dropSpin) clawDrop(c, "ring_")
-  if (t === T.swing2) clawAnimate(c, 2)
   if (t === T.slash2) {
     clawSound("slash2", c.pos)
     clawLunge(c)
@@ -389,7 +378,6 @@ function clawStep(c) {
     clawBurst(c, -1, (T.drop2 - T.slash2 - 2) * 0.2)
     clawDrop(c, "b")
   }
-  if (t === T.rest) clawAnimate(c, null)
   return t >= T.end
 }
 
