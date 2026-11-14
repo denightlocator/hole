@@ -12,6 +12,7 @@ var CLAW_CFG = {
   hitPlayers: true,
   animate: true,
   flip: 1,
+  slope: 1,
   nodeClaws: true,
   sounds: true,
   hideDist: 80,
@@ -225,7 +226,7 @@ function clawBox(c, key, thick, long, col, pos, t, resize, tall) {
     clawMeshes++
     resize = 2
   } else if (resize) api.updateMeshEntity(id, "Box", box)
-  if (resize === 2) api.setEntityRotation(id, -Math.asin(Math.max(-1, Math.min(1, t[1]))), Math.atan2(t[0], t[2]), 0)
+  if (resize === 2) api.setEntityRotation(id, Math.asin(Math.max(-1, Math.min(1, t[1]))) * CLAW_CFG.slope, Math.atan2(t[0], t[2]), 0)
   api.setPosition(id, pos[0], pos[1], pos[2])
 }
 
@@ -253,11 +254,10 @@ function clawFront(age) {
 function clawPoint(c, side, arc, u, drift, back) {
   var m = CLAW_MESH.mark[arc]
   var S = clawNorm(clawAdd(clawAdd([0, 0, 0], c.R, -side), [0, 1, 0], -0.9))
-  var W = clawNorm(clawAdd(clawAdd([0, 0, 0], c.R, 0.9 * side), [0, 1, 0], -1))
   var k = clawSize()
   var at = clawAdd(c.from, [0, 1, 0], 0.8 + 1.1 * k)
   at = clawAdd(at, S, u * m[1] * 1.9 * k)
-  at = clawAdd(at, W, m[0] * k)
+  at = clawAdd(at, c.R, m[0] * 1.45 * k * side)
   at = clawAdd(at, c.F, clawNear() + drift - (back || 0))
   return { at: at, t: S }
 }
@@ -435,7 +435,11 @@ function clawTick() {
     try {
       done = clawStep(c)
       c.t++
-    } catch (e) {}
+    } catch (e) {
+      try {
+        api.sendMessage(c.id, "Dragon Claw stopped at tick " + c.t + ": " + e, { color: "orange" })
+      } catch (x) {}
+    }
     if (done) {
       clawEnd(c)
       clawCasts.splice(i, 1)

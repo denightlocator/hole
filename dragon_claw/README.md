@@ -88,6 +88,7 @@ themselves: send the changed file and the numbers can be carried over.
 | `hitPlayers` | Whether other players are hit, or only mobs |
 | `animate` | Whether the player is animated |
 | `flip` | 1 or -1: which way the arms and body lean. Set -1 if the arms swing backward in the game |
+| `slope` | 1 or -1: which way the game tilts a mesh up or down. If the three slashes lean against the direction the arm swings, set -1 |
 | `nodeClaws` | Whether claws are attached to the hands |
 | `sounds`, `hideDist`, `maxCasts`, `maxMeshes` | As in Dragon Pulse |
 
@@ -99,7 +100,7 @@ timings in ticks in `CLAW_STEP`.
 | Group | Rows | What |
 |---|---|---|
 | `slash` | 7 | The bars of one slash, nested on one centre line: length (1 = whole slash), width, thickness, colour. A long thin bright-green spine, then shorter and wider green and light-green bars, an olive one, a dark-green core and two thin inner strips. Each shorter bar is thicker, so it shows on both sides |
-| `mark` | 3 | The three slashes of one claw: sideways offset, length, width. One claw is 3 × 7 = 21 meshes |
+| `mark` | 3 | The three slashes of one claw: sideways offset, length, width. One claw is 3 × 7 = 21 meshes. They stand side by side at the same height, 1.4 blocks apart |
 | `ring` | 16 | The ring of the spin: thickness, colour. Every second piece gets a darker piece behind it (24 meshes) |
 | `hand` | 11 | Node meshes on each arm: three talons of three pieces each (base, middle, tip bent forward), a knuckle plate, then a wide blade |
 

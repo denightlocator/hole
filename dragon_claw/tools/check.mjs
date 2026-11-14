@@ -68,6 +68,8 @@ function game(before = '') {
   s.g = {}
   s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerAltAction;\n' + before + '\n' + code +
     '\nreturn { tick, onPlayerChat, onPlayerAltAction, CLAW_CFG, CLAW_POSE, CLAW_NODES, CLAW_STEP, clawCasts, clawNodePose, clawSchema, held: () => clawMeshes }')(s.api, s.g)
+  s.shipped = s.run.CLAW_CFG.slope
+  s.run.CLAW_CFG.slope = -1
   return s
 }
 
@@ -109,6 +111,20 @@ const done = at(T.slash1 + T.draw - 1)
 const bars = done.slice(0, 7)
 check(bars.every((m, i) => !i || (m.depth < bars[0].depth && m.width > bars[i - 1].width)) && Math.max(...bars.map((m) => m.height)) > 3 * bars[0].height && bars.every((m) => m.p.every((v, k) => Math.abs(v - bars[0].p[k]) < 1e-9)), 'each slash is one long thin bar with shorter, wider and thicker bars nested on it, all on one centre line')
 const low = Math.min(...done.map((m) => m.p[1] - (m.depth / 2) * Math.abs(Math.sin(m.r[0]))))
+const xs = [0, 7, 14].map((k) => done[k].p)
+check(xs.every((p) => Math.abs(p[1] - xs[0][1]) < 1e-9 && Math.abs(p[2] - xs[0][2]) < 1e-9) && Math.abs(Math.abs(xs[1][0] - xs[0][0]) - 1.392) < 0.01 && Math.abs(Math.abs(xs[2][0] - xs[1][0]) - 1.392) < 0.01, `the three slashes stand side by side at the same height, ${Math.abs(xs[1][0] - xs[0][0]).toFixed(2)} blocks apart, so they stay three whichever way the game tilts them`)
+const other = game()
+other.run.CLAW_CFG.slope = 1
+other.g.dragonClaw('caster')
+const mirrored = play(other).frames[T.slash1 + T.draw - 1].meshes
+check(s.shipped === 1 && mirrored.every((m, k) => Math.abs(m.r[0] + done[k].r[0]) < 1e-9 && Math.abs(m.r[1] - done[k].r[1]) < 1e-9), 'slope 1 (shipped) and slope -1 tilt the slashes opposite ways')
+const boom = game()
+let told = ''
+boom.api.sendMessage = (id, m) => { told = m }
+boom.api.setPosition = () => { throw new Error('nope') }
+boom.g.dragonClaw('caster')
+play(boom)
+check(/^Dragon Claw stopped at tick \d+: Error: nope$/.test(told) && boom.meshes.size === 0, `if the game refuses a call, the move stops, cleans up and tells the caster: "${told}"`)
 check(spine(T.slash1 + T.draw - 1) > 5 && low > 10, `each slash is ${spine(T.slash1 + T.draw - 1).toFixed(1)} blocks long (lowest point ${(low - 10).toFixed(2)} above the floor)`)
 const zs = (n) => at(n).filter((m) => m.depth < 1.2 && m.width < 0.45).map((m) => m.p[2] - 0.5)
 const lead = (n) => Math.max(...at(n).filter((m) => Math.abs(m.r[0]) > 0.2).map((m) => m.p[2] - 0.5))
