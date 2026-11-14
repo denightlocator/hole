@@ -182,35 +182,57 @@ var DP_MESH = {
   ],
 
   beam: [
-    ["M", 1.3, 1, 1.3, "void", 0, 0, 0, "spin"],
-    ["M", 0.35, 1, 0.35, "crimson", 1.1, 0, 0],
-    ["M", 0.35, 1, 0.35, "crimson", -1.1, 0, 0],
-    ["M", 0.35, 1, 0.35, "deep", 0, 1.1, 0, "m"],
+    ["M", 0.61, 1, 1.48, "void", 0, 0, 0],
+    ["M", 0.61, 1, 1.48, "void", 0, 0, 0, "", 45],
+    ["M", 0.61, 1, 1.48, "void", 0, 0, 0, "", 90],
+    ["M", 0.61, 1, 1.48, "void", 0, 0, 0, "", 135],
+    ["M", 0.35, 1, 0.35, "crimson", 1.15, 0, 0],
+    ["M", 0.35, 1, 0.35, "crimson", -1.15, 0, 0],
+    ["M", 0.35, 1, 0.35, "deep", 0.575, 0.996, 0, "m"],
+    ["M", 0.35, 1, 0.35, "deep", -0.575, 0.996, 0, "m"],
   ],
 
   beam2: [
-    ["M", 0.5, 1, 0.5, "night", 1.55, 1.55, 0, "m"],
-    ["M", 0.5, 1, 0.5, "night", -1.55, 1.55, 0, "m"],
-    ["M", 0.28, 1, 0.28, "blood", 2.3, 0, 0],
-    ["M", 0.28, 1, 0.28, "blood", -2.3, 0, 0],
-    ["M", 0.28, 1, 0.28, "crimson", 0, 2.3, 0, "m"],
+    ["M", 0.5, 1, 0.5, "night", 2.1, 0, 0],
+    ["M", 0.5, 1, 0.5, "night", -2.1, 0, 0],
+    ["M", 0.5, 1, 0.5, "night", 0, 2.1, 0, "m"],
+    ["M", 0.28, 1, 0.28, "blood", 1.485, 1.485, 0, "m"],
+    ["M", 0.28, 1, 0.28, "crimson", -1.485, 1.485, 0, "m"],
   ],
 
   blast: [
-    ["M", 1.2, 1.2, 1.2, "crimson", 0, 0, 0, "spin"],
+    ["M", 1.1, 1.1, 1.1, "crimson", 0, 0, 0],
+    ["M", 1.1, 1.1, 1.1, "crimson", 0, 0, 0, "f"],
+    ["M", 1.1, 1.1, 1.1, "blood", 0, 0, 0, "o"],
     ["M", 3.4, 0.3, 0.3, "blood", 0, 0, 0],
     ["M", 0.34, 3, 0.34, "night", 0, 0, 0],
     ["M", 0.3, 0.3, 3.4, "blood", 0, 0, 0],
+    ["M", 0.3, 0.3, 3.4, "blood", 0, 0, 0, "f"],
+    ["M", 0.3, 0.3, 3.4, "blood", 0, 0, 0, "g"],
+    ["M", 0.2, 0.2, 2.6, "night", 0, 0, 0, "u"],
+    ["M", 0.2, 0.2, 2.6, "night", 0, 0, 0, "v"],
+    ["M", 0.2, 0.2, 2.6, "night", 0, 0, 0, "w"],
+    ["M", 0.2, 0.2, 2.6, "night", 0, 0, 0, "x"],
     ["M", 0.22, 0.22, 2.8, "crimson", 0, 0, 0, "a"],
     ["M", 0.22, 0.22, 2.8, "deep", 0, 0, 0, "b"],
     ["M", 0.22, 0.22, 2.8, "deep", 0, 0, 0, "c"],
     ["M", 0.22, 0.22, 2.8, "crimson", 0, 0, 0, "d"],
+    ["M", 1.37, 0.05, 5.12, "void", 0, 0, 0],
+    ["M", 1.37, 0.05, 5.12, "void", 0, 0, 0, "h"],
+    ["M", 1.37, 0.05, 5.12, "void", 0, 0, 0, "j"],
+    ["M", 1.37, 0.05, 5.12, "void", 0, 0, 0, "q"],
+    ["M", 1.37, 0.05, 5.12, "void", 0, 0, 0, "y"],
+    ["M", 1.37, 0.05, 5.12, "void", 0, 0, 0, "z"],
+    ["M", 1.19, 0.1, 2.86, "blood", 0, 0, 0],
+    ["M", 1.19, 0.1, 2.86, "blood", 0, 0, 0, "f"],
+    ["M", 1.19, 0.1, 2.86, "blood", 0, 0, 0, "q"],
+    ["M", 1.19, 0.1, 2.86, "blood", 0, 0, 0, "g"],
   ],
 
   beamTop: [
-    ["M", 2.2, 2.2, 2.2, "crimson", 0, 0, 0, "spin"],
-    ["M", 4.4, 0.16, 4.4, "blood", 0, 0, 0, "spin"],
-    ["M", 2.8, 0.26, 2.8, "wine", 0, 0, 0, "spin"],
+    ["M", 2.2, 2.2, 2.2, "crimson", 0, 0, 0],
+    ["M", 1.84, 0.16, 4.43, "blood", 0, 0, 0],
+    ["M", 1.22, 0.26, 2.96, "wine", 0, 0, 0],
   ],
 }
 
@@ -222,7 +244,24 @@ var DP_ORBS = [
   [-17.5, 1.5, 0.2],
 ]
 
-var DP_DIAG = { a: [1, 1, 1], b: [-1, 1, 1], c: [1, 1, -1], d: [-1, 1, -1] }
+var DP_DIAG = {
+  a: [1, 1, 1],
+  b: [-1, 1, 1],
+  c: [1, 1, -1],
+  d: [-1, 1, -1],
+  f: [1, 0, 1],
+  g: [1, 0, -1],
+  h: [0.5, 0, 0.866],
+  j: [0.866, 0, 0.5],
+  q: [1, 0, 0],
+  y: [0.866, 0, -0.5],
+  z: [0.5, 0, -0.866],
+  o: [0, 1, 1],
+  u: [0.924, 0, 0.383],
+  v: [0.383, 0, 0.924],
+  w: [-0.383, 0, 0.924],
+  x: [-0.924, 0, 0.383],
+}
 
 var DP_FX = {
   mote: { tex: "glint", life: [0.5, 0.9], size: [0.15, 0.35], speed: [2, 5], col: ["tint", "tint2"], fade: [1, 0], blend: 2 },
@@ -393,9 +432,18 @@ function dpBars(c, name, tag, base, k, w, tall) {
     dpPut(c, tag + i, r, "", dpAt(base, DP_UP, r[5] * w, r[6] * w, tall / 2), null, k)
     var box = dpBox(r, "", w)
     box.height = tall
-    if (c.m[tag + i]) api.updateMeshEntity(c.m[tag + i], "Box", box)
+    if (!c.m[tag + i]) return
+    api.updateMeshEntity(c.m[tag + i], "Box", box)
+    if (r[9]) api.setEntityRotation(c.m[tag + i], 0, (r[9] * Math.PI) / 180, 0)
   })
 }
+
+var dpTurn = [
+  [0, 0, 1],
+  [0.707, 0, 0.707],
+  [1, 0, 0],
+  [0.707, 0, -0.707],
+]
 
 function dpBeam(c, base, k, tall, wide, two) {
   var w = k * (wide || 1)
@@ -405,8 +453,8 @@ function dpBeam(c, base, k, tall, wide, two) {
   dpSize = 2 * k
   dpShape("ray", dpAdd(base, [0, 1, 0], tall), dpBall(10), 1.1 * k, 0)
   dpSize = 1
-  dpPut(c, "beam_base", top[1], "", dpAdd(base, [0, 1, 0], 0.1), null, k)
-  for (var n = 0; n < 3; n++) dpPut(c, "beam_ring" + n, top[2], "", dpAdd(base, [0, 1, 0], tall * ((n / 3 + c.t * 0.11) % 1)), null, k)
+  for (var n = 0; n < 4; n++) dpPut(c, "beam_base" + n, top[1], "", dpAdd(base, [0, 1, 0], 0.1), dpTurn[n], w)
+  for (var n = 0; n < 8; n++) dpPut(c, "beam_ring" + n, top[2], "", dpAdd(base, [0, 1, 0], tall * (((n >> 2) / 2 + c.t * 0.11) % 1)), dpTurn[n % 4], k)
   dpFx("mote", base, 8, 1.4 * k, "magenta", "white", [0, 1, 0])
   dpFx("flash", dpAdd(base, [0, 1, 0], tall), 6, k)
   dpFx("glow", dpAdd(base, [0, 1, 0], tall), 2, k, "magenta")
@@ -448,6 +496,12 @@ function dpBlast(c, base, k, e, ring) {
   dpFx("ember", base, 8, ring * g * 0.5, "crimson", "blood", null, 2)
   if (e % 3 === 0) dpFx("wave", base, 14, 0.5)
   if (e % 2 === 0) dpRingFx("shock", base, ring * (0.1 + g * 0.8), 4, 1, 0.08, "crimson", "blood", 10, e * 0.4)
+  if (e === 0 || e === 4) {
+    var dome = dpBall(e ? 40 : 56).filter((d) => d[1] > -0.05)
+    dpSize = k * (e ? 1.6 : 1.2)
+    dpShape(e ? "puff" : "front", dpAdd(base, [0, 1, 0], k), dome, ring * 0.12, ring * (e ? 0.5 : 1.5), "crimson", "blood", e ? 1 : 0)
+    dpSize = 1
+  }
   if (e === 0) {
     dpFx("glow", base, 10, 3 * k, "crimson")
     dpRingFx("smoke", base, ring * 0.2, 4, 1, 0.3, "", "", 8)

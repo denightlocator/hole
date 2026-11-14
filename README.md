@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 42,281 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 52,497 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 58,530 |
+| `world_code.js` | World Code | 44,134 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,350 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,383 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 
@@ -151,10 +151,10 @@ the table columns mean is written on this page instead.
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | no meshes: each star is 48 particles placed along 12 rays, plus sparks | 4.7–5.3 |
-| beam | The dragon turns into a massive black beam that shoots 72 blocks straight up from the target | 9 meshes: a black core and four thin red and purple beams that grow, a ball of particles on the tip, a disc at the foot, three collars travelling up; rising sparks | 5.35–5.85 |
-| second beam | A second beam rises around the first in a fifth of a second and waits: the two throb and slowly thicken (about 9 blocks across) while light is pulled in at the foot and down from the tip | 8 more meshes: four near-black bars on the corners and four thin red bars outside the first beam; gathering glints, a red glow | 5.85–6.65 |
-| collapse | It all comes down: both beams sink from the top into the ground in 0.3 s and get twice as thick while they do | the same 18 meshes; streaks racing down | 6.65–6.95 |
-| blast | It explodes on the ground: a spiked star bursts out to 20 blocks across, three shock rings of particles widen at three heights out to the blast radius, then the star shrinks away. The target is killed at the first moment, others within 16 blocks are hurt and pushed | 8 meshes: the star (`blast`). The rings are 40, 32 and 24 particles, each placed on its circle; flashes, debris, embers, shock waves | 6.95–7.8 |
+| beam | The dragon turns into a massive round black beam that shoots 72 blocks straight up from the target | 22 meshes: an eight-sided black core (four boxes turned 45° apart), six thin red and purple beams round it, an eight-sided disc at the foot, two eight-sided collars travelling up; a ball of particles on the tip, rising sparks | 5.35–5.85 |
+| second beam | A second beam rises around the first in a fifth of a second and waits: the two throb and slowly thicken (about 9 blocks across) while light is pulled in at the foot and down from the tip | 8 more meshes: eight bars in a circle round the first beam, near-black and red in turn; gathering glints, a red glow | 5.85–6.65 |
+| collapse | It all comes down: both beams sink from the top into the ground in 0.3 s and get twice as thick while they do | the same 30 meshes, still round; streaks racing down | 6.65–6.95 |
+| blast | It explodes on the ground: a round burst: a ball with 22 spikes all round bursts out to 20 blocks across, a round black and red shock disc sweeps out over the ground to 31 blocks across, a dome of particles flies up and out, then a dome of smoke, three shock rings of particles widen at three heights out to the blast radius, then the star shrinks away. The target is killed at the first moment, others within 16 blocks are hurt and pushed | 26 meshes (`blast`): a 3-box ball, 13 ray boxes, a twelve-sided disc of 6 boxes and an eight-sided disc of 4. The rings are 40, 32 and 24 particles, each placed on its circle; flashes, debris, embers, shock waves | 6.95–7.8 |
 | smoke | A ball of dark smoke swells and rises, with a ring of dust rolling out | no meshes: 26 + 14 + 14 smoke particles placed on spheres and 20 on the dust ring, plus sparks | 7.8–9.6 |
 
 After two dragons touch, the one that is left runs these steps instead:
@@ -162,8 +162,8 @@ After two dragons touch, the one that is left runs these steps instead:
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
 | mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 113 meshes, bigger | 1.2 s |
-| beam | A beam more than twice as thick again shoots from the ground up through the dragon and 50 blocks past it | the same 10 meshes, bigger | 0.6 s |
-| nuke | A second beam joins it and waits about a second, both sink into the ground (up to 21 blocks thick), then it explodes: a star about 60 blocks across and three shock rings out to the kill radius. Everything within 44 blocks dies | the same meshes as the blast, three times the size | 2.2 s |
+| beam | A beam more than twice as thick again shoots from the ground up through the dragon and 50 blocks past it | the same 22 meshes, bigger | 0.6 s |
+| nuke | A second beam joins it and waits about a second, both sink into the ground (up to 15 blocks thick), then it explodes: a burst about 60 blocks across with a shock disc about 92 blocks across and three shock rings out to the kill radius. Everything within 44 blocks dies | the same meshes as the blast, three times the size | 2.2 s |
 | cloud | Smoke where the beam stood and rings of dust rolling out along the ground | no meshes: smoke balls of 40 and 24 particles and dust rings of 36 | 2.5 s |
 
 How long the dive takes depends on how far the target is. The clip in
@@ -183,10 +183,10 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | `pillar` | 1 | The pillar of light when the dragon comes out |
 | `head` | 55 | Dark purple skull and a snout that narrows to the tip; open lower jaw with its own tip and hinges; black horns in three pieces with magenta tips; a three-step crest; glowing red eyes in black sockets with slit pupils under heavy brows; a nose horn, snout ridge and forehead gem; big and small fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins with frill spikes, chin spikes, beard |
 | `body` | 58 | 12 segments from thick neck to thin tail, dark purple and near-black in turn; a tall magenta spine on each, bright violet belly plates, red stripes on both sides, a pair of wings with violet tips, a pair of fins, tail fins |
-| `beam` | 5 | The beam before each explosion: a core and four thin beams |
-| `beam2` | 8 | The second beam that waits before the explosion: four corner bars and four thin outer bars |
-| `blast` | 8 | The explosion on the ground: a turning core, three rays along the axes and four slanted rays |
-| `beamTop` | 3 | The ball on the beam's tip, the disc at its foot, and a collar that is used 3 times and travels up the beam |
+| `beam` | 10 | The beam before each explosion: an eight-sided core (4 boxes) and six thin beams round it |
+| `beam2` | 8 | The second beam that waits before the explosion: eight bars in a circle |
+| `blast` | 26 | The explosion on the ground: a ball (3 boxes), 13 ray boxes that make 22 spikes, and two round shock discs (6 and 4 boxes) |
+| `beamTop` | 3 | A spare ball, one slice of the disc at the beam's foot (used 4 times), and one slice of a collar (used 8 times, two collars) |
 
 Each beam also has a shock ring of 10 meshes that widens on the ground. It is
 made in code by `dpShock`, not from a table.
@@ -198,8 +198,8 @@ To change a part, change its row. To add one, add a row: the engine picks it up.
 
 Every row in `DP_MESH` is named `M`. What each row is, in order:
 
-- `beam`: core, front, back, then the two side beams.
-- `beamTop`: tip, foot, collar.
+- `beam`: the four core boxes, front, back, then the four side beams.
+- `beamTop`: ball, foot slice, collar slice.
 - `body`: for each of the 12 segments from neck to tail tip, the segment itself,
   then its spine, then (where it has them) its belly plate, side stripes, and
   wings or fins. The wing tips follow the wings. The last three rows are the tail
@@ -350,6 +350,15 @@ Set `vortex: false` in `DP_CFG` to turn it off. Not tested in the game: the
 vortex only shows if the game leaves particles behind when an emitter moves.
 If the particles move along with the emitter instead, it will look like two
 dark balls circling the dragon.
+
+### Round shapes from boxes
+
+The game only has box meshes, so a round shape is made from long boxes that
+cross in the middle: four boxes turned 45° apart give eight sides, six boxes
+turned 30° apart give twelve. The beam's core, its foot, its collars and the two
+shock discs of the explosion are built this way. A row of `beam` can carry its
+turn in degrees as a tenth value; rows of `blast` take their direction from
+`DP_DIAG` by flag letter.
 
 ### The Particle Studio scene
 
