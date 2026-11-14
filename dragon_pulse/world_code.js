@@ -1,39 +1,22 @@
-// ============================================================================
-//  DRAGON PULSE  -  World Code (F8)
-//  Three orbs charge (violet / orange / cyan) -> three beams fly up into the
-//  sky and twist together -> they merge into a glowing serpent dragon that
-//  dives onto the target it chose, coils around it and detonates into a
-//  white blast and smoke.
-//
-//  Cast it:  type  !dp  in chat,  hold the item named in DP_CFG.item and
-//            right click,  or run  dragonPulse(myId)  from a code block.
-//
-//  Layout:   1 config        4 particle looks     7 phases
-//            2 colours       5 helpers            8 cast + callbacks
-//            3 mesh tables   6 mesh + particle engine
-// ============================================================================
-
-// ---------------------------------------------------------------- 1. CONFIG
 var DP_CFG = {
-  chat: "!dp",      // chat message that casts the move ("" = off)
-  item: "",         // held item that casts it on right click ("" = off)
-  cooldown: 8,      // seconds between casts of one player
-  range: 40,        // blocks around the caster in which the dragon finds a target
-  rise: 16,         // blocks the beams fly up before they become the dragon
-  lean: 0.3,        // how far the beams lean forward on the way up (0 = straight up)
-  hitPlayers: true, // false = the dragon only goes for mobs
-  damage: 40,       // health taken at the centre of the blast
-  radius: 6,        // blast radius in blocks
-  knockback: 14,    // push away from the blast
+  chat: "!dp",
+  item: "",
+  cooldown: 8,
+  range: 40,
+  rise: 16,
+  lean: 0.3,
+  hitPlayers: true,
+  damage: 40,
+  radius: 6,
+  knockback: 14,
   hurtCaster: false,
-  rotate: true,     // turn meshes to face the way they fly
+  rotate: true,
   sounds: true,
-  hideDist: 96,     // players further away do not see it
-  maxCasts: 3,      // casts running at once in the world
-  maxMeshes: 70,    // mesh entities this script may hold at once
+  hideDist: 96,
+  maxCasts: 3,
+  maxMeshes: 70,
 }
 
-// --------------------------------------------------------------- 2. COLOURS
 var DP_COL = {
   white: [255, 255, 255],
   violet: [165, 70, 255],
@@ -46,24 +29,14 @@ var DP_COL = {
   shade: [118, 128, 176],
 }
 
-// ----------------------------------------------------------- 3. MESH TABLES
-// One row is one Box mesh:
-//   [name, width, height, depth, colour, forward, right, up, flag]
-// width is left-right, height is bottom-top, depth is along the flight.
-// forward / right / up is where the part sits, in blocks from the middle of
-// its group. flag "spin" = turns by itself, "lit" = shaded instead of glowing.
 var DP_MESH = {
-  // An orb: a white-hot core inside a turning coloured shell. "tint" is
-  // replaced by the colour of the orb (violet, orange or cyan).
   orb: [
     ["core", 0.5, 0.5, 0.5, "white", 0, 0, 0],
     ["shell", 0.58, 0.58, 0.58, "tint", 0, 0, 0, "spin"],
   ],
 
-  // The piece of beam behind an orb. Each beam has DP_BEAM_LEN of them.
   beam: [["ray", 0.3, 0.3, 1.2, "tint", 0, 0, 0]],
 
-  // Dragon head. Stiff: every part keeps its place next to the skull.
   head: [
     ["skull", 1.5, 1.25, 1.6, "white", 0, 0, 0],
     ["snout", 1.05, 0.6, 1.3, "white", 1.35, 0, 0.18],
@@ -77,8 +50,6 @@ var DP_MESH = {
     ["finR", 0.2, 0.7, 0.95, "blue", -0.45, 0.98, -0.05],
   ],
 
-  // Dragon body. Bends: "forward" is how far behind the head the part
-  // follows along the path the head flew (so it is negative).
   body: [
     ["neck1", 1.3, 1.15, 1.1, "white", -1.35, 0, 0],
     ["neck2", 1.25, 1.1, 1.1, "pink", -2.5, 0, 0],
@@ -99,7 +70,6 @@ var DP_MESH = {
     ["tailFinR", 0.7, 0.14, 0.8, "blue", -14.4, 0.4, 0],
   ],
 
-  // The yellow star that flashes where the dragon bites.
   flare: [
     ["heart", 1.0, 1.0, 1.0, "white", 0, 0, 0, "spin"],
     ["rayX", 3.0, 0.42, 0.42, "gold", 0, 0, 0],
@@ -107,10 +77,8 @@ var DP_MESH = {
     ["rayZ", 0.42, 0.42, 3.0, "orange", 0, 0, 0],
   ],
 
-  // The white core of the blast.
   blast: [["core", 3.4, 3.4, 3.4, "white", 0, 0, 0, "spin"]],
 
-  // Smoke puffs. Here forward / right / up is where a puff ends up.
   smoke: [
     ["puff1", 2.6, 2.3, 2.6, "smoke", 0.4, -2.6, 1.4, "lit"],
     ["puff2", 2.9, 2.5, 2.9, "smoke", -0.3, 2.4, 1.8, "lit"],
@@ -123,20 +91,13 @@ var DP_MESH = {
   ],
 }
 
-// The three orbs: colour, and where each sits around the aim line (degrees).
 var DP_ORBS = [
   ["violet", 210],
   ["orange", 90],
   ["cyan", 330],
 ]
-var DP_BEAM_LEN = 4 // pieces of beam behind each orb
+var DP_BEAM_LEN = 4
 
-// ------------------------------------------------------ 4. PARTICLE LOOKS
-// tex: texture. life: seconds. size: blocks. speed: blocks per second.
-// grav: blocks per second squared (up is +). col: the two colours a particle
-// is mixed from ("tint" = given when played). fade: alpha at birth and death.
-// blend: 1 normal, 2 glow. drag: speed left at the end (1 = keeps flying).
-// flat: 1 = flies level (rings).
 var DP_FX = {
   orbGlow: { tex: "glint", life: [0.25, 0.45], size: [0.25, 0.5], speed: [0.3, 1.2], col: ["tint", "white"], fade: [1, 0], blend: 2 },
   orbDust: { tex: "square_particle", life: [0.3, 0.5], size: [0.08, 0.16], speed: [1.5, 3], col: ["tint", "tint"], fade: [1, 0], blend: 2, drag: 0.1 },
@@ -151,7 +112,6 @@ var DP_FX = {
   smoke: { tex: "square_particle", life: [1.2, 2], size: [1.5, 3], speed: [0.5, 2], grav: 0.8, col: ["smoke", "shade"], fade: [0.85, 0], blend: 1, drag: 0.2 },
   spark: { tex: "glint", life: [0.5, 1], size: [0.25, 0.5], speed: [1, 4], col: ["violet", "pink"], fade: [1, 0], blend: 2, drag: 0.2 },
 }
-// The colour pairs the dragon's skin shimmers in.
 var DP_SKIN = [
   ["pink", "violet"],
   ["blue", "cyan"],
@@ -159,7 +119,6 @@ var DP_SKIN = [
   ["white", "pink"],
 ]
 
-// --------------------------------------------------------------- 5. HELPERS
 var dpAdd = (a, b, s) => [a[0] + b[0] * s, a[1] + b[1] * s, a[2] + b[2] * s]
 var dpSub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
 var dpLen = (a) => Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
@@ -167,12 +126,10 @@ var dpNorm = (a) => {
   var l = dpLen(a)
   return l < 1e-6 ? [0, 0, 1] : [a[0] / l, a[1] / l, a[2] / l]
 }
-// The frame of something flying along f: [forward, right, up].
 var dpBasis = (f) => {
   var r = Math.abs(f[1]) > 0.999 ? [1, 0, 0] : dpNorm([f[2], 0, -f[0]])
   return [f, r, [f[1] * r[2] - f[2] * r[1], f[2] * r[0] - f[0] * r[2], f[0] * r[1] - f[1] * r[0]]]
 }
-// p moved by forward / right / up in the frame B.
 var dpAt = (p, B, fw, rt, up) => [
   p[0] + B[0][0] * fw + B[1][0] * rt + B[2][0] * up,
   p[1] + B[0][1] * fw + B[1][1] * rt + B[2][1] * up,
@@ -184,16 +141,13 @@ var dpSound = (name, pos, vol, rate) => {
     api.broadcastSound(name, vol, rate, { playerIdOrPos: pos, maxHearDist: 70, refDistance: 12 })
   } catch (e) {}
 }
-// Everything the blast can hurt.
 var dpLifeforms = () => api.getMobIds().concat(api.getPlayerIds())
 
-// -------------------------------------------- 6. MESH + PARTICLE ENGINE
-var dpCasts = [] // casts that are running
-var dpMeshes = 0 // mesh entities held right now
-var dpClock = 0 // ticks since the world code started
-var dpLast = {} // playerId -> tick of the last cast
+var dpCasts = []
+var dpMeshes = 0
+var dpClock = 0
+var dpLast = {}
 
-// The options of one mesh row, k times its size.
 function dpBox(row, tint, k) {
   var col = DP_COL[row[4] === "tint" ? tint : row[4]]
   var lit = row[8] === "lit"
@@ -208,7 +162,6 @@ function dpBox(row, tint, k) {
   }
 }
 
-// Puts one mesh at pos, facing along f. Makes it the first time.
 function dpPut(c, key, row, tint, pos, f) {
   var id = c.m[key]
   if (!id) {
@@ -224,8 +177,6 @@ function dpPut(c, key, row, tint, pos, f) {
   }
 }
 
-// Puts a stiff group (orb, head, flare) at pos, k times its size.
-// still: keep it level instead of turning it along B.
 function dpGroup(c, name, tag, tint, pos, B, k, still) {
   var rows = DP_MESH[name]
   for (var i = 0; i < rows.length; i++) {
@@ -241,7 +192,6 @@ function dpResize(c, name, tag, tint, k) {
   })
 }
 
-// Deletes the meshes whose key starts with tag ("" = all of them).
 function dpDrop(c, tag) {
   for (var key in c.m) {
     if (key.indexOf(tag) !== 0) continue
@@ -253,7 +203,6 @@ function dpDrop(c, tag) {
   }
 }
 
-// Lays the body along the path the head flew (c.path, newest point last).
 function dpBody(c) {
   var rows = DP_MESH.body
   var P = c.path
@@ -267,18 +216,16 @@ function dpBody(c) {
       j--
       seg = dpLen(dpSub(P[j], P[j - 1]))
     }
-    if (walked + seg < -r[5]) return // this far back has not left the flash yet
+    if (walked + seg < -r[5]) return
     var f = dpNorm(dpSub(P[j], P[j - 1]))
     var B = dpBasis(f)
     dpPut(c, "body_" + r[0], r, "", dpAt(P[j], B, -(-r[5] - walked), r[6], r[7]), f)
   }
 }
 
-// Plays n particles of a look around pos. spread: half the size of the cloud.
-// dir: fly this way instead of every way. tint / tint2: colour names.
 function dpFx(look, pos, n, spread, tint, tint2, dir) {
   var L = DP_FX[look]
-  var S = 0.6 // one second on the game's particle clock
+  var S = 0.6
   var a = DP_COL[L.col[0] === "tint" ? tint : L.col[0]]
   var b = DP_COL[L.col[1] === "tint" ? tint : L.col[1] === "tint2" ? tint2 : L.col[1]]
   var y = L.flat ? 0.04 : 1
@@ -309,15 +256,11 @@ function dpFx(look, pos, n, spread, tint, tint2, dir) {
   })
 }
 
-// ---------------------------------------------------------------- 7. PHASES
-// Every phase is called once per tick (20 times a second) with the cast c.
-// c.t counts the ticks of the phase. dpNext(c) moves on to the next phase.
 var dpNext = (c) => {
   c.ph++
   c.t = -1
 }
 
-// Where orb i is, p of the way (0 to 1) from the caster to the merge point.
 function dpOrbAt(c, i, p) {
   var q = Math.max(0, p)
   var rad = 0.9 * (1 - q) + 0.7 * Math.sin(Math.PI * q)
@@ -325,7 +268,6 @@ function dpOrbAt(c, i, p) {
   return dpAt(c.from, c.L, c.reach * q, Math.cos(ang) * rad, Math.sin(ang) * rad)
 }
 
-// Where the dragon is heading: its target if it has one, else a fixed point.
 function dpGoal(c) {
   if (c.target) {
     try {
@@ -338,7 +280,6 @@ function dpGoal(c) {
   return c.goal
 }
 
-// Moves the head to pos, lays the body behind it and makes it shimmer.
 function dpFly(c, pos) {
   var last = c.path[c.path.length - 1]
   var f = dpNorm(dpSub(pos, last))
@@ -357,7 +298,6 @@ function dpFly(c, pos) {
 }
 
 var DP_PHASE = [
-  // 0 CHARGE (0.8 s): three orbs swell in front of the caster.
   function (c) {
     var k = c.t < 8 ? 0.6 : 1
     if (c.t === 0) dpSound("magicAccent1", c.from, 1, 0.8)
@@ -372,8 +312,6 @@ var DP_PHASE = [
     if (c.t >= 15) dpNext(c)
   },
 
-  // 1 BEAMS (0.7 s): the orbs shoot up into the sky, twist round each other
-  // and meet.
   function (c) {
     var T = 14
     var p = (c.t + 1) / T
@@ -396,13 +334,11 @@ var DP_PHASE = [
     if (c.t >= T - 1) dpNext(c)
   },
 
-  // 2 DRAGON: high up the beams flash into one and the dragon comes out of
-  // the flash, arches over and dives, weaving, onto its target.
   function (c) {
     if (c.t === 0) {
       dpDrop(c, "orb")
       dpDrop(c, "beam")
-      c.at = dpAt(c.from, c.L, c.reach, 0, 0) // the point the weaving is around
+      c.at = dpAt(c.from, c.L, c.reach, 0, 0)
       c.path = [dpAt(c.at, c.L, -0.6, 0, 0)]
       c.far = Math.max(1, dpLen(dpSub(dpGoal(c), c.at)))
       dpFx("flash", c.at, 10, 0.6)
@@ -423,7 +359,6 @@ var DP_PHASE = [
     dpFly(c, dpAt(c.at, B, 0, Math.sin(c.t * 0.42) * weave, Math.sin(c.t * 0.21 + 1) * weave * 0.6 + arch))
   },
 
-  // 3 COIL (0.6 s): it winds round the target and bites: two yellow stars.
   function (c) {
     var goal = dpGoal(c)
     var rad = c.t < 4 ? 0.65 * (c.t + 1) : 2.6 - (c.t - 3) * 0.15
@@ -440,7 +375,6 @@ var DP_PHASE = [
     if (c.t >= 11) dpNext(c)
   },
 
-  // 4 BLAST: the dragon bursts. Damage and knockback happen here.
   function (c) {
     var goal = dpGoal(c)
     if (c.t === 0) {
@@ -456,12 +390,11 @@ var DP_PHASE = [
     if (c.t >= 3) dpNext(c)
   },
 
-  // 5 SMOKE (1.4 s): white and blue-grey puffs roll out, sparks linger.
   function (c) {
     var goal = c.goal
     var T = 28
     if (c.t === 0) dpDrop(c, "blast_")
-    var out = 1 - Math.pow(1 - Math.min(1, (c.t + 1) / 14), 2) // fast, then slow
+    var out = 1 - Math.pow(1 - Math.min(1, (c.t + 1) / 14), 2)
     var k = c.t < 18 ? 1 : c.t < 23 ? 0.65 : 0.35
     var rows = DP_MESH.smoke
     for (var i = 0; i < rows.length; i++) {
@@ -475,7 +408,6 @@ var DP_PHASE = [
   },
 ]
 
-// Damage and push everything alive inside the blast.
 function dpHurt(c, at) {
   var ids = dpLifeforms()
   for (var i = 0; i < ids.length; i++) {
@@ -494,8 +426,6 @@ function dpHurt(c, at) {
   }
 }
 
-// ------------------------------------------------------ 8. CAST + CALLBACKS
-// How many blocks from a point along dir are free of blocks, up to max.
 function dpFree(from, dir, max) {
   for (var d = 1; d <= max; d++) {
     try {
@@ -506,12 +436,6 @@ function dpFree(from, dir, max) {
   return max
 }
 
-// The dragon chooses what it dives into:
-//   1 the mob or player the caster looks at,
-//   2 else the mob nearest to the caster,
-//   3 else the nearest other player (only with DP_CFG.hitPlayers).
-// Returns null when nothing is in range: the dragon then hits where the
-// caster looks.
 function dpPick(casterId, eye, f) {
   var pick = (ids, aimed) => {
     var best = null
@@ -535,8 +459,6 @@ function dpPick(casterId, eye, f) {
   return pick(mobs.concat(players), true) || pick(mobs, false) || pick(players, false)
 }
 
-// Starts the move for a player. Returns true when it started.
-// eye, dir: fire from this point this way instead of from the player's eyes.
 function dragonPulse(playerId, eye, dir) {
   var wait = DP_CFG.cooldown * 20 - (dpClock - (dpLast[playerId] === undefined ? -1e9 : dpLast[playerId]))
   if (wait > 0) {
@@ -548,21 +470,20 @@ function dragonPulse(playerId, eye, dir) {
   var f = dpNorm(face.dir)
   var B = dpBasis(f)
   eye = face.camPos
-  // The beams go up into the sky, leaning a little the way the caster faces.
   var flat = dpNorm([f[0], 0, f[2]])
   var up = dpNorm([flat[0] * DP_CFG.lean, 1, flat[2] * DP_CFG.lean])
   var from = dpAt(eye, B, 2.2, 0, 0.1)
   var c = {
     id: playerId,
-    ph: 0, // phase
-    t: 0, // tick of the phase
-    m: {}, // mesh key -> entity id
-    B: B, // the frame of the caster: [forward, right, up]
-    L: dpBasis(up), // the frame of the launch: forward is the way the beams fly
-    from: from, // middle of the three orbs
-    reach: Math.max(3, dpFree(from, up, DP_CFG.rise) - 2), // blocks up to where the beams merge
+    ph: 0,
+    t: 0,
+    m: {},
+    B: B,
+    L: dpBasis(up),
+    from: from,
+    reach: Math.max(3, dpFree(from, up, DP_CFG.rise) - 2),
     target: dpPick(playerId, eye, f),
-    goal: dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5)), // with no target: where the caster looks
+    goal: dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5)),
     path: [],
   }
   dpLast[playerId] = dpClock
@@ -571,7 +492,6 @@ function dragonPulse(playerId, eye, dir) {
 }
 globalThis.dragonPulse = dragonPulse
 
-// Runs every cast one step. Call it once per tick.
 function dpTick() {
   dpClock++
   for (var i = dpCasts.length - 1; i >= 0; i--) {
@@ -589,9 +509,6 @@ function dpTick() {
   }
 }
 
-// A world has one of each callback. If yours already has tick, onPlayerChat
-// or onPlayerAltAction, do not paste these three: put the one line inside
-// each into your own callback instead.
 tick = () => {
   dpTick()
 }

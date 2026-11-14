@@ -127,6 +127,7 @@ if (process.argv[2]) {
   const world = generateCode(clean.objects, { target: 'world', precision: 20 })
   console.log(`studio check: ${bad ? bad + ' problem(s)' : 'scene loads unchanged'}, ${leaves.length} objects, ${block.particles} particles`)
   console.log(`studio export: ${block.parts.length} code block(s) of ${block.parts.map((p) => p.chars).join(', ')} characters (limit 32000); as World Code ${world.parts[0].chars} characters (limit 512000)`)
-  fs.writeFileSync(path.join(here, 'particles_only.code_block.js'), block.parts[0].code + '\n')
+  // without the studio's one comment line, like the other files to paste
+  fs.writeFileSync(path.join(here, 'particles_only.code_block.js'), block.parts[0].code.replace(/^\/\/.*\n/, '') + '\n')
   if (bad || block.parts.length !== 1) process.exit(1)
 }

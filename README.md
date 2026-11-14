@@ -75,10 +75,13 @@ again while one stands, that one stays: remove it first.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 23,986 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 13,828 | 512,000 together: 37,815 |
-| `code_block.js` | Code Block | 164 | 32,000 |
-| `studio/particles_only.code_block.js` | Code Block | 13,479 | 32,000 |
+| `world_code.js` | World Code | 17,477 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 27,693 |
+| `code_block.js` | Code Block | 18 | 32,000 |
+| `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
+
+The files to paste hold no `//` comments, to save space. What the settings and
+the table columns mean is written on this page instead.
 
 ## What the frames show, and how it is built
 
@@ -135,9 +138,77 @@ Code, meshes, aiming or damage.
 
 ## Settings
 
-All in `DP_CFG` at the top of `world_code.js`: chat word, item, cooldown, range,
-how high the beams rise, whether the dragon goes for players, damage, blast radius, knockback, whether the caster can be hurt, sounds, view
-distance, and the caps on casts and meshes.
+`DP_CFG` at the top of `world_code.js`:
+
+| Setting | Meaning |
+|---|---|
+| `chat` | Chat message that casts the move. `""` turns it off |
+| `item` | Held item that casts it on right click. `""` turns it off |
+| `cooldown` | Seconds between two casts of one player |
+| `range` | Blocks around the caster in which the dragon finds a target |
+| `rise` | Blocks the beams fly up before they become the dragon |
+| `lean` | How far the beams lean forward on the way up. 0 is straight up |
+| `hitPlayers` | `false`: the dragon only goes for mobs |
+| `damage` | Health taken at the centre of the blast |
+| `radius` | Blast radius in blocks |
+| `knockback` | Push away from the blast |
+| `hurtCaster` | `true`: the blast also hurts whoever cast it |
+| `rotate` | Turn meshes to face the way they fly |
+| `sounds` | Play sounds |
+| `hideDist` | Players further away than this many blocks do not see it |
+| `maxCasts` | Casts that may run at once in the world |
+| `maxMeshes` | Mesh entities the move may hold at once |
+
+`GOODRA_CFG` at the top of `goodra.js`:
+
+| Setting | Meaning |
+|---|---|
+| `chat` | The chat word, `!goodra` |
+| `scale` | Size. 1 is 6.8 blocks tall, 0.6 about 4 |
+| `detail` | 1, 2 or 3: how many parts are made |
+| `rotate` | Turn and tilt the meshes. `false`: it faces north, east, south or west |
+| `perTick` | Meshes made per tick while it is being built |
+| `hideDist` | Players further away than this many blocks do not see it |
+
+## The table columns
+
+**`DP_MESH`** (the move): `[name, width, height, depth, colour, forward, right, up, flag]`
+
+- width is left to right, height bottom to top, depth along the flight.
+- forward, right, up: where the part sits, in blocks from the middle of its group.
+  In `body`, forward is how far behind the head the part follows (negative). In
+  `smoke`, it is where the puff ends up.
+- colour: a name from `DP_COL`. `"tint"` is the colour of the orb it belongs to.
+- flag: `"spin"` turns by itself, `"lit"` is shaded instead of glowing.
+
+**`GOODRA_MESH`**: `[name, width, height, depth, colour, forward, right, up, tilt, turn, lean, flags]`
+
+- forward, right, up: where the middle of the part is, in blocks from the point on
+  the ground between the feet, before `scale`.
+- tilt, turn, lean: degrees. Tilt leans the top forward, turn turns it to its
+  right, lean leans the top to its right. Leave them out for 0.
+- colour: a name from `GOODRA_COL`.
+- flags: `m` makes the part twice, mirrored left and right (write it for the right
+  side). `2` or `3` makes it only at that detail level or higher. `g` makes it glow.
+
+**`DP_FX`** (particle looks):
+
+| Field | Meaning |
+|---|---|
+| `tex` | Texture name |
+| `life` | Shortest and longest life in seconds |
+| `size` | Smallest and largest size in blocks |
+| `speed` | Slowest and fastest speed in blocks per second |
+| `grav` | Pull in blocks per second squared. Up is + |
+| `col` | The two colours a particle is mixed from. `"tint"` and `"tint2"` are given when it is played |
+| `fade` | How solid it is at birth and at death, 0 to 1 |
+| `blend` | 1 normal, 2 glow |
+| `drag` | Share of its speed left at the end. 1 keeps flying |
+| `flat` | 1: flies level, for rings |
+
+`DP_ORBS` holds the colour of each orb and its place round the launch line in
+degrees. `DP_SKIN` holds the colour pairs the dragon shimmers in. `GOODRA_MOUTH`
+is where Dragon Pulse leaves Goodra: forward, right, up.
 
 ## Not tested in the game
 

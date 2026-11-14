@@ -1,51 +1,24 @@
-// ============================================================================
-//  GOODRA  -  World Code (F8)
-//  The Pokemon that fires Dragon Pulse in the clip, built from Box meshes.
-//
-//  Works on its own. To let it fire the move, paste it BELOW world_code.js in
-//  the same World Code.
-//
-//  Chat:  !goodra         stand it where you are, facing the way you look
-//         !goodra pulse   it fires Dragon Pulse from its mouth
-//         !goodra off     remove it
-//
-//  Layout:   1 config    2 colours    3 mesh tables    4 engine    5 callbacks
-// ============================================================================
-
-// ---------------------------------------------------------------- 1. CONFIG
 var GOODRA_CFG = {
   chat: "!goodra",
-  scale: 0.6,     // 1 = 6.8 blocks tall, 0.6 = about 4 blocks
-  detail: 3,      // 1 = body and eyes (51 meshes), 2 = + face, spots, belly (92), 3 = everything (125)
-  rotate: true,   // turn the meshes. false = no turning: it then faces north, east, south or west
-  perTick: 10,    // meshes made per tick while it is being built
+  scale: 0.6,
+  detail: 3,
+  rotate: true,
+  perTick: 10,
   hideDist: 96,
 }
 
-// --------------------------------------------------------------- 2. COLOURS
 var GOODRA_COL = {
-  skin: [190, 166, 226],   // lilac body
-  light: [208, 188, 238],  // rounded edges catch the light
-  under: [150, 112, 196],  // darker underside: throat, belly, under the tail
-  spot: [142, 212, 120],   // green spots
+  skin: [190, 166, 226],
+  light: [208, 188, 238],
+  under: [150, 112, 196],
+  spot: [142, 212, 120],
   eye: [96, 200, 96],
   white: [255, 255, 255],
-  dark: [70, 48, 104],     // mouth, nostrils, pupils
+  dark: [70, 48, 104],
   slime: [226, 214, 248],
 }
 
-// ----------------------------------------------------------- 3. MESH TABLES
-// One row is one Box mesh:
-//   [name, width, height, depth, colour, forward, right, up, tilt, turn, lean, flags]
-// width is left-right, height is bottom-top, depth is back-front.
-// forward / right / up: where its middle is, in blocks from the point on the
-//   ground between the feet (before GOODRA_CFG.scale).
-// tilt / turn / lean: degrees. tilt + leans its top forward, turn + turns it
-//   to its right, lean + leans its top to its right. Leave out for 0.
-// flags: "m" = make it twice, mirrored left and right (written for the right
-//   side). "2" or "3" = only at that detail level or higher. "g" = glows.
 var GOODRA_MESH = {
-  // ---- head: a rounded block with a short blunt snout
   head: [
     ["skull", 1.5, 1.25, 1.5, "skin", 0.45, 0, 5.4],
     ["skullTop", 1.2, 0.25, 1.2, "light", 0.45, 0, 6.1],
@@ -57,8 +30,6 @@ var GOODRA_MESH = {
     ["jawSide", 0.16, 0.3, 0.9, "skin", 1.0, 0.56, 4.85, 0, 0, 0, "m2"],
   ],
 
-  // ---- face: big round eyes that stand out from the head and glow, so they
-  //      show from the ground and in the dark; mouth, nostrils, cheek spots
   face: [
     ["eye", 0.5, 0.6, 0.22, "eye", 1.26, 0.5, 5.75, 0, 0, 0, "mg"],
     ["eyeSide", 0.14, 0.5, 0.45, "eye", 1.05, 0.95, 5.75, 0, 0, 0, "mg"],
@@ -71,8 +42,6 @@ var GOODRA_MESH = {
     ["cheekSpot", 0.06, 0.34, 0.34, "spot", 0.7, 0.94, 5.18, 0, 0, 0, "m2"],
   ],
 
-  // ---- antennae: the long pair hangs down the back and curls at the tip,
-  //      the short pair stands on the forehead
   antennae: [
     ["hornRoot", 0.32, 0.7, 0.32, "skin", -0.05, 0.45, 6.3, -25, 0, 8, "m"],
     ["hornArch", 0.3, 0.3, 0.95, "skin", -0.65, 0.52, 6.62, 12, 0, 0, "m"],
@@ -87,7 +56,6 @@ var GOODRA_MESH = {
     ["feelerTip", 0.22, 0.16, 0.22, "light", 1.03, 0.32, 6.5, 18, 0, 6, "m3"],
   ],
 
-  // ---- neck: long, with the darker throat down its front
   neck: [
     ["neckTop", 1.05, 0.75, 1.0, "skin", 0.3, 0, 4.6],
     ["neckBase", 1.25, 0.9, 1.15, "skin", 0.2, 0, 3.95],
@@ -95,7 +63,6 @@ var GOODRA_MESH = {
     ["throatBase", 0.9, 0.85, 0.14, "under", 0.8, 0, 3.95, 0, 0, 0, "2"],
   ],
 
-  // ---- torso: pear shaped, widest at the hips
   torso: [
     ["chest", 1.7, 0.85, 1.45, "skin", 0.12, 0, 3.4],
     ["waist", 2.0, 1.1, 1.7, "skin", 0.05, 0, 2.6],
@@ -107,7 +74,6 @@ var GOODRA_MESH = {
     ["backMid", 1.6, 0.9, 0.2, "light", -0.88, 0, 2.6, 0, 0, 0, "2"],
   ],
 
-  // ---- belly: the darker underside, in plates from the chest to the hips
   belly: [
     ["bellyTop", 1.2, 0.75, 0.16, "under", 0.9, 0, 3.4, 0, 0, 0, "2"],
     ["bellyMid", 1.5, 1.0, 0.2, "under", 0.98, 0, 2.6, 0, 0, 0, "2"],
@@ -116,7 +82,6 @@ var GOODRA_MESH = {
     ["bellyUnder", 1.6, 0.14, 1.5, "under", 0.1, 0, 0.92, 0, 0, 0, "3"],
   ],
 
-  // ---- arms: short and stubby, held out in front, with two fingers
   arms: [
     ["upperArm", 0.5, 0.5, 0.95, "skin", 0.6, 1.02, 3.38, 28, 0, 0, "m"],
     ["foreArm", 0.46, 0.46, 0.8, "skin", 1.28, 1.02, 3.08, 12, 0, 0, "m"],
@@ -126,7 +91,6 @@ var GOODRA_MESH = {
     ["elbow", 0.4, 0.3, 0.3, "light", 0.95, 1.02, 3.02, 0, 0, 0, "m3"],
   ],
 
-  // ---- legs: thick, with flat two-toed feet
   legs: [
     ["thigh", 0.95, 0.9, 1.05, "skin", 0.05, 0.72, 0.85, 0, 0, 0, "m"],
     ["foot", 1.0, 0.45, 1.35, "skin", 0.3, 0.75, 0.23, 0, 0, 0, "m"],
@@ -135,7 +99,6 @@ var GOODRA_MESH = {
     ["knee", 0.7, 0.4, 0.2, "light", 0.62, 0.72, 0.95, 0, 0, 0, "m3"],
   ],
 
-  // ---- tail: thick at the hips, thinner along the ground, curled at the end
   tail: [
     ["tail1", 1.7, 1.2, 1.2, "skin", -1.15, 0, 1.3, -18, 0, 0],
     ["tail2", 1.5, 1.0, 1.2, "skin", -2.1, 0, 0.9, -14, 0, 0],
@@ -151,7 +114,6 @@ var GOODRA_MESH = {
     ["tailUnder3", 0.9, 0.1, 1.1, "under", -3.1, 0, 0.17, -8, 0, 0, "3"],
   ],
 
-  // ---- spots: green, along both sides of the tail and on the hips
   spots: [
     ["hipSpot", 0.06, 0.4, 0.4, "spot", -0.35, 1.35, 1.75, 0, 0, 0, "m2"],
     ["tailSpot1", 0.06, 0.42, 0.42, "spot", -1.2, 0.87, 1.38, -18, 0, 0, "m2"],
@@ -161,7 +123,6 @@ var GOODRA_MESH = {
     ["curlSpot", 0.06, 0.3, 0.3, "spot", -5.05, 0.35, 1.4, 0, 0, 0, "m3"],
   ],
 
-  // ---- slime: Goodra drips. Hanging from the hands, chin, elbows and tail
   slime: [
     ["handDrip1", 0.12, 0.42, 0.12, "slime", 1.85, 1.1, 2.55, 0, 0, 0, "m3"],
     ["handDrip2", 0.1, 0.26, 0.1, "slime", 1.65, 0.92, 2.62, 0, 0, 0, "m3"],
@@ -172,13 +133,10 @@ var GOODRA_MESH = {
   ],
 }
 
-// Where the mouth is: Dragon Pulse starts here. [forward, right, up]
 var GOODRA_MOUTH = [2.0, 0, 5.1]
 
-// ---------------------------------------------------------------- 4. ENGINE
-var goodra = null // the one that stands in the world: { ids, todo, pos, yaw }
+var goodra = null
 
-// Every mesh to make, mirrored rows doubled, for the detail level.
 function goodraParts() {
   var out = []
   for (var group in GOODRA_MESH) {
@@ -195,7 +153,6 @@ function goodraParts() {
   return out
 }
 
-// A point of the model in the world. p: [forward, right, up]
 function goodraPoint(g, p) {
   var k = GOODRA_CFG.scale
   var s = Math.sin(g.yaw)
@@ -236,8 +193,6 @@ function goodraRemove() {
   goodra = null
 }
 
-// Stands Goodra with its feet at pos, facing yaw (radians, 0 = +Z).
-// It is built over the next ticks, GOODRA_CFG.perTick meshes at a time.
 function goodraSpawn(pos, yaw, playerId) {
   goodraRemove()
   if (!GOODRA_CFG.rotate) yaw = Math.round(yaw / (Math.PI / 2)) * (Math.PI / 2)
@@ -252,7 +207,6 @@ function goodraTick() {
       g.todo.shift()
       continue
     }
-    // the game would not make another mesh: stop here and say so
     try {
       api.sendMessage(g.by, "Goodra: the game's mesh limit was reached after " + g.ids.length + " parts, " + g.todo.length + " are missing. Lower GOODRA_CFG.detail.", { color: "orange" })
     } catch (e) {}
@@ -260,7 +214,6 @@ function goodraTick() {
   }
 }
 
-// Goodra fires Dragon Pulse from its mouth, the way it faces.
 function goodraPulse(playerId) {
   if (!goodra || typeof dragonPulse !== "function") return false
   var f = [Math.sin(goodra.yaw), 0.12, Math.cos(goodra.yaw)]
@@ -286,9 +239,6 @@ globalThis.goodraSpawn = goodraSpawn
 globalThis.goodraRemove = goodraRemove
 globalThis.goodraPulse = goodraPulse
 
-// ------------------------------------------------------------- 5. CALLBACKS
-// These add Goodra to the tick and onPlayerChat that are already there (the
-// ones of world_code.js when this is pasted below it), or stand alone.
 var goodraOldTick = typeof tick === "function" ? tick : null
 tick = (ms) => {
   if (goodraOldTick) goodraOldTick(ms)

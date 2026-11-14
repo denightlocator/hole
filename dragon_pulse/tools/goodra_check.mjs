@@ -53,7 +53,7 @@ const rows = Object.entries(s.run.mesh).flatMap(([g, list]) => list.map((r) => g
 check(new Set(rows).size === rows.length, `${rows.length} rows in ${Object.keys(s.run.mesh).length} groups, every name used once`)
 const counts = [1, 2, 3].map((d) => { s.run.cfg.detail = d; return s.run.parts().length })
 console.log(`  detail 1, 2, 3: ${counts.join(', ')} meshes`)
-check(model.includes(`(${counts[0]} meshes)`) && model.includes(`(${counts[1]})`) && model.includes(`(${counts[2]})`), 'the counts written in GOODRA_CFG are right')
+check(counts.join() === '51,92,125', 'the counts are the ones the README gives')
 check(s.run.chat('hello') === undefined, 'other chat messages pass through')
 check(s.run.chat('!goodra') === false, '!goodra is taken and hidden from chat')
 ticks(s, 1)

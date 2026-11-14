@@ -1,4 +1,3 @@
-// Bloxd Particle Studio: 598 particles. Click the block to play.
 const [X, Y, Z] = thisPos
 const B = {
   dir1: [0, 1, 0], dir2: [0, 1, 0], manualEmitCount: 1,
