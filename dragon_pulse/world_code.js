@@ -8,19 +8,20 @@ var DP_CFG = {
   hitPlayers: true,
   kill: true,
   damage: 40,
-  radius: 6,
-  knockback: 14,
+  boom: 1,
+  radius: 10,
+  knockback: 18,
   hurtCaster: false,
   merge: true,
   mergeDist: 4,
   megaScale: 2.2,
   megaRise: 22,
-  nukeRadius: 22,
+  nukeRadius: 34,
   nukeDamage: 400,
   nukeKnockback: 30,
   rotate: true,
   sounds: true,
-  hideDist: 128,
+  hideDist: 160,
   maxCasts: 4,
   detail: 3,
   maxMeshes: 400,
@@ -170,7 +171,12 @@ var DP_MESH = {
     ["M", 0.42, 0.42, 3.0, "magenta", 0, 0, 0],
   ],
 
-  blast: [["M", 3.4, 3.4, 3.4, "white", 0, 0, 0, "spin"]],
+  blast: [
+    ["M", 3.6, 3.6, 3.6, "white", 0, 0, 0, "spin"],
+    ["M", 10, 0.7, 0.7, "magenta", 0, 0, 0],
+    ["M", 0.7, 10, 0.7, "purple", 0, 0, 0],
+    ["M", 0.7, 0.7, 10, "cyan", 0, 0, 0],
+  ],
 
   smoke: [
     ["M", 2.6, 2.3, 2.6, "smoke", 0.4, -2.6, 1.4, "lit"],
@@ -184,10 +190,10 @@ var DP_MESH = {
   ],
 
   nuke: [
-    ["M", 5, 5, 5, "white", 0, 0, 0, "spin"],
-    ["M", 16, 1.2, 1.2, "magenta", 0, 0, 0],
-    ["M", 1.2, 16, 1.2, "purple", 0, 0, 0],
-    ["M", 1.2, 1.2, 16, "cyan", 0, 0, 0],
+    ["M", 8, 8, 8, "white", 0, 0, 0, "spin"],
+    ["M", 26, 1.8, 1.8, "magenta", 0, 0, 0],
+    ["M", 1.8, 26, 1.8, "purple", 0, 0, 0],
+    ["M", 1.8, 1.8, 26, "cyan", 0, 0, 0],
   ],
 
   stem: [["M", 3.2, 4.4, 3.2, "shade", 0, 0, 0, "lit"]],
@@ -511,25 +517,30 @@ var DP_PHASE = [
 
   function (c) {
     var goal = dpGoal(c)
+    var b = DP_CFG.boom
     if (c.t === 0) {
       dpDrop(c, "")
-      dpGroup(c, "blast", "blast_", "", goal, c.B, 1, true)
-      dpFx("flash", goal, 16, 1.5)
+      dpGroup(c, "blast", "blast_", "", goal, DP_UP, b, true)
+      dpFx("flash", goal, 20, 3 * b)
       dpFx("ring", goal, 24, 0.4)
-      dpFx("impact", goal, 14, 0.8)
+      dpFx("wave", goal, 20, 0.5)
+      dpFx("impact", goal, 18, 2 * b)
       dpSound("blast", goal)
       dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
     }
-    dpFx("flash", goal, 6, 2)
-    if (c.t >= 3) dpNext(c)
+    if (c.t && c.t % 2 === 0) dpResize(c, "blast", "blast_", "", b * (1 + c.t * 0.3))
+    dpFx("flash", goal, 10, (3 + c.t * 0.6) * b)
+    if (c.t % 3 === 0) dpFx("wave", goal, 12, 0.5)
+    if (c.t >= 8) dpNext(c)
   },
 
   function (c) {
     if (c.t === 0) dpDrop(c, "blast_")
-    dpCloud(c, 1, 14, 18, 23, 0.03)
-    if (c.t < 20 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5), 5, 2.5)
-    if (c.t % 3 === 0) dpFx("spark", dpAt(c.goal, c.B, 0, 0, 0.5), 5, 2.5)
-    if (c.t >= 27) c.ph = 99
+    var b = 2 * DP_CFG.boom
+    dpCloud(c, b, 14, 24, 30, 0.04)
+    if (c.t < 26 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5 * b), 7, 2.5 * b)
+    if (c.t % 3 === 0) dpFx("spark", dpAt(c.goal, c.B, 0, 0, 0.5), 7, 2.5 * b)
+    if (c.t >= 35) c.ph = 99
   },
 
   function (c) {
@@ -550,30 +561,30 @@ var DP_PHASE = [
       dpDrop(c, "")
       c.goal = c.at
       c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
-      dpGroup(c, "nuke", "nuke_", "", c.goal, DP_UP, 1, true)
+      dpGroup(c, "nuke", "nuke_", "", c.goal, DP_UP, DP_CFG.boom, true)
       dpSound("nuke", c.goal)
       dpHurt(c, c.ground, DP_CFG.nukeRadius, DP_CFG.nukeDamage, DP_CFG.nukeKnockback, true)
     }
-    if (c.t && c.t % 3 === 0) dpResize(c, "nuke", "nuke_", "", 1 + c.t * 0.2)
-    dpFx("flash", c.goal, 14, 3 + c.t * 0.5)
+    if (c.t && c.t % 3 === 0) dpResize(c, "nuke", "nuke_", "", DP_CFG.boom * (1 + c.t * 0.2))
+    dpFx("flash", c.goal, 18, (5 + c.t) * DP_CFG.boom)
     dpFx("wave", c.goal, 16, 0.5)
     dpFx("wave", c.ground, 16, 0.5)
-    dpFx("impact", c.goal, 10, 3)
+    dpFx("impact", c.goal, 14, 6 * DP_CFG.boom)
     if (c.t >= 15) dpNext(c)
   },
 
   function (c) {
     if (c.t === 0) dpDrop(c, "nuke_")
     if (c.t % 8 === 0 && c.t < 33) dpSound("rumble", c.ground, 1 - c.t * 0.01)
-    dpCloud(c, 3, 20, 34, 42, 0.05)
+    dpCloud(c, 5 * DP_CFG.boom, 20, 34, 42, 0.05)
     var out = Math.min(1, (c.t + 1) / 12)
     for (var i = 0; i < 5 && c.t < 36; i++) {
-      dpPut(c, "stem_" + i, DP_MESH.stem[0], "", dpAdd(c.ground, dpSub(c.goal, c.ground), ((i + 0.5) / 5) * out))
+      dpPut(c, "stem_" + i, DP_MESH.stem[0], "", dpAdd(c.ground, dpSub(c.goal, c.ground), ((i + 0.5) / 5) * out), null, 1.6 * DP_CFG.boom)
     }
     if (c.t === 36) dpDrop(c, "stem_")
-    if (c.t < 36 && c.t % 2 === 0) dpFx("smoke", c.goal, 8, 8)
-    if (c.t < 30 && c.t % 2 === 1) dpFx("smoke", c.ground, 8, 6)
-    if (c.t % 2 === 0) dpFx("spark", c.goal, 8, 9)
+    if (c.t < 36 && c.t % 2 === 0) dpFx("smoke", c.goal, 10, 13 * DP_CFG.boom)
+    if (c.t < 30 && c.t % 2 === 1) dpFx("smoke", c.ground, 10, 9 * DP_CFG.boom)
+    if (c.t % 2 === 0) dpFx("spark", c.goal, 10, 14 * DP_CFG.boom)
     if (c.t >= 49) c.ph = 99
   },
 ]
