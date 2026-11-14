@@ -71,12 +71,64 @@ Not tested in the game either. Two things to look at:
 `!goodra off` removes the Goodra this World Code made. If you save World Code
 again while one stands, that one stays: remove it first.
 
+## Skins made of node meshes
+
+[`dragon_pulse/skin.js`](dragon_pulse/skin.js) dresses a player in meshes that are
+attached to the body parts ("nodes") of the player model, so they move with the
+player by themselves. Paste it into World Code, alone or below the other files.
+
+| Chat | What happens |
+|---|---|
+| `!skin goodra` | You wear Goodra: lilac body, green eyes and spots, antennae, belly, tail |
+| `!skin dragon` | You wear the Dragon Pulse dragon: glowing white, horns, crest, whiskers, spines, fins, tail |
+| `!skin off` | The skin is taken off |
+
+![The Goodra skin](dragon_pulse/preview/skin_goodra.png)
+
+*Drawn outside the game on a guessed player shape. The other skin is in
+`dragon_pulse/preview/skin_dragon.png`.*
+
+Each skin is a list in `SKINS`, 37 parts each. One row is one Box:
+
+```
+[node, width, height, depth, colour, right, up, front, flags]
+```
+
+- node: `HeadMesh`, `TorsoNode`, `ArmRightMesh`, `ArmLeftMesh`, `LegRightMesh` or
+  `LegLeftMesh`.
+- right, up, front: where the middle of the box is, in blocks from that node.
+- colour: a name from `SKIN_COL`.
+- flags: `x` is an extra (see below), `m` makes it twice, mirrored left and right,
+  `g` makes it glow.
+
+To make your own skin, add a list to `SKINS` under a new name: `!skin` and that
+name then wears it.
+
+`SKIN_CFG`: `chat` is the chat word, `extras` turns the extra parts on or off,
+`front` is 1 or -1 (see below), `scale` resizes every part, `hideDist` is how far
+away it is seen.
+
+Not tested in the game. The documentation leaves three things open:
+
+- **How many meshes a node holds.** If the game keeps only one per node, you see
+  six plain boxes: the first six rows of a skin, one per body part. The code
+  attaches those last so that they are the ones that stay. The other rows are the
+  extras (face, antennae, tail and so on) and only show if the game keeps several.
+- **Where a node is.** The offsets assume the head node is at the neck, the arm
+  nodes at the shoulders, the leg nodes at the hips and the torso node in the
+  middle of the torso. If a part sits too high or too low, change the `up` number
+  of its rows.
+- **Which way is front.** If the face and belly are on your back, set `front: -1`.
+
+The meshes sit over your own skin; they do not hide it.
+
 ## Size
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
 | `world_code.js` | World Code | 20,126 | 512,000 |
 | `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 30,342 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 36,375 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -272,12 +324,14 @@ It cannot show how the game draws it. Things to look at first in your world:
 | `beam_blast_frames/` | The 20 reference frames |
 | `dragon_pulse/world_code.js` | The move. Paste into World Code |
 | `dragon_pulse/goodra.js` | Goodra. Paste into World Code below the move |
+| `dragon_pulse/skin.js` | Skins made of node meshes. Paste into World Code |
 | `dragon_pulse/code_block.js` | One line for a code block that casts it |
 | `dragon_pulse/studio/dragon_pulse.scene.json` | The particles as a Particle Studio scene |
 | `dragon_pulse/studio/particles_only.code_block.js` | That scene exported by the studio |
 | `dragon_pulse/studio/build_scene.mjs` | Writes the scene and checks it with the studio's code |
 | `dragon_pulse/tools/sim.mjs` | The test run: `node dragon_pulse/tools/sim.mjs --target` |
 | `dragon_pulse/tools/goodra_check.mjs` | The test of Goodra: `node dragon_pulse/tools/goodra_check.mjs` |
+| `dragon_pulse/tools/skin_check.mjs` | The test of the skins: `node dragon_pulse/tools/skin_check.mjs` |
 | `dragon_pulse/tools/dragon_model.mjs` | Lays the dragon out straight for a drawing |
 | `dragon_pulse/tools/render_model.py` | Draws Goodra and the dragon (needs Pillow) |
 | `dragon_pulse/tools/render.py` | Draws the test run (needs Pillow) |
