@@ -69,7 +69,7 @@ def view(angle, height, title):
 
 # which way the model faces: from the middle of everything to the snout tip
 far = max(meshes, key=lambda m: m['p'][0] ** 2 + m['p'][2] ** 2 if m['p'][1] > 4.5 else 0)
-FACING = math.atan2(far['p'][0], far['p'][2])
+FACING = math.atan2(far['p'][0], far['p'][2]) if len(sys.argv) < 4 else 0.0  # a third argument: it faces +Z
 sheet = Image.new('RGB', (W * 2, H * 2))
 for i, (ang, hgt, title) in enumerate([(35, 3, 'front right'), (90, 1, 'right side'), (180, 3, 'back'), (-25, -1.5, 'front left, from the ground')]):
     sheet.paste(view(ang, hgt, f'{title}  ({len(meshes)} meshes)'), ((i % 2) * W, (i // 2) * H))

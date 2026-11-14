@@ -75,8 +75,8 @@ again while one stands, that one stays: remove it first.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 17,477 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 27,693 |
+| `world_code.js` | World Code | 20,613 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 30,829 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -92,7 +92,7 @@ The 20 frames cover 1.50 s to 6.25 s of the clip.
 | 01–03 | Three orbs charge: violet, orange and cyan, each with a white core | 6 meshes (core + turning shell per orb), glow and dust particles | 0.0–0.8 |
 | 04–05 | Three beams with white cores shoot up into the sky side by side | The orbs fly 16 blocks up with 4 beam pieces each, particle streaks behind | 0.8–1.5 |
 | 06 | The beams merge into one white column with a magenta and blue edge | White flash and ring where the beams meet, high up | 1.5 |
-| 07–11 | The energy becomes a serpent dragon: white body, mottled pink, violet, blue and orange, with a head and jaws. It arches over and dives after the target | 27 meshes: a 10-part head and a 17-part body that bends along the path the head flew. Skin shimmer and white outline particles | 1.5–3.3 |
+| 07–11 | The energy becomes a serpent dragon: white body, mottled pink, violet, blue and orange, with a head and jaws. It arches over and dives after the target | 94 meshes: a 38-part head and a 56-part body that bends along the path the head flew. Skin shimmer and white outline particles | 1.5–3.3 |
 | 12–16 | It wraps round the target; two yellow-orange stars flash | The dragon circles the target; two 4-part star meshes and gold sparks | 3.3–3.9 |
 | 17 | White explosion with thin arcs | White core mesh, flash, shock ring. Damage and knockback happen here | 3.9–4.1 |
 | 18–20 | Rolling white smoke with blue-grey shading, violet sparks left over | 8 smoke meshes that roll out and shrink, smoke and spark particles | 4.1–5.5 |
@@ -111,14 +111,25 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 |---|---|---|
 | `orb` | 2 | Core and shell, used three times with the colours in `DP_ORBS` |
 | `beam` | 1 | One piece of beam, 4 behind each orb |
-| `head` | 10 | Skull, snout, jaw, two horns, crest, two eyes, two cheek fins |
-| `body` | 17 | Neck, back and tail from thick to thin, three back spines, two tail fins |
+| `head` | 38 | Skull, snout and open jaw; horns with antlers and tips; brows, eyes and pupils; fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek frills, chin and beard |
+| `body` | 56 | 12 segments from thick neck to thin tail, a spine on each, belly plates, coloured patches on both sides, two pairs of side fins, tail fins |
 | `flare` | 4 | The yellow star: a core and three rays |
 | `blast` | 1 | The white core of the explosion |
 | `smoke` | 8 | White and blue-grey puffs |
 
 To change a part, change its row. To add one, add a row: the engine picks it up.
-At most 31 meshes exist at once, and all are deleted when the move ends.
+The numbers are meshes made at full detail; parts on both sides are written once
+and mirrored. `detail` in `DP_CFG` sets how much of the dragon is made: 1 gives 27
+meshes, 2 gives 63, 3 gives 94.
+
+![The dragon laid out straight](dragon_pulse/preview/dragon.png)
+
+![The dragon's head](dragon_pulse/preview/dragon_head.png)
+
+*Drawn outside the game with plain light so the parts can be told apart. In the
+game they glow.*
+
+At most 98 meshes exist at once in one cast, and all are deleted when the move ends.
 
 ## The particles
 
@@ -144,7 +155,6 @@ Code, meshes, aiming or damage.
 |---|---|
 | `chat` | Chat message that casts the move. `""` turns it off |
 | `item` | Held item that casts it on right click. `""` turns it off |
-| `cooldown` | Seconds between two casts of one player |
 | `range` | Blocks around the caster in which the dragon finds a target |
 | `rise` | Blocks the beams fly up before they become the dragon |
 | `lean` | How far the beams lean forward on the way up. 0 is straight up |
@@ -157,7 +167,8 @@ Code, meshes, aiming or damage.
 | `sounds` | Play sounds |
 | `hideDist` | Players further away than this many blocks do not see it |
 | `maxCasts` | Casts that may run at once in the world |
-| `maxMeshes` | Mesh entities the move may hold at once |
+| `detail` | 1, 2 or 3: how many parts the dragon has |
+| `maxMeshes` | Mesh entities all running casts may hold together |
 
 `GOODRA_CFG` at the top of `goodra.js`:
 
@@ -179,7 +190,9 @@ Code, meshes, aiming or damage.
   In `body`, forward is how far behind the head the part follows (negative). In
   `smoke`, it is where the puff ends up.
 - colour: a name from `DP_COL`. `"tint"` is the colour of the orb it belongs to.
-- flag: `"spin"` turns by itself, `"lit"` is shaded instead of glowing.
+- flag: `spin` turns by itself, `lit` is shaded instead of glowing. `m` makes the
+  part twice, mirrored left and right (write it for the right side). `2` or `3`
+  makes it only at that detail level or higher.
 
 **`GOODRA_MESH`**: `[name, width, height, depth, colour, forward, right, up, tilt, turn, lean, flags]`
 
@@ -222,7 +235,12 @@ It cannot show how the game draws it. Things to look at first in your world:
   angles go. If the beams or the dragon's parts point the wrong way, set
   `rotate: false`: the parts then stay level, in the right places.
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
-  If parts of the dragon are missing, lower `maxCasts`, or remove rows from `body`.
+  If parts of the dragon are missing, lower `detail`.
+- **Many casts at once.** There is no cooldown. Up to `maxCasts` (3) casts run
+  together and share `maxMeshes` (130), so a second dragon at full detail is cut
+  short while the first still flies. Lower `detail` or raise `maxMeshes` for more.
+- **Speed.** At full detail the dragon makes about 160 api calls per tick. If the
+  game stutters or stops the script, lower `detail`.
 - **Code block.** `code_block.js` calls a function defined in World Code. If your
   world reports that `dragonPulse` is not defined, use the chat word or the item.
 - **Roofs and walls.** Under a roof the beams stop below it. The dragon itself
@@ -243,6 +261,7 @@ It cannot show how the game draws it. Things to look at first in your world:
 | `dragon_pulse/studio/build_scene.mjs` | Writes the scene and checks it with the studio's code |
 | `dragon_pulse/tools/sim.mjs` | The test run: `node dragon_pulse/tools/sim.mjs --target` |
 | `dragon_pulse/tools/goodra_check.mjs` | The test of Goodra: `node dragon_pulse/tools/goodra_check.mjs` |
-| `dragon_pulse/tools/render_model.py` | Draws Goodra (needs Pillow) |
+| `dragon_pulse/tools/dragon_model.mjs` | Lays the dragon out straight for a drawing |
+| `dragon_pulse/tools/render_model.py` | Draws Goodra and the dragon (needs Pillow) |
 | `dragon_pulse/tools/render.py` | Draws the test run (needs Pillow) |
 | `dragon_pulse/preview/` | The drawings |

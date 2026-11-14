@@ -1,7 +1,6 @@
 var DP_CFG = {
   chat: "!dp",
   item: "",
-  cooldown: 8,
   range: 40,
   rise: 16,
   lean: 0.3,
@@ -14,7 +13,8 @@ var DP_CFG = {
   sounds: true,
   hideDist: 96,
   maxCasts: 3,
-  maxMeshes: 70,
+  detail: 3,
+  maxMeshes: 130,
 }
 
 var DP_COL = {
@@ -41,33 +41,76 @@ var DP_MESH = {
     ["skull", 1.5, 1.25, 1.6, "white", 0, 0, 0],
     ["snout", 1.05, 0.6, 1.3, "white", 1.35, 0, 0.18],
     ["jaw", 0.9, 0.26, 1.35, "pink", 1.2, 0, -0.58],
-    ["hornL", 0.26, 0.26, 1.2, "violet", -1.05, -0.5, 0.8],
-    ["hornR", 0.26, 0.26, 1.2, "violet", -1.05, 0.5, 0.8],
-    ["crest", 0.3, 0.5, 1.0, "orange", -0.35, 0, 0.85],
-    ["eyeL", 0.3, 0.3, 0.3, "cyan", 0.5, -0.78, 0.25],
-    ["eyeR", 0.3, 0.3, 0.3, "cyan", 0.5, 0.78, 0.25],
-    ["finL", 0.2, 0.7, 0.95, "blue", -0.45, -0.98, -0.05],
-    ["finR", 0.2, 0.7, 0.95, "blue", -0.45, 0.98, -0.05],
+    ["horn", 0.26, 0.26, 1.2, "violet", -1.05, 0.5, 0.8, "m"],
+    ["crest", 0.3, 0.5, 1, "orange", -0.35, 0, 0.85],
+    ["eye", 0.3, 0.3, 0.3, "cyan", 0.5, 0.78, 0.25, "m"],
+    ["fin", 0.2, 0.7, 0.95, "blue", -0.45, 0.98, -0.05, "m"],
+    ["brow", 0.5, 0.2, 0.75, "violet", 0.5, 0.55, 0.68, "m2"],
+    ["fangUp", 0.14, 0.32, 0.14, "white", 1.85, 0.36, -0.24, "m2"],
+    ["fangLow", 0.12, 0.26, 0.12, "white", 1.72, 0.3, -0.34, "m2"],
+    ["throat", 0.6, 0.3, 0.45, "gold", 0.72, 0, -0.28, "2"],
+    ["whisker", 0.12, 0.12, 1.3, "cyan", 1.05, 0.82, -0.05, "m2"],
+    ["antler", 0.2, 0.6, 0.2, "violet", -1.35, 0.5, 1.15, "m2"],
+    ["mane", 0.9, 0.5, 0.5, "pink", -1, 0, 0.55, "2"],
+    ["pupil", 0.12, 0.2, 0.2, "white", 0.56, 0.92, 0.25, "m3"],
+    ["teeth", 0.08, 0.14, 0.9, "white", 1.2, 0.44, -0.18, "m3"],
+    ["tongue", 0.4, 0.1, 0.95, "orange", 1.15, 0, -0.4, "3"],
+    ["nostril", 0.2, 0.16, 0.2, "pink", 1.92, 0.3, 0.5, "m3"],
+    ["whiskerTip", 0.1, 0.1, 1.2, "blue", -0.1, 1.15, -0.2, "m3"],
+    ["hornTip", 0.18, 0.18, 0.6, "pink", -1.9, 0.5, 0.95, "m3"],
+    ["maneBack", 0.6, 0.45, 0.5, "violet", -1.45, 0, 0.78, "3"],
+    ["cheekFrill", 0.14, 0.5, 0.6, "pink", -0.95, 1, 0.25, "m3"],
+    ["chin", 0.3, 0.3, 0.45, "violet", 1, 0, -0.82, "3"],
+    ["beard", 0.2, 0.45, 0.2, "violet", 0.68, 0, -0.98, "3"],
   ],
 
   body: [
     ["neck1", 1.3, 1.15, 1.1, "white", -1.35, 0, 0],
+    ["spine1", 0.25, 0.6, 0.8, "orange", -1.35, 0, 0.85, "2"],
+    ["belly1", 0.91, 0.14, 0.95, "cyan", -1.35, 0, -0.61, "2"],
+    ["patch1", 0.1, 0.52, 0.6, "pink", -1.3, 0.68, 0.09, "m3"],
     ["neck2", 1.25, 1.1, 1.1, "pink", -2.5, 0, 0],
-    ["spine1", 0.25, 0.6, 0.8, "orange", -2.5, 0, 0.8],
+    ["spine2", 0.25, 0.57, 0.8, "violet", -2.5, 0, 0.81],
+    ["belly2", 0.88, 0.14, 0.95, "cyan", -2.5, 0, -0.59, "2"],
+    ["patch2", 0.1, 0.5, 0.6, "blue", -2.45, 0.66, 0.09, "m3"],
+    ["sideFin2", 0.9, 0.12, 0.7, "blue", -2.6, 1.04, -0.1, "m2"],
     ["back1", 1.2, 1.05, 1.1, "white", -3.65, 0, 0],
-    ["back2", 1.15, 1.0, 1.1, "violet", -4.8, 0, 0],
+    ["spine3", 0.25, 0.55, 0.8, "cyan", -3.65, 0, 0.78, "2"],
+    ["belly3", 0.84, 0.14, 0.95, "cyan", -3.65, 0, -0.57, "2"],
+    ["patch3", 0.1, 0.47, 0.6, "orange", -3.6, 0.63, 0.08, "m3"],
+    ["back2", 1.15, 1, 1.1, "violet", -4.8, 0, 0],
+    ["spine4", 0.25, 0.52, 0.8, "pink", -4.8, 0, 0.74, "2"],
+    ["belly4", 0.8, 0.14, 0.95, "cyan", -4.8, 0, -0.54, "2"],
+    ["patch4", 0.1, 0.45, 0.6, "violet", -4.75, 0.6, 0.08, "m3"],
     ["back3", 1.1, 0.95, 1.1, "white", -5.95, 0, 0],
-    ["spine2", 0.25, 0.55, 0.8, "violet", -5.95, 0, 0.72],
-    ["back4", 1.0, 0.9, 1.1, "blue", -7.1, 0, 0],
+    ["spine5", 0.25, 0.49, 0.8, "blue", -5.95, 0, 0.7],
+    ["belly5", 0.77, 0.14, 0.95, "cyan", -5.95, 0, -0.52, "2"],
+    ["patch5", 0.1, 0.43, 0.6, "pink", -5.9, 0.58, 0.08, "m3"],
+    ["back4", 1, 0.9, 1.1, "blue", -7.1, 0, 0],
+    ["spine6", 0.25, 0.47, 0.8, "orange", -7.1, 0, 0.67, "2"],
+    ["belly6", 0.7, 0.14, 0.95, "cyan", -7.1, 0, -0.49, "2"],
+    ["sideFin6", 0.9, 0.12, 0.7, "blue", -7.2, 0.92, -0.1, "m2"],
     ["back5", 0.95, 0.85, 1.1, "white", -8.25, 0, 0],
+    ["spine7", 0.25, 0.44, 0.8, "violet", -8.25, 0, 0.63, "2"],
+    ["belly7", 0.66, 0.14, 0.95, "cyan", -8.25, 0, -0.46, "2"],
+    ["patch7", 0.1, 0.38, 0.6, "blue", -8.2, 0.51, 0.07, "m3"],
     ["back6", 0.85, 0.75, 1.1, "orange", -9.4, 0, 0],
-    ["spine3", 0.22, 0.5, 0.7, "cyan", -9.4, 0, 0.6],
+    ["spine8", 0.24, 0.39, 0.8, "cyan", -9.4, 0, 0.55],
+    ["belly8", 0.59, 0.14, 0.95, "cyan", -9.4, 0, -0.41, "2"],
     ["tail1", 0.75, 0.65, 1.1, "white", -10.55, 0, 0],
+    ["spine9", 0.21, 0.34, 0.6, "pink", -10.55, 0, 0.48, "2"],
+    ["belly9", 0.52, 0.14, 0.95, "cyan", -10.55, 0, -0.36, "2"],
+    ["patch9", 0.1, 0.29, 0.6, "orange", -10.5, 0.41, 0.05, "m3"],
     ["tail2", 0.62, 0.55, 1.1, "pink", -11.65, 0, 0],
+    ["spine10", 0.18, 0.29, 0.6, "blue", -11.65, 0, 0.41, "2"],
+    ["belly10", 0.43, 0.14, 0.95, "cyan", -11.65, 0, -0.32, "2"],
     ["tail3", 0.5, 0.45, 1.05, "white", -12.7, 0, 0],
-    ["tail4", 0.38, 0.35, 1.0, "violet", -13.7, 0, 0],
-    ["tailFinL", 0.7, 0.14, 0.8, "blue", -14.4, -0.4, 0],
-    ["tailFinR", 0.7, 0.14, 0.8, "blue", -14.4, 0.4, 0],
+    ["spine11", 0.15, 0.23, 0.6, "orange", -12.7, 0, 0.33, "2"],
+    ["tail4", 0.38, 0.35, 1, "violet", -13.7, 0, 0],
+    ["spine12", 0.12, 0.18, 0.6, "violet", -13.7, 0, 0.26, "2"],
+    ["tailFin", 0.7, 0.14, 0.8, "blue", -14.4, 0.4, 0, "m"],
+    ["tailTop", 0.14, 0.6, 0.7, "pink", -14.35, 0, 0.3, "2"],
+    ["tailTip", 0.2, 0.2, 0.6, "white", -15, 0, 0, "3"],
   ],
 
   flare: [
@@ -145,26 +188,47 @@ var dpLifeforms = () => api.getMobIds().concat(api.getPlayerIds())
 
 var dpCasts = []
 var dpMeshes = 0
-var dpClock = 0
-var dpLast = {}
+var dpRowCache = {}
+
+var dpFlag = (row, flag) => (row[8] || "").indexOf(flag) >= 0
+
+function dpRows(name) {
+  var key = name + DP_CFG.detail
+  if (dpRowCache[key]) return dpRowCache[key]
+  var out = []
+  DP_MESH[name].forEach((r) => {
+    var level = dpFlag(r, "3") ? 3 : dpFlag(r, "2") ? 2 : 1
+    if (level > DP_CFG.detail) return
+    if (!dpFlag(r, "m")) return out.push(r)
+    var right = r.slice()
+    var left = r.slice()
+    right[0] = r[0] + "R"
+    left[0] = r[0] + "L"
+    left[6] = -r[6]
+    out.push(right, left)
+  })
+  if (name === "body") out.sort((a, b) => b[5] - a[5])
+  return (dpRowCache[key] = out)
+}
 
 function dpBox(row, tint, k) {
   var col = DP_COL[row[4] === "tint" ? tint : row[4]]
-  var lit = row[8] === "lit"
+  var lit = dpFlag(row, "lit")
   return {
     width: row[1] * k,
     height: row[2] * k,
     depth: row[3] * k,
     diffuseColor: lit ? col : [0, 0, 0],
     emissiveColor: lit ? col.map((v) => v * 0.55) : col,
-    autoRotate: row[8] === "spin",
+    autoRotate: dpFlag(row, "spin"),
     hideDist: DP_CFG.hideDist,
   }
 }
 
 function dpPut(c, key, row, tint, pos, f) {
   var id = c.m[key]
-  if (!id) {
+  var fresh = !id
+  if (fresh) {
     if (dpMeshes >= DP_CFG.maxMeshes) return
     id = api.attemptCreateMeshEntity("Box", dpBox(row, tint, 1))
     if (!id) return
@@ -172,13 +236,13 @@ function dpPut(c, key, row, tint, pos, f) {
     dpMeshes++
   }
   api.setPosition(id, pos[0], pos[1], pos[2])
-  if (f && DP_CFG.rotate && row[8] !== "spin") {
+  if (f && DP_CFG.rotate && !dpFlag(row, "spin") && (fresh || (c.t + key.length) % 2 === 0)) {
     api.setEntityRotation(id, -Math.asin(Math.max(-1, Math.min(1, f[1]))), Math.atan2(f[0], f[2]), 0)
   }
 }
 
 function dpGroup(c, name, tag, tint, pos, B, k, still) {
-  var rows = DP_MESH[name]
+  var rows = dpRows(name)
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i]
     dpPut(c, tag + r[0], r, tint, dpAt(pos, B, r[5] * k, r[6] * k, r[7] * k), still ? null : B[0])
@@ -186,7 +250,7 @@ function dpGroup(c, name, tag, tint, pos, B, k, still) {
 }
 
 function dpResize(c, name, tag, tint, k) {
-  DP_MESH[name].forEach((r) => {
+  dpRows(name).forEach((r) => {
     var id = c.m[tag + r[0]]
     if (id) api.updateMeshEntity(id, "Box", dpBox(r, tint, k))
   })
@@ -204,7 +268,7 @@ function dpDrop(c, tag) {
 }
 
 function dpBody(c) {
-  var rows = DP_MESH.body
+  var rows = dpRows("body")
   var P = c.path
   var j = P.length - 1
   var walked = 0
@@ -396,7 +460,7 @@ var DP_PHASE = [
     if (c.t === 0) dpDrop(c, "blast_")
     var out = 1 - Math.pow(1 - Math.min(1, (c.t + 1) / 14), 2)
     var k = c.t < 18 ? 1 : c.t < 23 ? 0.65 : 0.35
-    var rows = DP_MESH.smoke
+    var rows = dpRows("smoke")
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i]
       dpPut(c, "smoke_" + r[0], r, "", dpAt(goal, c.B, r[5] * out, r[6] * out, 0.3 + r[7] * out + c.t * 0.03))
@@ -460,11 +524,6 @@ function dpPick(casterId, eye, f) {
 }
 
 function dragonPulse(playerId, eye, dir) {
-  var wait = DP_CFG.cooldown * 20 - (dpClock - (dpLast[playerId] === undefined ? -1e9 : dpLast[playerId]))
-  if (wait > 0) {
-    api.sendMessage(playerId, "Dragon Pulse is ready in " + Math.ceil(wait / 20) + " s", { color: "violet" })
-    return false
-  }
   if (dpCasts.length >= DP_CFG.maxCasts) return false
   var face = eye ? { camPos: eye, dir: dir } : api.getPlayerFacingInfo(playerId)
   var f = dpNorm(face.dir)
@@ -486,14 +545,12 @@ function dragonPulse(playerId, eye, dir) {
     goal: dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5)),
     path: [],
   }
-  dpLast[playerId] = dpClock
   dpCasts.push(c)
   return true
 }
 globalThis.dragonPulse = dragonPulse
 
 function dpTick() {
-  dpClock++
   for (var i = dpCasts.length - 1; i >= 0; i--) {
     var c = dpCasts[i]
     try {
