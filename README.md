@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 36,666 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 46,882 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 52,915 |
+| `world_code.js` | World Code | 38,964 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 49,180 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 55,213 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -146,7 +146,7 @@ the table columns mean is written on this page instead.
 
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|
-| circle | The summoning circle draws itself ring by ring; the star in it turns | 83 meshes in 13 rings: two outer rings with tick marks, an octagon, a turning six-pointed star, a hexagon and a square turning the other way, four spikes, six floating runes, six standing crystals, a halo above and a core; rising sparks | 0.0–2.5 |
+| circle | The summoning circle draws itself ring by ring; the star in it turns | 104 meshes in 17 rings: a smooth 16-sided outer band with a thin inner band, dashes and dots between them like runes, an octagon, a turning six-pointed star whose points touch it, a hexagon and a square turning the other way, eight spikes outside, six pillars on the band with a turning cube floating over each, two halos above turning against each other, and a core over a turning plate; rising sparks | 0.0–2.5 |
 | emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 143 meshes: a 55-part head, a 58-part body that follows the head's path, five cloud orbs beside it (20 meshes) and a trail of 10 pieces behind the tail that get thinner and darker; particles that fade out mark where it flew | 2.5–3.15 |
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
@@ -234,7 +234,8 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 - tick: when the ring appears, in ticks (20 per second) after the cast.
 - spin: how far the ring turns each tick; 0 stands still.
 - flag `spin`: the boxes turn by themselves (the runes and the core). Flag `r`:
-  the boxes point away from the middle instead of along the ring.
+  the boxes point away from the middle instead of along the ring. Flag `k`: the
+  ring stays while the dragon comes out.
 
 ![The dragon laid out straight](dragon_pulse/preview/dragon.png)
 
@@ -243,11 +244,43 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 *Drawn outside the game with plain light so the parts can be told apart. In the
 game they glow.*
 
-The move stays under 400 meshes. One cast holds at most 192 meshes at once (circle and dragon together, while it
-comes out); two dragons about to merge hold up to 371. To fit, three
-rings of the circle (the thin outer ring, the tick marks and the four spikes) are
-removed as soon as the dragon starts to come out. `maxMeshes` is 399, and the
+The move stays under 400 meshes. One cast holds at most 173 meshes at once (circle and dragon together, while it
+comes out); two dragons about to merge hold up to 333. To fit, the
+circle is cut down to 36 meshes (outer band, star, pillars and core: the rings
+with flag `k`) at the moment the dragon starts to come out. `maxMeshes` is 399, and the
 meshes of a standing Goodra count toward it, so the code never asks for a 400th. All are deleted when the move ends.
+
+## Node meshes (an experiment, off by default)
+
+A node mesh is a box that hangs on another entity and moves with it. It is not a
+mesh entity, so it does not count toward the limit. With them on, each rigid
+group becomes one mesh entity that carries the rest:
+
+| | Mesh entities | With node meshes |
+|---|---|---|
+| Summoning circle | 104 | 7 (one per turning speed) carrying 104 node meshes |
+| Dragon head | 55 | 1 carrying 55 |
+| One cast at most | 173 | 95 |
+
+The body, orbs and trail bend along the flight path piece by piece, so they stay
+mesh entities. With node meshes on, the whole circle stays while the dragon comes
+out, and a cast makes about a third fewer api calls per tick.
+
+Type `!dp nodes box` to turn it on, `!dp nodes person` for the second way, and
+`!dp nodes off` to go back. Or set `nodes` in `DP_CFG` to `"box"` or `"person"`.
+
+**This is not tested in the game and may show nothing.** The documentation only
+describes node meshes on a player's six body nodes. Two things are unknown:
+
+- Whether a Box mesh entity has a node to hang things on. `box` uses a tiny box
+  as the carrier and hangs everything on its `TorsoNode`. If the circle and the
+  head are invisible, try `person`: the carrier is then a `Person` mesh, which
+  has the body nodes for sure, but you will see a person standing in the circle
+  and one flying where the head is.
+- Whether one node holds many meshes. If the game keeps only one, you see a
+  single piece of the circle and of the head.
+
+If neither way works, leave it off: the move then runs as before.
 
 ## The particles
 
@@ -402,7 +435,7 @@ It cannot show how the game draws it. Things to look at first in your world:
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
   If parts of the dragon are missing, lower `detail`.
 - **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
-  together and share `maxMeshes` (399). Two dragons need 371; a third at the same time is cut
+  together and share `maxMeshes` (399). Two dragons need 333; a third at the same time is cut
   short.
 - **Speed.** At full detail one dragon makes up to 290 api calls per tick, two
   up to 540. If the game stutters or stops the script, lower `detail`.
@@ -437,4 +470,4 @@ It cannot show how the game draws it. Things to look at first in your world:
 | `dragon_pulse/tools/dragon_model.mjs` | Lays the dragon out straight for a drawing |
 | `dragon_pulse/tools/render_model.py` | Draws Goodra and the dragon (needs Pillow) |
 | `dragon_pulse/tools/render.py` | Draws the test run (needs Pillow) |
-| `dragon_pulse/preview/` | The drawings |
+| `dragon_pulse/preview/` | The drawings (`circle.png` is the summoning circle alone) |

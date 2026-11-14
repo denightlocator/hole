@@ -27,6 +27,7 @@ var DP_CFG = {
   maxCasts: 4,
   detail: 3,
   maxMeshes: 399,
+  nodes: "",
 }
 
 var DP_COL = {
@@ -43,19 +44,23 @@ var DP_COL = {
 }
 
 var DP_CIRCLE = [
-  [12, 3.6, 1.95, 0.22, 0.06, "purple", 0, 0, 0, 0],
-  [12, 4.05, 2.18, 0.08, 0.06, "lilac", 15, 0, 4, 0],
-  [12, 3.83, 0.36, 0.1, 0.06, "magenta", 15, 0, 8, 0, "r"],
-  [8, 2.95, 2.45, 0.1, 0.06, "magenta", 22.5, 0, 12, 0],
-  [3, 1.48, 5.1, 0.12, 0.06, "cyan", 0, 0.02, 16, 0.05],
-  [3, 1.48, 5.1, 0.12, 0.06, "cyan", 60, 0.02, 16, 0.05],
-  [6, 0.9, 1.04, 0.14, 0.06, "magenta", 0, 0.04, 22, -0.08],
-  [4, 0.42, 0.84, 0.1, 0.06, "lilac", 0, 0.06, 26, 0.12],
-  [4, 4.75, 1.3, 0.2, 0.06, "magenta", 0, 0, 30, 0, "r"],
-  [6, 3.28, 0.3, 0.3, 0.3, "lilac", 30, 0.45, 34, 0, "spin"],
-  [6, 3.28, 0.16, 0.16, 1.3, "purple", 0, 0.65, 38, 0],
-  [6, 2.1, 2.42, 0.1, 0.08, "cyan", 0, 2.4, 42, -0.1],
-  [1, 0, 0.5, 0.5, 0.5, "white", 0, 0.7, 44, 0, "spin"],
+  [16, 3.6, 1.46, 0.24, 0.06, "purple", 0, 0, 0, 0, "k"],
+  [16, 3.2, 1.3, 0.08, 0.06, "lilac", 11.25, 0, 3, 0],
+  [8, 3.4, 0.3, 0.1, 0.07, "magenta", 0, 0.01, 6, 0, "r"],
+  [8, 3.4, 0.14, 0.14, 0.07, "cyan", 22.5, 0.01, 9, 0],
+  [8, 2.6, 2.16, 0.1, 0.06, "magenta", 22.5, 0, 12, 0],
+  [3, 1.3, 4.5, 0.12, 0.06, "cyan", 0, 0.02, 16, 0.05, "k"],
+  [3, 1.3, 4.5, 0.12, 0.06, "cyan", 60, 0.02, 16, 0.05, "k"],
+  [6, 0.9, 1.04, 0.14, 0.06, "magenta", 0, 0.04, 21, -0.08],
+  [4, 0.42, 0.84, 0.1, 0.06, "lilac", 0, 0.06, 24, 0.12],
+  [4, 4.7, 1.5, 0.2, 0.06, "magenta", 0, 0, 27, 0, "r"],
+  [4, 4.35, 0.8, 0.12, 0.06, "lilac", 45, 0, 29, 0, "r"],
+  [6, 3.6, 0.2, 0.2, 1.2, "purple", 30, 0.6, 32, 0, "k"],
+  [6, 3.6, 0.3, 0.3, 0.3, "lilac", 30, 1.5, 35, 0, "spink"],
+  [6, 2.1, 2.42, 0.1, 0.08, "cyan", 0, 2.4, 38, -0.1],
+  [4, 1.1, 2.2, 0.1, 0.08, "magenta", 0, 3.4, 41, 0.14],
+  [1, 0, 0.5, 0.5, 0.5, "white", 0, 0.7, 44, 0, "spink"],
+  [1, 0, 1.1, 1.1, 0.08, "magenta", 0, 0.08, 44, 0.2, "k"],
 ]
 
 var DP_SND = {
@@ -470,18 +475,57 @@ function dpShock(c, tag, at, rad, thick, col) {
   }
 }
 
+function dpCarrier(c, key, pos, f, turn) {
+  var id = c.m[key]
+  if (!id) {
+    if (dpMeshes + dpOther() >= DP_CFG.maxMeshes) return
+    var tiny = { width: 0.05, height: 0.05, depth: 0.05, emissiveColor: DP_COL.white, hideDist: DP_CFG.hideDist }
+    id = DP_CFG.nodes === "person" ? api.attemptCreateMeshEntity("Person", { size: 1, hideDist: DP_CFG.hideDist }) : api.attemptCreateMeshEntity("Box", tiny)
+    if (!id) return
+    c.m[key] = id
+    c.fresh = true
+    dpMeshes++
+  } else c.fresh = false
+  api.setPosition(id, pos[0], pos[1], pos[2])
+  if (f) api.setEntityRotation(id, -Math.asin(Math.max(-1, Math.min(1, f[1]))), Math.atan2(f[0], f[2]), 0)
+  else api.setEntityRotation(id, 0, turn || 0, 0)
+  return id
+}
+
+var dpHang = (id, row, k, off, yaw) => api.updateEntityNodeMeshAttachment(id, "TorsoNode", "Box", dpBox(row, "", k), off, [0, yaw, 0])
+
+function dpRigid(c, name, tag, pos, B, k) {
+  if (c.nk !== k) dpDrop(c, tag)
+  c.nk = k
+  var id = dpCarrier(c, tag + "c", pos, B[0])
+  if (id && c.fresh) dpRows(name).forEach((r) => dpHang(id, r, k, [r[6] * k, r[7] * k, r[5] * k], 0))
+}
+
 function dpCircle(c) {
+  var node = DP_CFG.nodes
   for (var a = 0; a < DP_CIRCLE.length; a++) {
     var r = DP_CIRCLE[a]
     var age = c.ct - r[8]
-    if (age < 0 || (age > 0 && !r[9])) continue
+    var row = DP_RING[a]
+    if (age < 0) continue
     if (age === 0) dpSound("ring", c.home, 0.8 + a * 0.07)
-    var radial = dpFlag(DP_RING[a], "r")
+    var radial = dpFlag(row, "r")
+    if (node) {
+      var id = dpCarrier(c, "ringc" + r[9], c.home, null, -r[9] * c.ct)
+      if (!id || c.hung[a]) continue
+      c.hung[a] = 1
+      for (var n = 0; n < r[0]; n++) {
+        var ang = (r[6] * Math.PI) / 180 + (n * 2 * Math.PI) / r[0] - r[9] * r[8]
+        dpHang(id, row, 1, [Math.cos(ang) * r[1], r[7], Math.sin(ang) * r[1]], radial ? Math.atan2(Math.cos(ang), Math.sin(ang)) : Math.atan2(-Math.sin(ang), Math.cos(ang)))
+      }
+      continue
+    }
+    if ((age > 0 && !r[9]) || (c.ph && !dpFlag(row, "k"))) continue
     for (var n = 0; n < r[0]; n++) {
       var ang = (r[6] * Math.PI) / 180 + (n * 2 * Math.PI) / r[0] + r[9] * age
       var x = Math.cos(ang)
       var z = Math.sin(ang)
-      dpPut(c, "ring" + a + "_" + n, DP_RING[a], "", [c.home[0] + x * r[1], c.home[1] + r[7], c.home[2] + z * r[1]], radial ? [x, 0, z] : [-z, 0, x])
+      dpPut(c, "ring" + a + "_" + n, row, "", [c.home[0] + x * r[1], c.home[1] + r[7], c.home[2] + z * r[1]], radial ? [x, 0, z] : [-z, 0, x])
     }
   }
 }
@@ -567,7 +611,8 @@ function dpFly(c, pos) {
   var k = c.k
   c.path.push(pos)
   if (c.path.length > 60) c.path.shift()
-  dpGroup(c, "head", "head_", "", pos, dpBasis(f), k)
+  if (DP_CFG.nodes) dpRigid(c, "head", "head_", pos, dpBasis(f), k)
+  else dpGroup(c, "head", "head_", "", pos, dpBasis(f), k)
   dpAlong(c, "body")
   dpAlong(c, "tail")
   var skin = DP_SKIN[c.t % DP_SKIN.length]
@@ -622,12 +667,8 @@ var DP_PHASE = [
       dpSound("emerge", c.home)
     }
     c.ct = c.T + c.t
+    if (c.t === 0 && !DP_CFG.nodes) DP_RING.forEach((row, a) => dpFlag(row, "k") || dpDrop(c, "ring" + a + "_"))
     dpCircle(c)
-    if (c.t === 3) {
-      dpDrop(c, "ring1_")
-      dpDrop(c, "ring2_")
-      dpDrop(c, "ring8_")
-    }
     if (c.t === 7) dpDrop(c, "pillar_")
     dpFx("mote", c.home, 6, 2.6, "magenta", "lilac", [0, 1, 0])
     dpFx("streak", c.home, 4, 1.2, "", "", [0, 1, 0], h * 1.2)
@@ -874,6 +915,7 @@ function dragonPulse(playerId, eye, dir) {
     t: 0,
     m: {},
     k: 1,
+    hung: {},
     B: dpBasis(flat),
     home: home,
     at: home,
@@ -949,7 +991,14 @@ tick = () => {
 }
 
 onPlayerChat = (playerId, message) => {
-  if (DP_CFG.chat && message.trim().toLowerCase() === DP_CFG.chat) return dragonPulse(playerId), false
+  var words = message.trim().toLowerCase().split(/\s+/)
+  if (!DP_CFG.chat || words[0] !== DP_CFG.chat) return
+  if (words[1] === "nodes") {
+    DP_CFG.nodes = words[2] === "box" || words[2] === "person" ? words[2] : ""
+    api.sendMessage(playerId, "Dragon Pulse node meshes: " + (DP_CFG.nodes || "off"), { color: "orange" })
+  } else if (!words[1]) dragonPulse(playerId)
+  else return
+  return false
 }
 
 onPlayerAltAction = (playerId) => {

@@ -31,7 +31,7 @@ const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object
 function makeApi(mob) {
   const meshes = new Map()
   let next = 1
-  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [], sounds: new Set(), looks: new Set(), refused: 0, hurtAt: [], now: 0 }
+  const s = { meshes, calls: 0, particles: [], peak: 0, hurt: [], messages: [], errors: [], dead: [], sounds: new Set(), looks: new Set(), refused: 0, hung: 0, hurtAt: [], now: 0 }
   const pos = { caster: [0.5, 10, 0.5], other: [20.5, 10, 0.5], dummy: [-14.5, 10, 12.5] }
   const eyes = { caster: { camPos: [0.5, 11.6, 0.5], dir: [0.1, 0.12, 0.99] }, other: { camPos: [20.5, 11.6, 0.5], dir: [-0.1, 0.1, 0.99] } }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
@@ -51,17 +51,27 @@ function makeApi(mob) {
     attemptCreateMeshEntity: (type, o) => {
       s.calls++
       if (meshes.size >= 399) { s.refused++; return null } // the limit: under 400
-      need(type === 'Box', 'mesh type ' + type)
-      need(Object.keys(o).every((k) => ALLOWED_BOX.includes(k)), 'unknown Box option')
-      need(finite(o) && o.width > 0 && o.height > 0 && o.depth > 0, 'bad Box size')
+      need(type === 'Box' || type === 'Person', 'mesh type ' + type)
+      if (type === 'Box') {
+        need(Object.keys(o).every((k) => ALLOWED_BOX.includes(k)), 'unknown Box option')
+        need(finite(o) && o.width > 0 && o.height > 0 && o.depth > 0, 'bad Box size')
+      }
       const id = 'm' + next++
-      meshes.set(id, { o, p: null, r: null })
+      meshes.set(id, { o: type === 'Box' ? o : { width: 0.05, height: 0.05, depth: 0.05 }, p: null, r: null, hung: [] })
       s.peak = Math.max(s.peak, meshes.size)
       return id
     },
     updateMeshEntity: (id, type, o) => { s.calls++; need(meshes.has(id), 'update of a deleted mesh'); meshes.get(id).o = o },
     setPosition: (id, x, y, z) => { s.calls++; need(meshes.has(id) && finite([x, y, z]), 'bad setPosition'); meshes.get(id).p = [x, y, z] },
     setEntityRotation: (id, x, y, z) => { s.calls++; need(meshes.has(id) && finite([x, y, z]), 'bad rotation'); meshes.get(id).r = [x, y, z] },
+    // node meshes: kept on the entity they hang on, and gone when it is deleted
+    updateEntityNodeMeshAttachment: (id, node, type, o, off, rot) => {
+      s.calls++
+      need(meshes.has(id) && node === 'TorsoNode' && type === 'Box', 'bad node mesh')
+      need(Object.keys(o).every((k) => ALLOWED_BOX.includes(k)) && finite([o, off, rot]) && o.width > 0 && o.height > 0 && o.depth > 0 && off.length === 3 && rot.length === 3, 'bad node mesh option')
+      if (meshes.has(id)) meshes.get(id).hung.push({ o, off, rot })
+      s.hung++
+    },
     deleteMeshEntity: (id) => { s.calls++; need(meshes.delete(id), 'deleted twice') },
     playParticleEffect: (o) => {
       s.calls++
@@ -88,6 +98,14 @@ function load(mob) {
   return { s, g, game }
 }
 
+// Where a node mesh is in the world: its offset turned by the entity it hangs on (pitch, then yaw).
+function place(m, off) {
+  const [rx, ry] = m.r || [0, 0]
+  const y = off[1] * Math.cos(rx) - off[2] * Math.sin(rx)
+  const z = off[1] * Math.sin(rx) + off[2] * Math.cos(rx)
+  return [m.p[0] + off[0] * Math.cos(ry) + z * Math.sin(ry), m.p[1] + y, m.p[2] - off[0] * Math.sin(ry) + z * Math.cos(ry)]
+}
+
 // Runs until every cast has ended; returns one record per tick.
 function run({ s, game }, limit = 600) {
   const frames = []
@@ -98,7 +116,7 @@ function run({ s, game }, limit = 600) {
     const ph = Math.max(...game.dpCasts.map((c) => c.ph))
     game.tick(50)
     worst = Math.max(worst, s.calls - before)
-    frames.push({ t: frames.length, ph, casts: game.dpCasts.length, meshes: [...s.meshes.values()].map((m) => ({ ...m.o, p: m.p, r: m.r })), fx: s.particles.splice(0) })
+    frames.push({ t: frames.length, ph, casts: game.dpCasts.length, meshes: [...s.meshes.values()].flatMap((m) => [{ ...m.o, p: m.p, r: m.r }, ...m.hung.map((h) => ({ ...h.o, p: place(m, h.off), r: [(m.r?.[0] || 0) + h.rot[0], (m.r?.[1] || 0) + h.rot[1], 0], node: true }))]), entities: s.meshes.size, fx: s.particles.splice(0) })
   }
   return { frames, worst }
 }
@@ -123,7 +141,7 @@ const a = run(one)
 const F = a.frames
 const circle = of(F, 0)
 const flat = circle[circle.length - 1]
-check(flat.meshes.length === 83 && Math.max(...ys(flat)) < 13 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
+check(flat.meshes.length === 104 && Math.max(...ys(flat)) < 14 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
 const out = of(F, 1)
 check(out[0].t >= 40, `the dragon comes out after ${(out[0].t / 20).toFixed(2)} s`)
 check(Math.min(...ys(out[2])) < 10 && Math.max(...ys(out[out.length - 1])) > 10 + 14, `it comes up through the floor and dashes ${(Math.max(...ys(out[out.length - 1])) - 10).toFixed(1)} blocks into the air`)
@@ -173,6 +191,26 @@ check(two.s.peak < 400 && two.s.refused === 0, `two dragons together stay under 
 check(b.worst <= 580, `most api calls in one tick: ${b.worst}`)
 console.log('  Phases: ' + phases(M))
 
-if (dumpAt >= 0) fs.writeFileSync(args[dumpAt + 1], JSON.stringify(dumpMerge ? M : F))
+console.log('Node meshes (!dp nodes box)')
+const nd = load(withTarget)
+check(nd.game.onPlayerChat('caster', '!dp nodes box') === false && nd.game.DP_CFG.nodes === 'box' && nd.s.messages.length === 1, '!dp nodes box turns them on and says so')
+nd.game.onPlayerChat('caster', '!dp')
+const c = run(nd)
+const N = c.frames
+const nc = of(N, 0)
+const nflat = nc[nc.length - 1]
+check(nflat.entities === 7 && nflat.meshes.length === 104 + 7, `the circle is ${nflat.entities} mesh entities carrying ${nflat.meshes.length - nflat.entities} node meshes`)
+const same = (a, b) => a.every((m) => b.some((o) => Math.hypot(...m.p.map((v, i) => v - o.p[i])) < 0.02 && Math.abs(m.width - o.width) < 1e-6))
+check(same(flat.meshes, nflat.meshes), 'every piece is where the mesh-entity circle has it')
+const nfly = of(N, 3)
+const nlast = nfly[nfly.length - 1]
+check(nlast.entities === 143 - 55 + 1, `the dragon is ${nlast.entities} mesh entities: its 55-part head is one entity`)
+const headAt = (f) => f.meshes.filter((m) => m.width > 1.39 && m.width < 1.41 && m.depth > 1.39 && m.depth < 1.41)[0]
+check(Math.hypot(...headAt(nlast).p.map((v, i) => v - headAt(last).p[i])) < 0.02 && same(last.meshes, nlast.meshes), 'the head sits and points the same as without node meshes')
+check(nd.s.errors.length === 0 && nd.s.meshes.size === 0 && nd.game.held() === 0, 'every call is well formed and everything is deleted at the end' + [...new Set(nd.s.errors)].join('; '))
+console.log(`  most mesh entities at once: ${nd.s.peak} (without node meshes ${one.s.peak}); node meshes attached: ${nd.s.hung}; most api calls in one tick: ${c.worst}`)
+check(nd.game.onPlayerChat('caster', '!dp nodes off') === false && nd.game.DP_CFG.nodes === '', '!dp nodes off goes back to mesh entities')
+
+if (dumpAt >= 0) fs.writeFileSync(args[dumpAt + 1], JSON.stringify(args.includes('--nodes') ? N : dumpMerge ? M : F))
 if (fail.length) { console.log(`\n${fail.length} check(s) failed`); process.exit(1) }
 console.log('\nAll checks passed')
