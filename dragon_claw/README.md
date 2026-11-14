@@ -16,26 +16,31 @@ right-click handlers working. Then type `!claw`.
 
 From other code: `dragonClaw(playerId)`.
 
-## What happens (1.7 s)
+## What happens (1.95 s)
 
 | Seconds | Player animation | Meshes and particles | Hit |
 |---|---|---|---|
-| 0.00–0.45 | Right arm goes up and back, then rakes down across the body | Claws appear on both hands (node meshes). Three slash marks are drawn in front, top to bottom, with sparks at the tips | |
-| 0.25–0.70 | | The three marks fly forward as far as `range` (10 blocks), trailing sparks, and burst at the end | Everything they pass, once |
-| 0.45–0.85 | Arms out, full turn in four quarter steps; the legs turn with the body | A ring is drawn round the player as they turn | |
-| 0.75–1.00 | | The ring widens out to `spinRange` (6 blocks); a ring of 18 particles flies outward | Everything the ring reaches, once |
-| 0.85–1.35 | Left arm goes up and back, then rakes down the other way | Three more slash marks, crossing the first | |
-| 1.10–1.55 | | These fly forward too | Everything they pass, once |
-| 1.35–1.50 | Pose is reset | Claws are taken off | |
+| 0.00–0.25 | Slow wind-up: right arm goes up and back | Claws appear on both hands (node meshes) | |
+| 0.25–0.35 | Fast strike: the arm rakes down across the body | From 0.30: three slash marks, 4.8 blocks tall, drawn top to bottom in 2 ticks with sparks at the tips | What stands right in front |
+| 0.35–0.60 | Follow-through, held for a moment | The marks hang for one tick with a flash, then shoot forward, fast at first and slowing down, as far as `range` (10 blocks) | Everything they pass, once |
+| 0.60–1.00 | Arms out, full turn in four quarter steps; the legs turn with the body | A ring is drawn round the player as they turn | |
+| 1.00–1.25 | Second wind-up: left arm goes up and back | The ring widens out to `spinRange` (6 blocks); a ring of 18 particles flies outward | Everything the ring reaches, once |
+| 1.25–1.35 | Fast strike the other way | Three more slash marks, crossing the first | |
+| 1.35–1.80 | Follow-through, then back to rest at 1.60 | These hang and fly forward too | Everything they pass, once |
+| 1.60–1.75 | Pose is reset | Claws are taken off | |
 
-At most 57 mesh entities at once and 82 api calls in one tick.
+At most 57 mesh entities at once and 100 api calls in one tick.
+
+The timing is in two tables: `CLAW_POSE` (first number of each row = the tick
+that pose is reached, 20 ticks a second) for the player, and `CLAW_STEP` for
+the meshes. The marks start one tick into each strike.
 
 ## Range
 
 `range` is how far the claw marks fly (10) and `spinRange` how far the ring
 widens (6). `CLAW_MAX_RANGE` is 15: whatever the two are set to, nothing
-further than 15 blocks is reached or hit. A claw mark hits what is within 2.2
-blocks to either side of its path.
+further than 15 blocks is reached or hit. A claw mark hits what is within 2.8
+blocks to either side of its path (it grows with `slashSize`).
 
 ## The animation
 
@@ -72,6 +77,7 @@ themselves: send the changed file and the numbers can be carried over.
 | `item` | Name of a held item that casts it on right click, `""` for none |
 | `range` | Blocks the claw marks fly forward (15 at most) |
 | `spinRange` | Blocks the ring of the spin widens to (15 at most) |
+| `slashSize` | Size of the claw slashes (1.6; 1 is the old size, 0.5 to 3). The lane they hit is 1.2 + this wide to either side |
 | `damage`, `spinDamage` | Damage of each claw and of the spin |
 | `knockback` | Push on everything that is hit |
 | `lunge` | Push forward on the player at each claw, 0 for none |

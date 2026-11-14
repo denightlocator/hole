@@ -99,10 +99,13 @@ check(frames.length === T.end + 1, `it lasts ${(frames.length / 20).toFixed(2)} 
 check(s.errors.length === 0, 'every api call is well formed ' + [...new Set(s.errors)].join('; '))
 const at = (n) => frames[n].meshes
 const marks = (n) => at(n).filter((m) => Math.abs(m.r[0]) > 0.05 || m.p[1] > 11.4 || m.p[1] < 10.9)
-check(at(T.slash1).length === 15 && at(T.slash1 + 2).length === 42, 'first claw: three slash marks, each 9 bright meshes on 5 wider dark ones, drawn from one end to the other in 3 ticks')
+check(at(T.slash1).length === 24 && at(T.slash1 + 1).length === 42, 'first claw: three slash marks, each 9 bright meshes on 5 wider dark ones, drawn from one end to the other in 2 ticks')
+const tall = (n) => { const y = at(n).filter((m) => Math.abs(m.r[0]) > 0.2).map((m) => m.p[1]); return Math.max(...y) - Math.min(...y) }
+check(tall(T.slash1 + 1) > 3.5 && Math.min(...at(T.slash1 + 1).map((m) => m.p[1])) > 9.9, `each claw is ${tall(T.slash1 + 1).toFixed(1)} blocks tall (lowest point ${(Math.min(...at(T.slash1 + 1).map((m) => m.p[1])) - 10).toFixed(2)} above the floor)`)
 const zs = (n) => at(n).filter((m) => m.depth < 1.2 && m.width < 0.45).map((m) => m.p[2] - 0.5)
 const lead = (n) => Math.max(...at(n).filter((m) => Math.abs(m.r[0]) > 0.2).map((m) => m.p[2] - 0.5))
-check(lead(T.slash1 + 2) < 2.5 && lead(T.drop1 - 1) > 9 && lead(T.drop1 - 1) <= 10, `the marks then fly forward: ${lead(T.slash1 + 2).toFixed(1)} blocks ahead when drawn, ${lead(T.drop1 - 1).toFixed(1)} when they end (range ${s.run.CLAW_CFG.range})`)
+check(lead(T.slash1 + 2) === lead(T.slash1 + 1) && lead(T.slash1 + 4) - lead(T.slash1 + 3) > lead(T.drop1 - 1) - lead(T.drop1 - 2), 'the marks hang for a moment, then shoot off fast and slow down at the end')
+check(lead(T.slash1 + 2) < 3.6 && lead(T.drop1 - 1) > 9 && lead(T.drop1 - 1) <= 10, `the marks then fly forward: ${lead(T.slash1 + 2).toFixed(1)} blocks ahead when drawn, ${lead(T.drop1 - 1).toFixed(1)} when they end (range ${s.run.CLAW_CFG.range})`)
 const ringOf = (n) => at(n).filter((m) => Math.abs(m.r[0]) < 1e-9 && Math.abs(m.p[1] - 11) < 0.2)
 const radius = (n) => Math.max(...ringOf(n).map((m) => Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5)))
 check(ringOf(T.spin + 7).length === 24 && Math.abs(radius(T.spin + 5) - 2.3) < 0.05 && radius(T.dropSpin - 1) > 5.3, `spin: a ring of 16 bright and 8 dark meshes is drawn round the player, then widens from ${radius(T.spin + 5).toFixed(1)} to ${radius(T.dropSpin - 1).toFixed(1)} blocks`)
@@ -125,7 +128,7 @@ check(steps.every((a) => Object.entries(a.schema.nodeAnimations).every(([n, v]) 
 const end = (a, n) => a.schema.nodeAnimations[n]?.timeline[1].rotation ?? [0, 0, 0]
 const start = (a, n) => a.schema.nodeAnimations[n]?.timeline[0].rotation ?? [0, 0, 0]
 check(steps.every((a, i) => !i || NODES.every((n) => [0, 2].every((k) => Math.abs(start(a, n)[k] - end(steps[i - 1], n)[k]) < 0.011) && Math.abs(Math.sin(start(a, n)[1]) - Math.sin(end(steps[i - 1], n)[1])) < 0.02)), 'each one starts in the pose the one before ended in')
-const spin = steps.filter((a) => a.t >= T.spin && a.t < 17)
+const spin = steps.filter((a) => a.t >= T.spin && a.t < T.spin + 8)
 check(spin.length === 4 && spin.every((a, i) => Math.abs(end(a, 'TorsoNode')[1] - start(a, 'TorsoNode')[1] - Math.PI / 2) < 0.02 && Math.abs(end(a, 'LegLeftMesh')[1] - end(a, 'TorsoNode')[1]) < 0.02), 'the spin is four quarter turns of the torso, and the legs turn with it')
 check(Math.min(...steps.map((a) => end(a, 'ArmRightMesh')[0])) < -2.5 && Math.min(...steps.slice(8).map((a) => end(a, 'ArmLeftMesh')[0])) < -2.5, 'the right arm is raised for the first claw and the left arm for the second')
 
