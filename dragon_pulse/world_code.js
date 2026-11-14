@@ -29,6 +29,7 @@ var DP_CFG = {
   maxMeshes: 399,
   nodes: "",
   ringParticles: true,
+  vortex: true,
 }
 
 var DP_COL = {
@@ -695,6 +696,63 @@ function dpFly(c, pos) {
   dpFx("mote", at, 1, 0.1, "crimson", "blood")
   dpSize = 1
   dpFx("ember", c.path[Math.max(0, n - 6 - ((c.t * 5) % 14))], 3, 0.8 * k, skin2[0], "lilac")
+  dpVortex(c)
+}
+
+function dpVortexLook(k) {
+  var a = DP_COL.void
+  var b = DP_COL.wine
+  var d = DP_COL.shade
+  return {
+    texture: "square_particle",
+    minLifeTime: 0.5,
+    maxLifeTime: 0.8,
+    minEmitPower: 0,
+    maxEmitPower: 0.3,
+    minSize: 0.5 * k,
+    maxSize: 1.1 * k,
+    gravity: [0, 0.3, 0],
+    velocityGradients: [{ timeFraction: 0, factor: 1, factor2: 1 }],
+    colorGradients: [
+      { timeFraction: 0, minColor: b.concat(0.9), maxColor: d.concat(0.9) },
+      { timeFraction: 0.4, minColor: a.concat(0.8), maxColor: d.concat(0.8) },
+      { timeFraction: 1, minColor: a.concat(0), maxColor: a.concat(0) },
+    ],
+    blendMode: 1,
+    hideDist: DP_CFG.hideDist,
+    width: 0.5 * k,
+    depth: 0.5 * k,
+    height: 0.5 * k,
+    emitRate: 70,
+    emitterShape: "box",
+  }
+}
+
+function dpVortex(c) {
+  if (!DP_CFG.vortex) return
+  var n = c.path.length
+  for (var i = 0; i < 2; i++) {
+    var key = "vortex" + i
+    if (c.vk !== c.k && c.m[key]) dpDrop(c, key)
+    if (!c.m[key]) {
+      if (dpMeshes + dpOther() >= DP_CFG.maxMeshes) return
+      try {
+        var e = api.attemptCreateMeshEntity("ParticleEmitter", dpVortexLook(c.k))
+        if (!e) return
+        c.m[key] = e
+        dpMeshes++
+      } catch (err) {
+        DP_CFG.vortex = false
+        return
+      }
+    }
+    var j = Math.max(1, n - 1 - (i ? 14 : 5))
+    var B = dpBasis(dpNorm(dpSub(c.path[j], c.path[j - 1])))
+    var ang = c.t * 0.7 + i * Math.PI
+    var at = dpAt(c.path[j], B, 0, Math.cos(ang) * 1.3 * c.k, Math.sin(ang) * 1.3 * c.k)
+    api.setPosition(c.m[key], at[0], at[1], at[2])
+  }
+  c.vk = c.k
 }
 
 function dpSpiral(c, mid, rad, turn) {

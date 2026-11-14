@@ -56,7 +56,7 @@ function makeApi(mob) {
       need(type === 'Box' || type === 'Person' || type === 'ParticleEmitter', 'mesh type ' + type)
       if (type === 'ParticleEmitter') {
         need(EMITTER.every((k) => k in o) && Object.keys(o).every((k) => EMITTER.includes(k) || k === 'hideDist' || k === 'emitterShape') && finite(o), 'bad ParticleEmitter option')
-        need(TEXTURES.includes(o.texture) && o.emitterShape === 'ring' && o.emitRate > 0 && o.width > 0 && o.depth > 0, 'bad ParticleEmitter')
+        need(TEXTURES.includes(o.texture) && ['ring', 'box'].includes(o.emitterShape) && o.emitRate > 0 && o.width > 0 && o.depth > 0, 'bad ParticleEmitter')
         s.emitters++
       }
       if (type === 'Box') {
@@ -108,6 +108,7 @@ function load(mob) {
 // A ring emitter is drawn as small boxes on its circle, so the pictures show it.
 function dots(m) {
   if (!m.ring || !m.p) return []
+  if (m.ring.emitterShape === 'box') return [{ width: 0.9, height: 0.9, depth: 0.9, diffuseColor: [0, 0, 0], emissiveColor: [20, 8, 30], p: m.p, r: [0, 0, 0], particle: true, vortex: true }]
   const n = Math.round(m.ring.emitRate / 4)
   const col = m.ring.colorGradients[1].minColor.slice(0, 3)
   return Array.from({ length: n }, (_, i) => ({ width: 0.18, height: 0.18, depth: 0.18, diffuseColor: [0, 0, 0], emissiveColor: col, p: [m.p[0] + Math.cos(i * 6.2832 / n) * m.ring.width / 2, m.p[1], m.p[2] + Math.sin(i * 6.2832 / n) * m.ring.depth / 2], r: [0, 0, 0], particle: true }))
@@ -158,7 +159,7 @@ const circle = of(F, 0)
 const flat = circle[circle.length - 1]
 const solid = (f) => f.meshes.filter((m) => !m.particle && !m.node)
 check(flat.entities === 88 && Math.max(...ys(flat)) < 18 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.entities} mesh entities, ${(circle.length / 20).toFixed(2)} s)`)
-check(one.s.emitters === 6 && solid(flat).filter((m) => m.p[1] > 10.9 && m.width > 0.06).length === 0 && solid(flat).filter((m) => m.width > 0.06).length === 82, 'the six circles above it are ring particle emitters, one entity each; the main circle is still meshes')
+check(one.s.emitters === 8 && solid(flat).filter((m) => m.p[1] > 10.9 && m.width > 0.06).length === 0 && solid(flat).filter((m) => m.width > 0.06).length === 82, 'the six circles above it are ring particle emitters, one entity each; the main circle is still meshes')
 // particles placed one by one: a single particle at an exact point with an exact speed
 const exact = (f) => f.fx.filter((o) => o.manualEmitCount === 1 && o.pos1.every((v, i) => v === o.pos2[i]) && o.minEmitPower === o.maxEmitPower)
 const smokeF = of(F, 6)
@@ -196,7 +197,7 @@ check(Math.max(...ys(mega[mega.length - 1])) - Math.max(...ys(mega[0])) > 12, `i
 const nuke = of(M, 8)
 const fly = of(F, 3)
 const last = fly[fly.length - 1]
-check(last.meshes.length === 113 && fly.slice(0, -1).every((f) => exact(f).length >= 9) && one.s.looks.has('1,1.6'), `the dragon is ${last.meshes.length} meshes; its cloud orbs and trail are particles now (${exact(fly[2]).length} placed one by one in a tick)`)
+check(solid(last).length === 115 && last.entities === 115 && last.meshes.filter((m) => m.vortex).length === 2 && fly.slice(0, -1).every((f) => exact(f).length >= 9) && one.s.looks.has('1,1.6'), `the dragon is 113 meshes and 2 dark particle emitters that whirl round its body; its cloud orbs and trail are particles now (${exact(fly[2]).length} placed one by one in a tick)`)
 const tall = (f) => Math.max(0, ...f.meshes.map((m) => m.height))
 const bl = of(F, 5)
 check(tall(bl[0]) < tall(bl[4]) && tall(bl[9]) > 40 && bl[9].meshes.length === 9, `a fast beam shoots ${tall(bl[9]).toFixed(0)} blocks up in ${(10 / 20).toFixed(2)} s`)
@@ -228,7 +229,7 @@ const same = (a, b) => a.every((m) => b.some((o) => Math.hypot(...m.p.map((v, i)
 check(same(solid(flat).filter((m) => m.width > 0.051), nflat.meshes), 'every piece is where the mesh-entity circle has it')
 const nfly = of(N, 3)
 const nlast = nfly[nfly.length - 1]
-check(nlast.entities === 113 - 55 + 1, `the dragon is ${nlast.entities} mesh entities: its 55-part head is one entity`)
+check(nlast.entities === 113 - 55 + 1 + 2, `the dragon is ${nlast.entities} mesh entities: its 55-part head is one entity`)
 const headAt = (f) => f.meshes.filter((m) => m.width > 1.39 && m.width < 1.41 && m.depth > 1.39 && m.depth < 1.41)[0]
 check(Math.hypot(...headAt(nlast).p.map((v, i) => v - headAt(last).p[i])) < 0.02 && same(last.meshes, nlast.meshes), 'the head sits and points the same as without node meshes')
 check(nd.s.errors.length === 0 && nd.s.meshes.size === 0 && nd.game.held() === 0, 'every call is well formed and everything is deleted at the end' + [...new Set(nd.s.errors)].join('; '))

@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 40,662 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 50,878 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 56,911 |
+| `world_code.js` | World Code | 42,281 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 52,497 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 58,530 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 
@@ -238,8 +238,8 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 *Drawn outside the game with plain light so the parts can be told apart. In the
 game they glow.*
 
-The move stays under 400 meshes. One cast holds at most 143 meshes at once (circle and dragon together, while it
-comes out); two dragons about to merge hold up to 282. To fit, the
+The move stays under 400 meshes. One cast holds at most 145 meshes at once (circle and dragon together, while it
+comes out); two dragons about to merge hold up to 286. To fit, the
 circle is cut down to 40 meshes (outer band, star, core and the two lowest of
 the circles above: the rings with flag `k`) at the moment the dragon starts to come out. `maxMeshes` is 399, and the
 meshes of a standing Goodra count toward it, so the code never asks for a 400th. All are deleted when the move ends.
@@ -254,7 +254,7 @@ group becomes one mesh entity that carries the rest:
 |---|---|---|
 | Summoning circle | 88 | 11 (5 carriers with 82 node meshes, and the 6 ring emitters) |
 | Dragon head | 55 | 1 carrying 55 |
-| One cast at most | 143 | 70 |
+| One cast at most | 145 | 72 |
 
 The body, orbs and trail bend along the flight path piece by piece, so they stay
 mesh entities. With node meshes on, the whole circle stays while the dragon comes
@@ -336,6 +336,20 @@ also switches back by itself if the game throws an error when the first emitter
 is made. Not tested in the game: how thick and how bright the rings look depends
 on how the game draws the emitter, and may need the numbers in `dpEmitter`
 changed (`emitRate`, `minSize`, `maxSize`, life).
+
+### The vortex round the dragon
+
+Two `ParticleEmitter` mesh entities ride on the dragon and pour out dark
+particles. One sits near the head and one further down the body, on opposite
+sides, and both circle the body as it flies. The particles stay where they were
+let go, so when the dragon spins (coming out of the circle, circling above, and
+coiling round the target) they draw a dark vortex. `dpVortex` moves them and
+`dpVortexLook` holds the look. They count as 2 of the mesh entities.
+
+Set `vortex: false` in `DP_CFG` to turn it off. Not tested in the game: the
+vortex only shows if the game leaves particles behind when an emitter moves.
+If the particles move along with the emitter instead, it will look like two
+dark balls circling the dragon.
 
 ### The Particle Studio scene
 
@@ -495,7 +509,7 @@ It cannot show how the game draws it. Things to look at first in your world:
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
   If parts of the dragon are missing, lower `detail`.
 - **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
-  together and share `maxMeshes` (399). Two dragons need 282; a third at the same time is cut
+  together and share `maxMeshes` (399). Two dragons need 286; a third at the same time is cut
   short.
 - **Speed.** At full detail one dragon makes up to 330 api calls per tick, two
   up to 540. If the game stutters or stops the script, lower `detail`.
