@@ -142,6 +142,10 @@ const F = a.frames
 const circle = of(F, 0)
 const flat = circle[circle.length - 1]
 check(flat.meshes.length === 124 && Math.max(...ys(flat)) < 18 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
+// particles placed one by one: a single particle at an exact point with an exact speed
+const exact = (f) => f.fx.filter((o) => o.manualEmitCount === 1 && o.pos1.every((v, i) => v === o.pos2[i]) && o.minEmitPower === o.maxEmitPower)
+const smokeF = of(F, 6)
+check(smokeF.every((f) => f.meshes.length === 0) && exact(smokeF[0]).length >= 46 && exact(of(F, 4)[2]).length >= 48, `the smoke and the bite stars have no meshes: ${exact(smokeF[0]).length} smoke particles and ${exact(of(F, 4)[2]).length} star particles, each placed`)
 const out = of(F, 1)
 check(out[0].t >= 40, `the dragon comes out after ${(out[0].t / 20).toFixed(2)} s`)
 check(Math.min(...ys(out[2])) < 10 && Math.max(...ys(out[out.length - 1])) > 10 + 14, `it comes up through the floor and dashes ${(Math.max(...ys(out[out.length - 1])) - 10).toFixed(1)} blocks into the air`)
@@ -175,15 +179,15 @@ check(Math.max(...ys(mega[mega.length - 1])) - Math.max(...ys(mega[0])) > 12, `i
 const nuke = of(M, 8)
 const fly = of(F, 3)
 const last = fly[fly.length - 1]
-check(last.meshes.length === 113 + 30 && one.s.looks.has('1,1.6'), `cloud orbs and a tapering trail follow the dragon (${last.meshes.length - 113} more meshes) with particles that fade`)
+check(last.meshes.length === 113 && fly.slice(0, -1).every((f) => exact(f).length >= 9) && one.s.looks.has('1,1.6'), `the dragon is ${last.meshes.length} meshes; its cloud orbs and trail are particles now (${exact(fly[2]).length} placed one by one in a tick)`)
 const tall = (f) => Math.max(0, ...f.meshes.map((m) => m.height))
 const bl = of(F, 5)
 check(tall(bl[0]) < tall(bl[4]) && tall(bl[9]) > 40 && bl[9].meshes.length === 10, `a fast beam shoots ${tall(bl[9]).toFixed(0)} blocks up in ${(10 / 20).toFixed(2)} s`)
 check(bl[10].meshes.length === 18 && bl[25].meshes.length === 18, `a second beam joins it and waits ${(16 / 20).toFixed(2)} s`)
 check(tall(bl[26]) < tall(bl[25]) && tall(bl[31]) < 5 && bl[31].meshes.length === 18, 'then it all comes down: the beams sink into the ground in 0.30 s')
 const wideAt = (f) => Math.max(...f.meshes.map((m) => Math.max(m.width, m.depth)))
-check(bl[32].meshes.length === 38 && wideAt(bl[40]) > 18 && !one.s.hurtAt.some((t) => t < bl[32].t) && one.s.hurtAt.some((t) => t === bl[32].t), `and explodes on the ground: a star ${wideAt(bl[40]).toFixed(0)} blocks across and three shock rings; nobody is hurt before that`)
-check(nuke[11].meshes.length === 10 && tall(nuke[11]) > 50 && nuke[12].meshes.length === 18 && tall(nuke[37]) < 11 && nuke[38].meshes.length === 38, `the nuke does the same with a beam ${tall(nuke[11]).toFixed(0)} blocks tall and a star ${wideAt(nuke[46]).toFixed(0)} blocks across`)
+check(bl[32].meshes.length === 8 && exact(bl[32]).length >= 36 && wideAt(bl[40]) > 18 && !one.s.hurtAt.some((t) => t < bl[32].t) && one.s.hurtAt.some((t) => t === bl[32].t), `and explodes on the ground: an 8-mesh star ${wideAt(bl[40]).toFixed(0)} blocks across and three shock rings of particles (${exact(bl[32]).length} in the first); nobody is hurt before that`)
+check(nuke[11].meshes.length === 10 && tall(nuke[11]) > 50 && nuke[12].meshes.length === 18 && tall(nuke[37]) < 11 && nuke[38].meshes.length === 8, `the nuke does the same with a beam ${tall(nuke[11]).toFixed(0)} blocks tall and a star ${wideAt(nuke[46]).toFixed(0)} blocks across`)
 const widest = Math.max(...nuke.flatMap((f) => f.meshes.filter((m) => m.height > 20).map((m) => m.width)))
 check(widest > 10, `the nuke beam is up to ${widest.toFixed(1)} blocks thick`)
 check(two.s.hurt.some((h) => h[0] === 'kill' && h[1] === 'dummy'), 'the nuke kills the mob under it')
@@ -207,7 +211,7 @@ const same = (a, b) => a.every((m) => b.some((o) => Math.hypot(...m.p.map((v, i)
 check(same(flat.meshes, nflat.meshes), 'every piece is where the mesh-entity circle has it')
 const nfly = of(N, 3)
 const nlast = nfly[nfly.length - 1]
-check(nlast.entities === 143 - 55 + 1, `the dragon is ${nlast.entities} mesh entities: its 55-part head is one entity`)
+check(nlast.entities === 113 - 55 + 1, `the dragon is ${nlast.entities} mesh entities: its 55-part head is one entity`)
 const headAt = (f) => f.meshes.filter((m) => m.width > 1.39 && m.width < 1.41 && m.depth > 1.39 && m.depth < 1.41)[0]
 check(Math.hypot(...headAt(nlast).p.map((v, i) => v - headAt(last).p[i])) < 0.02 && same(last.meshes, nlast.meshes), 'the head sits and points the same as without node meshes')
 check(nd.s.errors.length === 0 && nd.s.meshes.size === 0 && nd.game.held() === 0, 'every call is well formed and everything is deleted at the end' + [...new Set(nd.s.errors)].join('; '))

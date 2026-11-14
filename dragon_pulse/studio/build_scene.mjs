@@ -6,7 +6,7 @@
 //                                               own code, and write its export
 //                                               to particles_only.code_block.js
 //
-// The scene goes up from the crate and comes down 28 blocks away along +Z. Seconds match world_code.js fired at nothing.
+// The scene holds the effects that are particles instead of meshes, side by side along +X.
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -15,8 +15,8 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const AGE = 0.6 // the studio's "life" is on the game's particle clock: 0.6 per second
 const hex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('')
 const C = {
-  white: hex([255, 255, 255]), violet: hex([165, 70, 255]), orange: hex([255, 125, 30]), cyan: hex([40, 195, 255]),
-  pink: hex([255, 95, 205]), blue: hex([75, 95, 255]), gold: hex([255, 205, 45]), smoke: hex([236, 239, 250]), shade: hex([118, 128, 176]),
+  crimson: hex([235, 26, 46]), blood: hex([132, 8, 24]), wine: hex([64, 12, 58]), night: hex([38, 12, 80]),
+  smoke: hex([58, 40, 70]), shade: hex([26, 16, 36]),
 }
 const r2 = (v) => Math.round(v * 100) / 100
 
@@ -45,59 +45,25 @@ const aim = (d) => {
   return [0, (Math.atan2(d[2], d[0]) * 180) / Math.PI, (Math.asin(d[1] / l) * 180) / Math.PI]
 }
 
-const FROM = [0.5, 2.6, 2.7] // middle of the three orbs
-const MERGE = [0.5, 16, 6.7] // where the beams meet, up in the sky
-const GOAL = [0.5, 1.9, 28.5] // where the dragon bites, back on the ground
-const ORBS = [['violet', 210], ['orange', 90], ['cyan', 330]]
-const orbAt = (deg) => [FROM[0] + Math.cos((deg * Math.PI) / 180) * 0.9, FROM[1] + Math.sin((deg * Math.PI) / 180) * 0.9, FROM[2]]
+// The four effects that are particles instead of meshes. Each stands on its own
+// spot along +X so they can be looked at side by side; in the move they play at
+// the dragon, at the target and at the blast.
+let g = group('1 Cloud orb (follows the dragon)', 0)
+add(g, 'Orb: cloud', 'sphere', { count: 9, pos: [0, 3, 0], scale: [0.45, 0.45, 0.45], color: 'wine', color2: 'night', size: [0.55, 0.95], seconds: 0.36, blend: 1, grow: 0.4 })
+add(g, 'Orb: core', 'sphere', { count: 6, pos: [0, 3, 0], scale: [0.1, 0.1, 0.1], texture: 'glint', color: 'crimson', color2: 'blood', size: [0.15, 0.35], seconds: 0.7 })
 
-// 1 CHARGE 0 to 0.8 s
-let g = group('1 Charge (0.0 s)', 0)
-for (const [col, deg] of ORBS) {
-  add(g, `Orb ${col}: glow`, 'sphere', { count: 26, pos: orbAt(deg), scale: [0.42, 0.42, 0.42], texture: 'glint', color: col, color2: 'white', size: [0.25, 0.5], seconds: 0.8, fadeIn: true })
-  add(g, `Orb ${col}: dust`, 'sphere', { count: 14, pos: orbAt(deg), scale: [1.1, 1.1, 1.1], color: col, size: [0.08, 0.16], seconds: 0.5, grow: -1.6, start: 0.15 })
-}
+g = group('2 Bite star', 0.5)
+add(g, 'Star', 'firework', { count: 48, params: { rays: 12, inner: 0.25 }, pos: [6, 3, 0], scale: [1.2, 1.2, 1.2], texture: 'critical_hit', color: 'crimson', color2: 'blood', size: [0.3, 0.6], seconds: 0.33, grow: 9 })
 
-// 2 BEAMS 0.8 to 1.5 s
-g = group('2 Beams (0.8 s)', 0.8)
-for (const [col, deg] of ORBS) {
-  const a = orbAt(deg)
-  const d = MERGE.map((v, i) => v - a[i])
-  const len = Math.hypot(...d)
-  add(g, `Beam ${col}`, 'line', { count: 28, pos: a.map((v, i) => v + d[i] / 2), rot: aim(d), scale: [len / 2, 1, 1], color: col, color2: 'white', size: [0.3, 0.55], seconds: 0.7, fadeIn: true })
-  add(g, `Beam ${col}: sparks`, 'line', { count: 12, pos: a.map((v, i) => v + d[i] / 2), rot: aim(d), scale: [len / 2, 1, 1], texture: 'glint', color: col, color2: 'white', size: [0.15, 0.3], seconds: 0.5, scatter: 1.5, start: 0.2 })
-}
+g = group('3 Shock rings of the blast', 1)
+add(g, 'Ring on the ground', 'circle', { count: 40, pos: [16, 0.4, 0], scale: [1.6, 1.6, 1.6], color: 'crimson', color2: 'wine', size: [0.5, 0.9], seconds: 0.57, grow: 40 })
+add(g, 'Ring in the middle', 'circle', { count: 32, pos: [16, 2, 0], scale: [1.6, 1.6, 1.6], color: 'blood', color2: 'wine', size: [0.5, 0.9], seconds: 0.57, grow: 28, start: 0.15 })
+add(g, 'Ring on top', 'circle', { count: 24, pos: [16, 3.6, 0], scale: [1.6, 1.6, 1.6], color: 'blood', color2: 'wine', size: [0.5, 0.9], seconds: 0.57, grow: 16, start: 0.3 })
 
-// 3 DRAGON 1.5 to 3.0 s: flash, then the serpent dives to the goal
-g = group('3 Dragon (1.5 s)', 1.5)
-add(g, 'Merge flash', 'sphere', { count: 16, pos: MERGE, scale: [0.6, 0.6, 0.6], color: 'white', size: [1.5, 3.5], seconds: 0.25, grow: 5 })
-add(g, 'Merge ring', 'circle', { count: 28, pos: MERGE, scale: [0.5, 0.5, 0.5], color: 'white', size: [0.3, 0.5], seconds: 0.4, grow: 14 })
-// the serpent is 14 blocks long, lies along the dive and flies down it
-const dive = GOAL.map((v, i) => v - MERGE[i])
-const far = Math.hypot(...dive)
-const along = dive.map((v) => v / far)
-const speed = along.map((v) => (v * (far - 14)) / 1.5) // blocks per second
-const body = { pos: MERGE.map((v, i) => v + along[i] * 7), rot: aim(dive), seconds: 1.5, speed }
-const wave = { ...body, params: { waves: 1.5, height: 0.3 }, scale: [7, 5, 1] }
-add(g, 'Skin pink and violet', 'wave', { ...wave, count: 30, color: 'pink', color2: 'violet', size: [0.6, 1.1] })
-add(g, 'Skin blue and orange', 'wave', { ...wave, count: 22, color: 'blue', color2: 'orange', size: [0.5, 0.9], scatter: 0.5 })
-add(g, 'White outline', 'wave', { ...wave, count: 30, texture: 'glint', color: 'white', size: [0.5, 0.9], scatter: 0.3 })
-add(g, 'Head glow', 'sphere', { ...body, count: 24, pos: MERGE.map((v, i) => v + along[i] * 14), rot: [0, 0, 0], scale: [1.1, 1.1, 1.1], color: 'white', color2: 'pink', size: [0.6, 1] })
-
-// 4 BITE 3.0 to 3.6 s: two yellow stars
-g = group('4 Bite (3.0 s)', 3)
-add(g, 'Star 1', 'firework', { count: 36, params: { rays: 12, inner: 0.25 }, pos: [GOAL[0] - 0.8, GOAL[1] + 0.2, GOAL[2]], scale: [1.2, 1.2, 1.2], texture: 'critical_hit', color: 'gold', color2: 'orange', size: [0.4, 0.9], seconds: 0.4, grow: 5, start: 0.1 })
-add(g, 'Star 2', 'firework', { count: 36, params: { rays: 12, inner: 0.25 }, pos: [GOAL[0] + 0.9, GOAL[1] + 0.7, GOAL[2]], scale: [1.2, 1.2, 1.2], texture: 'critical_hit', color: 'gold', color2: 'orange', size: [0.4, 0.9], seconds: 0.4, grow: 5, start: 0.35 })
-
-// 5 BLAST 3.6 s
-g = group('5 Blast (3.6 s)', 3.6)
-add(g, 'White flash', 'sphere', { count: 30, pos: GOAL, scale: [1.5, 1.5, 1.5], color: 'white', size: [1.5, 3.5], seconds: 0.3, grow: 6 })
-add(g, 'Shock ring', 'circle', { count: 36, pos: GOAL, scale: [0.5, 0.5, 0.5], color: 'white', size: [0.3, 0.5], seconds: 0.45, grow: 16 })
-
-// 6 SMOKE 3.8 to 5.2 s
-g = group('6 Smoke (3.8 s)', 3.8)
-add(g, 'Smoke', 'ball', { count: 40, pos: [GOAL[0], GOAL[1] + 1.5, GOAL[2]], scale: [2.6, 2.2, 2.6], color: 'smoke', color2: 'shade', size: [1.5, 3], seconds: 1.4, blend: 1, grow: 0.8, speed: [0, 0.5, 0] })
-add(g, 'Sparks', 'scatter', { count: 30, pos: [GOAL[0], GOAL[1] + 0.5, GOAL[2]], scale: [2.5, 2.5, 2.5], texture: 'glint', color: 'violet', color2: 'pink', size: [0.25, 0.5], seconds: 1.2, scatter: 1.2 })
+g = group('4 Smoke after the blast', 1.9)
+add(g, 'Smoke ball', 'sphere', { count: 26, pos: [16, 1.5, 0], scale: [2.6, 2.6, 2.6], color: 'smoke', color2: 'shade', size: [1.6, 3], seconds: 1.6, blend: 1, grow: 1.2, speed: [0, 0.8, 0] })
+add(g, 'Smoke ball, second puff', 'sphere', { count: 14, pos: [16, 2.3, 0], scale: [1.9, 1.9, 1.9], color: 'smoke', color2: 'shade', size: [1.6, 3], seconds: 1.6, blend: 1, grow: 1.2, speed: [0, 0.8, 0], start: 0.4 })
+add(g, 'Dust ring', 'circle', { count: 20, pos: [16, 0.5, 0], scale: [2.4, 2.4, 2.4], color: 'smoke', color2: 'shade', size: [1.6, 3], seconds: 1.6, blend: 1, grow: 4 })
 
 const scene = { app: 'bloxd-particle-studio', version: 1, objects }
 const file = path.join(here, 'dragon_pulse.scene.json')
@@ -114,13 +80,6 @@ if (process.argv[2]) {
   for (const o of clean.objects) {
     const raw = objects.find((r) => r.id === o.id)
     for (const k of Object.keys(raw)) if (JSON.stringify(raw[k]) !== JSON.stringify(o[k])) { bad++; console.log(`  changed by the studio: ${o.name}.${k} ${JSON.stringify(raw[k])} -> ${JSON.stringify(o[k])}`) }
-  }
-  // the beams must really run from the orbs to the merge point
-  for (const o of clean.objects.filter((x) => x.name.startsWith('Beam') && !x.name.includes('sparks'))) {
-    const pts = objectPoints(o)
-    const end = pts.reduce((a, b) => (b[2] > a[2] ? b : a))
-    const miss = Math.hypot(...end.map((v, i) => v - MERGE[i]))
-    if (miss > 0.05) { bad++; console.log(`  ${o.name} misses the merge point by ${miss.toFixed(2)}`) }
   }
   const leaves = clean.objects.filter((o) => !isGroup(o))
   const block = generateCode(clean.objects, { maxChars: 32000, maxLines: Infinity, precision: 20 })

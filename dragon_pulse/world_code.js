@@ -179,35 +179,6 @@ var DP_MESH = {
     ["M", 0.2, 0.2, 0.6, "blood", -15, 0, 0, "3"],
   ],
 
-  trail: [
-    ["M", 0.6, 0.3, 1, "blood", -15.8, 0, 0],
-    ["M", 0.55, 0.28, 1, "night", -16.8, 0, 0],
-    ["M", 0.5, 0.25, 1, "deep", -17.8, 0, 0, "2"],
-    ["M", 0.44, 0.22, 1, "night", -18.8, 0, 0],
-    ["M", 0.38, 0.19, 1, "void", -19.8, 0, 0, "2"],
-    ["M", 0.32, 0.16, 1, "night", -20.8, 0, 0],
-    ["M", 0.26, 0.13, 1, "void", -21.8, 0, 0, "2"],
-    ["M", 0.2, 0.1, 1, "void", -22.8, 0, 0],
-    ["M", 0.14, 0.08, 1, "void", -23.8, 0, 0, "2"],
-    ["M", 0.09, 0.06, 1, "void", -24.8, 0, 0],
-  ],
-
-  orb: [
-    ["M", 0.8, 0.8, 0.8, "blood", 0, 0, 0, "spin"],
-    ["M", 0.75, 0.65, 0.75, "wine", 0.45, 0.3, 0.25, "lit2"],
-    ["M", 0.65, 0.55, 0.65, "wine", -0.45, -0.3, 0.3, "lit2"],
-    ["M", 0.5, 0.45, 0.5, "void", 0, 0.1, -0.5, "lit3"],
-  ],
-
-  flare: [
-    ["M", 1, 1, 1, "void", 0, 0, 0, "spin"],
-    ["M", 3.2, 0.36, 0.36, "gold", 0, 0, 0],
-    ["M", 0.36, 3.2, 0.36, "gold", 0, 0, 0],
-    ["M", 0.36, 0.36, 3.2, "crimson", 0, 0, 0],
-    ["M", 0.26, 0.26, 2.4, "void", 0, 0, 0, "a"],
-    ["M", 0.26, 0.26, 2.4, "void", 0, 0, 0, "d"],
-  ],
-
   beam: [
     ["M", 1.3, 1, 1.3, "void", 0, 0, 0, "spin"],
     ["M", 0.35, 1, 0.35, "crimson", 1.1, 0, 0],
@@ -239,23 +210,6 @@ var DP_MESH = {
     ["M", 4.4, 0.16, 4.4, "blood", 0, 0, 0, "spin"],
     ["M", 2.8, 0.26, 2.8, "wine", 0, 0, 0, "spin"],
   ],
-
-  smoke: [
-    ["M", 2.6, 2.3, 2.6, "smoke", 0.4, -2.6, 1.4, "lit"],
-    ["M", 2.9, 2.5, 2.9, "smoke", -0.3, 2.4, 1.8, "lit"],
-    ["M", 2.3, 2.0, 2.3, "smoke", 2.2, 0.3, 2.9, "lit"],
-    ["M", 2.0, 1.8, 2.0, "shade", -2.3, -1.0, 0.5, "lit"],
-    ["M", 2.2, 1.9, 2.2, "smoke", 0.2, -0.5, 3.9, "lit"],
-    ["M", 1.8, 1.6, 1.8, "shade", 1.4, 2.6, 0.2, "lit"],
-    ["M", 1.9, 1.7, 1.9, "smoke", -1.6, 1.3, 3.3, "lit"],
-    ["M", 1.6, 1.4, 1.6, "shade", 2.6, -2.0, 1.2, "lit"],
-    ["M", 2.1, 1.8, 2.1, "smoke", -2.4, -2.2, 2.4, "lit"],
-    ["M", 1.7, 1.5, 1.7, "shade", 2.9, 2.2, 2.2, "lit"],
-    ["M", 1.5, 1.3, 1.5, "smoke", 0.3, 0.4, 5.1, "lit"],
-    ["M", 1.6, 1.6, 1.6, "crimson", 0, 0, 1.4, "spin"],
-  ],
-
-  dust: [["M", 2.6, 1.6, 2.6, "smoke", 0, 0, 0, "lit"]],
 }
 
 var DP_ORBS = [
@@ -285,6 +239,10 @@ var DP_FX = {
   gather: { tex: "glint", life: [0.35, 0.5], size: [0.2, 0.4], speed: [5, 7], col: ["tint", "tint2"], fade: [0.4, 1], blend: 2, tight: 1 },
   debris: { tex: "square_particle", life: [0.7, 1.2], size: [0.2, 0.5], speed: [8, 15], grav: -14, col: ["magenta", "purple"], fade: [1, 0], blend: 2, hot: 1 },
   shock: { tex: "square_particle", life: [0.4, 0.6], size: [0.5, 1], speed: [12, 16], col: ["tint", "tint2"], fade: [1, 0], blend: 2, drag: 0.3, hot: 1 },
+  puff: { tex: "square_particle", life: [1.3, 1.9], size: [1.6, 3], speed: [0, 0], grav: 0.5, col: ["smoke", "shade"], fade: [0.9, 0], blend: 1, drag: 0.15 },
+  cloud: { tex: "square_particle", life: [0.3, 0.42], size: [0.55, 0.95], speed: [0, 0], col: ["wine", "night"], fade: [0.85, 0], blend: 1 },
+  front: { tex: "square_particle", life: [0.55, 0.6], size: [0.5, 0.9], speed: [0, 0], col: ["tint", "tint2"], fade: [1, 0], blend: 2, drag: 0.25, hot: 1 },
+  ray: { tex: "critical_hit", life: [0.3, 0.36], size: [0.3, 0.6], speed: [0, 0], col: ["crimson", "blood"], fade: [1, 0], blend: 2, drag: 0.3 },
   glow: { tex: "square_particle", life: [0.25, 0.4], size: [1.4, 2.6], speed: [0, 0.5], col: ["tint", "white"], fade: [0.35, 0], blend: 2 },
 }
 var DP_DARK = { white: "crimson", lilac: "deep", magenta: "blood", cyan: "wine", gold: "crimson", purple: "deep", volt: "deep" }
@@ -348,11 +306,7 @@ function dpRows(name) {
     left[6] = -r[6]
     out.push(r, left)
   })
-  if (name === "tail") {
-    out = dpRows("trail").slice()
-    DP_ORBS.forEach((o) => dpRows("orb").forEach((r) => out.push(["M", r[1], r[2], r[3], r[4], r[5] + o[0], r[6] + o[1], r[7] + o[2], r[8]])))
-  }
-  if (name === "body" || name === "tail") out.sort((a, b) => b[5] - a[5])
+  if (name === "body") out.sort((a, b) => b[5] - a[5])
   return (dpRowCache[key] = out)
 }
 
@@ -478,9 +432,12 @@ function dpBlast(c, base, k, e, ring) {
   var size = k * (1.5 + 4.5 * g) * (e > 10 ? Math.max(0.15, 1 - (e - 10) / 6) : 1)
   if (e === 0) dpBurst(c, "blast", "blast_", dpAdd(base, [0, 1, 0], k), size)
   dpResize(c, "blast", "blast_", "", size)
-  dpShock(c, "blast_s", dpAdd(base, [0, 1, 0], 0.4), ring * (0.1 + g * 0.9), 0.6 * k, "blood")
-  dpShock(c, "blast_t", dpAdd(base, [0, 1, 0], 1.6 * k), ring * g * 0.6, 0.45 * k, "crimson")
-  dpShock(c, "blast_u", dpAdd(base, [0, 1, 0], 3.4 * k), ring * g * 0.32, 0.35 * k, "night")
+  if (e === 0 || e === 3 || e === 6) {
+    var j = e / 3
+    dpSize = k
+    dpShape("front", dpAdd(base, [0, 1, 0], 0.4 + j * 1.6 * k), dpRing(Math.min(64, 28 + 12 * k) - j * 8, e), ring * 0.1, ring * 2.5 * (1 - j * 0.3), j ? "blood" : "crimson", "wine")
+    dpSize = 1
+  }
   dpFx("flash", base, 12, (2 + e * 0.6) * k)
   dpFx("impact", base, 8, 2.5 * k)
   dpFx("debris", base, 10, 2 * k, "", "", [0, 1, 0])
@@ -513,18 +470,6 @@ function dpFinale(c, base, k, tall, ring, slow, burst) {
   if (e === 0) dpDrop(c, "beam_")
   dpBlast(c, base, burst, e, ring)
   return e === 0 ? 1 : e >= 16 ? 2 : 0
-}
-
-function dpShock(c, tag, at, rad, thick, col) {
-  var row = ["M", thick, thick * 0.4, 1, col, 0, 0, 0, ""]
-  for (var n = 0; n < 10; n++) {
-    var x = Math.cos(n * Math.PI * 0.2)
-    var z = Math.sin(n * Math.PI * 0.2)
-    dpPut(c, tag + n, row, "", [at[0] + x * rad, at[1], at[2] + z * rad], [-z, 0, x])
-    var box = dpBox(row, "", 1)
-    box.depth = rad * 0.65
-    if (c.m[tag + n]) api.updateMeshEntity(c.m[tag + n], "Box", box)
-  }
 }
 
 function dpCarrier(c, key, pos, f, turn) {
@@ -582,9 +527,11 @@ function dpCircle(c) {
   }
 }
 
-function dpFx(look, pos, n, spread, tint, tint2, dir, tall) {
+function dpFx(look, pos, n, spread, tint, tint2, dir, tall, vel) {
   var L = DP_FX[look]
   var S = 0.6
+  var go = vel && dpLen(vel) > 1e-6
+  if (vel) dir = null
   var a = dpTint(L.col[0] === "tint" ? tint : L.col[0])
   var b = dpTint(L.col[1] === "tint" ? tint : L.col[1] === "tint2" ? tint2 : L.col[1])
   var y = L.flat ? 0.04 : 1
@@ -596,17 +543,17 @@ function dpFx(look, pos, n, spread, tint, tint2, dir, tall) {
   ]
   if (L.hot) grad.unshift({ timeFraction: 0, minColor: hot, maxColor: hot })
   api.playParticleEffect({
-    dir1: dir ? dpAdd(dir, [1, 1, 1], -w) : [-1, -y, -1],
-    dir2: dir ? dpAdd(dir, [1, 1, 1], w) : [1, y, 1],
+    dir1: vel ? (go ? vel : [0, 1, 0]) : dir ? dpAdd(dir, [1, 1, 1], -w) : [-1, -y, -1],
+    dir2: vel ? (go ? vel : [0, 1, 0]) : dir ? dpAdd(dir, [1, 1, 1], w) : [1, y, 1],
     pos1: [pos[0] - spread, pos[1] - (tall ? 0 : spread), pos[2] - spread],
     pos2: [pos[0] + spread, pos[1] + (tall || spread), pos[2] + spread],
     texture: L.tex,
     minLifeTime: L.life[0] * S,
     maxLifeTime: L.life[1] * S,
-    minEmitPower: L.speed[0] / S,
-    maxEmitPower: L.speed[1] / S,
-    minSize: L.size[0],
-    maxSize: L.size[1],
+    minEmitPower: vel ? (go ? 1 / S : 0) : L.speed[0] / S,
+    maxEmitPower: vel ? (go ? 1 / S : 0) : L.speed[1] / S,
+    minSize: L.size[0] * dpSize,
+    maxSize: L.size[1] * dpSize,
     manualEmitCount: n,
     gravity: [0, (L.grav || 0) / (S * S), 0],
     colorGradients: grad,
@@ -617,6 +564,21 @@ function dpFx(look, pos, n, spread, tint, tint2, dir, tall) {
     blendMode: L.blend,
     hideDist: DP_CFG.hideDist,
   })
+}
+
+var dpSize = 1
+var dpBalls = {}
+var dpBall = (n) =>
+  dpBalls[n] ||
+  (dpBalls[n] = Array.from({ length: n }, (_, i) => {
+    var y = 1 - (2 * i + 1) / n
+    var r = Math.sqrt(1 - y * y)
+    return [Math.cos(i * 2.39996) * r, y, Math.sin(i * 2.39996) * r]
+  }))
+var dpRing = (n, turn) => Array.from({ length: n }, (_, i) => [Math.cos((i / n) * 6.2832 + (turn || 0)), 0, Math.sin((i / n) * 6.2832 + (turn || 0))])
+
+function dpShape(look, at, dirs, rad, grow, tint, tint2, rise) {
+  dirs.forEach((d) => dpFx(look, dpAdd(at, d, rad), 1, 0, tint, tint2, null, 0, [d[0] * grow, d[1] * grow + (rise || 0), d[2] * grow]))
 }
 
 function dpRingFx(look, pos, rad, n, out, lift, tint, tint2, pts, turn) {
@@ -666,7 +628,6 @@ function dpFly(c, pos) {
   if (DP_CFG.nodes) dpRigid(c, "head", "head_", pos, dpBasis(f), k)
   else dpGroup(c, "head", "head_", "", pos, dpBasis(f), k)
   dpAlong(c, "body")
-  dpAlong(c, "tail")
   var skin = DP_SKIN[c.t % DP_SKIN.length]
   dpFx("aura", pos, 5, 0.9 * k, skin[0], skin[1])
   dpFx("outline", pos, 3, 1.1 * k)
@@ -676,8 +637,17 @@ function dpFly(c, pos) {
   var skin2 = DP_SKIN[(c.t + 2) % DP_SKIN.length]
   dpFx("aura", mid, 4, 0.7 * k, skin2[0], skin2[1])
   if (c.t % 2 === 0) dpFx("wisp", c.path[Math.max(0, n - 10)], 2, 0.6 * k)
-  dpFx("trail", c.path[Math.max(0, n - 15)], 3, 0.5 * k, "purple", "magenta")
-  dpFx("trail", c.path[Math.max(0, n - 22)], 2, 0.4 * k, "deep", "purple")
+  for (var q = 0; q < 5; q++) {
+    dpSize = k * (1 - q * 0.17)
+    dpFx("trail", c.path[Math.max(0, n - 13 - q * 3)], 1, 0.3 * k, q < 2 ? "purple" : "deep", "blood")
+  }
+  dpSize = k
+  var o = DP_ORBS[c.t % DP_ORBS.length]
+  var j = Math.max(1, n - 1 - Math.round((-o[0] * k) / 1.1))
+  var at = dpAt(c.path[j], dpBasis(dpNorm(dpSub(c.path[j], c.path[j - 1]))), 0, o[1] * k, o[2] * k)
+  dpShape("cloud", at, dpBall(9), 0.45 * k, 0.4)
+  dpFx("mote", at, 1, 0.1, "crimson", "blood")
+  dpSize = 1
   dpFx("ember", c.path[Math.max(0, n - 6 - ((c.t * 5) % 14))], 3, 0.8 * k, skin2[0], "lilac")
 }
 
@@ -771,15 +741,13 @@ var DP_PHASE = [
     var ang = c.spin + c.t * 0.55
     dpFly(c, [goal[0] + Math.cos(ang) * rad, goal[1] - 0.5 + c.t * 0.2, goal[2] + Math.sin(ang) * rad])
     if (c.t === 2 || c.t === 7) {
-      var tag = c.t === 2 ? "flareA_" : "flareB_"
       var at = dpAt(goal, c.B, 0, c.t === 2 ? -0.8 : 0.9, c.t === 2 ? 0.2 : 0.7)
-      dpBurst(c, "flare", tag, at, 1)
+      for (var j = 1; j < 5; j++) dpShape("ray", at, dpBall(12), 0.3 * j, 3 * j)
       dpFx("impact", at, 12, 0.3)
       dpFx("glow", at, 3, 0.4, c.t === 2 ? "cyan" : "gold")
       dpRingFx("shock", at, 0.6, 3, 1, 0, "lilac", c.t === 2 ? "cyan" : "gold", 6)
       dpSound("flare", at, c.t === 2 ? 1 : 1.2)
     }
-    if (c.t === 6) dpDrop(c, "flareA_")
     if (c.t >= 11) dpNext(c)
   },
 
@@ -798,7 +766,8 @@ var DP_PHASE = [
   function (c) {
     if (c.t === 0) dpDrop(c, "blast_")
     var b = 1.2 * DP_CFG.boom
-    dpCloud(c, "smoke", b, 14, 24, 30, 0.04)
+    if (c.t % 8 === 0 && c.t < 17) dpShape("puff", [c.goal[0], c.goal[1] + 1.5 * b + c.t * 0.1, c.goal[2]], dpBall(c.t ? 14 : 26), (2.2 - c.t * 0.08) * b, 1.2, "", "", 0.8)
+    if (c.t === 0) dpShape("puff", [c.goal[0], c.goal[1] + 0.5, c.goal[2]], dpRing(20), 2 * b, 4)
     if (c.t < 26 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5 * b), 7, 2.5 * b)
     if (c.t % 3 === 0) dpFx("spark", dpAt(c.goal, c.B, 0, 0, 0.5), 7, 2.5 * b)
     if (c.t < 28) dpFx("ember", c.goal, 4, 3 * b, "magenta", "purple", null, 1)
@@ -843,12 +812,11 @@ var DP_PHASE = [
     var b = DP_CFG.boom
     if (c.t === 0) dpDrop(c, "blast_")
     if (c.t % 8 === 0 && c.t < 33) dpSound("rumble", c.ground, 1 - c.t * 0.01)
-    dpCloud(c, "smoke", 2.4 * b, 20, 34, 42, 0.05)
     var wide = (4 + 16 * (1 - Math.pow(1 - Math.min(1, (c.t + 1) / 26), 2))) * b
-    for (var i = 0; i < 8 && c.t < 36; i++) {
-      dpPut(c, "dust_" + i, DP_MESH.dust[0], "", [c.ground[0] + Math.cos(i * 0.785 + 0.4) * wide, c.ground[1] + 1.6 * b, c.ground[2] + Math.sin(i * 0.785 + 0.4) * wide], null, 1.8 * b)
-    }
-    if (c.t === 36) dpDrop(c, "dust_")
+    dpSize = 2.4
+    if (c.t % 8 === 0 && c.t < 25) dpShape("puff", [c.ground[0], c.ground[1] + 4 * b + c.t * 0.15, c.ground[2]], dpBall(c.t ? 24 : 40), (6 - c.t * 0.12) * b, 2.5, "", "", 1.2)
+    if (c.t % 6 === 0 && c.t < 19) dpShape("puff", [c.ground[0], c.ground[1] + 1.6 * b, c.ground[2]], dpRing(36, c.t), wide, 7)
+    dpSize = 1
     if (c.t < 30 && c.t % 2 === 0) dpFx("smoke", c.ground, 10, 9 * b)
     if (c.t % 2 === 0) dpFx("spark", c.ground, 10, 10 * b)
     if (c.t < 40) dpFx("ember", c.ground, 8, 11 * b, "magenta", "cyan", null, 3)
@@ -857,16 +825,6 @@ var DP_PHASE = [
     if (c.t >= 49) c.ph = 99
   },
 ]
-
-function dpCloud(c, name, k, grow, small, tiny, lift) {
-  var out = 1 - Math.pow(1 - Math.min(1, (c.t + 1) / grow), 2)
-  var rows = dpRows(name)
-  for (var i = 0; i < rows.length; i++) {
-    var r = rows[i]
-    dpPut(c, name + "_" + i, r, "", dpAt(c.goal, c.B, r[5] * out * k, r[6] * out * k, 0.3 + r[7] * out * k + c.t * lift), null, k)
-  }
-  if (c.t === small || c.t === tiny) dpResize(c, name, name + "_", "", k * (c.t === small ? 0.65 : 0.35))
-}
 
 function dpKill(id, by) {
   try {
