@@ -21,7 +21,7 @@ From other code: `dragonClaw(playerId)`.
 | Seconds | Player animation | Meshes and particles | Hit |
 |---|---|---|---|
 | 0.00–0.40 | Wind-up: right arm goes up and back | Claws appear on both hands (node meshes) | |
-| 0.40–0.70 | The slash: the arm comes down across the body, starting slowly and speeding up | Three slash marks, 4.8 blocks tall, grow from top to bottom together with the arm, a bit more every tick, with sparks at the tips | From half way down: what stands right in front |
+| 0.40–0.70 | The slash: the arm comes down across the body, starting slowly and speeding up | Three straight slashes, 6 blocks long, grow from the top end downward together with the arm, a bit longer every tick, with sparks at the tips | From half way down: what stands right in front |
 | 0.70–0.90 | Follow-through | The marks hang with a flash | |
 | 0.75–1.30 | Arms go out (from 0.90) | The marks shoot forward, fast at first and slowing down, as far as `range` (10 blocks) | Everything they pass, once |
 | 1.05–1.65 | Tilted 360: a full turn on the spot in four quarter steps, arms out, with the body leaning 25° to the side; the legs turn with the body but stay upright | A ring is drawn round the player, piece by piece, as they turn, tilted the same 25° | |
@@ -30,7 +30,7 @@ From other code: `dragonClaw(playerId)`.
 | 2.30–2.90 | Follow-through, then back to rest at 2.75 | These hang and fly forward too | Everything they pass, once |
 | 2.75–2.90 | Pose is reset | Claws are taken off | |
 
-At most 74 mesh entities at once and 93 api calls in one tick.
+At most 32 mesh entities at once and 91 api calls in one tick.
 
 The timing is in two tables (20 ticks a second). `CLAW_POSE`: the first number
 of each row is the tick that pose is reached. `CLAW_STEP`: when the marks and
@@ -91,23 +91,21 @@ themselves: send the changed file and the numbers can be carried over.
 | `nodeClaws` | Whether claws are attached to the hands |
 | `sounds`, `hideDist`, `maxCasts`, `maxMeshes` | As in Dragon Pulse |
 
-Colours are in `CLAW_COL` (white, core, edge, deep), sounds in `CLAW_SND`,
+Colours are in `CLAW_COL` (seven greens, listed below), sounds in `CLAW_SND`,
 timings in ticks in `CLAW_STEP`.
 
 ## Meshes (`CLAW_MESH`)
 
 | Group | Rows | What |
 |---|---|---|
-| `talon` | 11 | The bright core of one slash mark from end to end: place along it (-1 to 1), thickness, colour. White in the middle, then mint, green and teal to the tips |
-| `glow` | 7 | The wider, darker edge behind that core: teal in the middle, navy, violet at the ends |
-| `shard` | 3 | Thin splinters beside each mark: place along it, thickness, colour, sideways offset, length |
-| `mark` | 3 | The three marks of one claw: sideways offset, length, thickness. One claw is 3 × (11 + 7 + 3) = 63 meshes |
-| `ring` | 16 | The ring of the spin: thickness, colour. Every second piece gets a navy or violet piece behind it (24 meshes) |
-| `hand` | 11 | Node meshes on each arm: three talons of three pieces each (teal base, green middle, white tip bent forward), a violet knuckle plate, then a wide blade |
+| `slash` | 7 | The bars of one slash, nested on one centre line: length (1 = whole slash), width, thickness, colour. A long thin bright-green spine, then shorter and wider green and light-green bars, an olive one, a dark-green core and two thin inner strips. Each shorter bar is thicker, so it shows on both sides |
+| `mark` | 3 | The three slashes of one claw: sideways offset, length, width. One claw is 3 × 7 = 21 meshes |
+| `ring` | 16 | The ring of the spin: thickness, colour. Every second piece gets a darker piece behind it (24 meshes) |
+| `hand` | 11 | Node meshes on each arm: three talons of three pieces each (base, middle, tip bent forward), a knuckle plate, then a wide blade |
 
-Colours are in `CLAW_COL`: `white`, `hot` (mint), `core` (bright green), `mid`,
-`edge` (teal), `deep` (navy), `void` (violet). Change them there and every
-mesh and particle follows.
+Colours are in `CLAW_COL`: `white` (pale green), `hot` (light green), `core`
+(bright green), `mid` (green), `edge` (olive), `deep` (dark green), `void`
+(moss). Change them there and every mesh and particle follows.
 
 The blade is attached last on purpose. The documentation only shows one node
 mesh per body part; if the game keeps only the last one, the blade is what
