@@ -2,122 +2,140 @@ var DP_CFG = {
   chat: "!dp",
   item: "",
   range: 40,
+  summon: 2.5,
+  circleDist: 4,
   rise: 16,
-  lean: 0.3,
   hitPlayers: true,
+  kill: true,
   damage: 40,
   radius: 6,
   knockback: 14,
   hurtCaster: false,
+  merge: true,
+  mergeDist: 4,
+  megaScale: 2.2,
+  megaRise: 22,
+  nukeRadius: 22,
+  nukeDamage: 400,
+  nukeKnockback: 30,
   rotate: true,
   sounds: true,
-  hideDist: 96,
-  maxCasts: 3,
+  hideDist: 128,
+  maxCasts: 4,
   detail: 3,
-  maxMeshes: 130,
+  maxMeshes: 300,
 }
 
 var DP_COL = {
   white: [255, 255, 255],
-  violet: [165, 70, 255],
-  orange: [255, 125, 30],
-  cyan: [40, 195, 255],
-  pink: [255, 95, 205],
-  blue: [75, 95, 255],
+  purple: [150, 55, 255],
+  deep: [82, 26, 172],
+  night: [38, 12, 80],
+  magenta: [255, 55, 215],
+  lilac: [212, 172, 255],
+  cyan: [70, 230, 255],
   gold: [255, 205, 45],
-  smoke: [236, 239, 250],
-  shade: [118, 128, 176],
+  smoke: [236, 232, 250],
+  shade: [128, 112, 180],
 }
 
-var DP_MESH = {
-  orb: [
-    ["M", 0.5, 0.5, 0.5, "white", 0, 0, 0],
-    ["M", 0.58, 0.58, 0.58, "tint", 0, 0, 0, "spin"],
-  ],
+var DP_CIRCLE = [
+  [12, 3.6, 1.95, 0.22, "purple", 0, 0, 0, 0],
+  [8, 2.95, 2.45, 0.1, "magenta", 22.5, 0, 8, 0],
+  [3, 1.48, 5.1, 0.12, "cyan", 0, 0.02, 16, 0.05],
+  [3, 1.48, 5.1, 0.12, "cyan", 60, 0.02, 16, 0.05],
+  [6, 0.9, 1, 0.14, "magenta", 0, 0.04, 24, -0.08],
+  [6, 3.28, 0.3, 0.3, "lilac", 30, 0.45, 30, 0, "spin"],
+]
 
-  beam: [["M", 0.3, 0.3, 1.2, "tint", 0, 0, 0]],
+var DP_MESH = {
+  pillar: [["M", 1, 14, 1, "lilac", 0, 0, 7, "spin"]],
 
   head: [
-    ["M", 1.5, 1.25, 1.6, "white", 0, 0, 0],
-    ["M", 1.05, 0.6, 1.3, "white", 1.35, 0, 0.18],
-    ["M", 0.9, 0.26, 1.35, "pink", 1.2, 0, -0.58],
-    ["M", 0.26, 0.26, 1.2, "violet", -1.05, 0.5, 0.8, "m"],
-    ["M", 0.3, 0.5, 1, "orange", -0.35, 0, 0.85],
+    ["M", 1.5, 1.25, 1.6, "purple", 0, 0, 0],
+    ["M", 1.05, 0.6, 1.3, "purple", 1.35, 0, 0.18],
+    ["M", 0.9, 0.26, 1.35, "deep", 1.2, 0, -0.58],
+    ["M", 0.26, 0.26, 1.7, "night", -1.25, 0.5, 0.85, "m"],
+    ["M", 0.3, 0.6, 1.1, "magenta", -0.35, 0, 0.9],
     ["M", 0.3, 0.3, 0.3, "cyan", 0.5, 0.78, 0.25, "m"],
-    ["M", 0.2, 0.7, 0.95, "blue", -0.45, 0.98, -0.05, "m"],
-    ["M", 0.5, 0.2, 0.75, "violet", 0.5, 0.55, 0.68, "m2"],
-    ["M", 0.14, 0.32, 0.14, "white", 1.85, 0.36, -0.24, "m2"],
-    ["M", 0.12, 0.26, 0.12, "white", 1.72, 0.3, -0.34, "m2"],
-    ["M", 0.6, 0.3, 0.45, "gold", 0.72, 0, -0.28, "2"],
+    ["M", 0.2, 0.7, 0.95, "deep", -0.45, 0.98, -0.05, "m"],
+    ["M", 0.5, 0.2, 0.75, "night", 0.5, 0.55, 0.68, "m2"],
+    ["M", 0.14, 0.38, 0.14, "white", 1.85, 0.36, -0.27, "m2"],
+    ["M", 0.12, 0.3, 0.12, "white", 1.72, 0.3, -0.32, "m2"],
+    ["M", 0.6, 0.3, 0.45, "magenta", 0.72, 0, -0.28, "2"],
     ["M", 0.12, 0.12, 1.3, "cyan", 1.05, 0.82, -0.05, "m2"],
-    ["M", 0.2, 0.6, 0.2, "violet", -1.35, 0.5, 1.15, "m2"],
-    ["M", 0.9, 0.5, 0.5, "pink", -1, 0, 0.55, "2"],
+    ["M", 0.22, 0.22, 1.2, "night", -1.1, 0.85, 0.45, "m2"],
+    ["M", 0.9, 0.5, 0.5, "deep", -1, 0, 0.55, "2"],
     ["M", 0.12, 0.2, 0.2, "white", 0.56, 0.92, 0.25, "m3"],
     ["M", 0.08, 0.14, 0.9, "white", 1.2, 0.44, -0.18, "m3"],
-    ["M", 0.4, 0.1, 0.95, "orange", 1.15, 0, -0.4, "3"],
-    ["M", 0.2, 0.16, 0.2, "pink", 1.92, 0.3, 0.5, "m3"],
-    ["M", 0.1, 0.1, 1.2, "blue", -0.1, 1.15, -0.2, "m3"],
-    ["M", 0.18, 0.18, 0.6, "pink", -1.9, 0.5, 0.95, "m3"],
-    ["M", 0.6, 0.45, 0.5, "violet", -1.45, 0, 0.78, "3"],
-    ["M", 0.14, 0.5, 0.6, "pink", -0.95, 1, 0.25, "m3"],
-    ["M", 0.3, 0.3, 0.45, "violet", 1, 0, -0.82, "3"],
-    ["M", 0.2, 0.45, 0.2, "violet", 0.68, 0, -0.98, "3"],
+    ["M", 0.4, 0.1, 0.95, "magenta", 1.15, 0, -0.4, "3"],
+    ["M", 0.2, 0.16, 0.2, "magenta", 1.92, 0.3, 0.5, "m3"],
+    ["M", 0.1, 0.1, 1.2, "lilac", -0.1, 1.15, -0.2, "m3"],
+    ["M", 0.18, 0.18, 0.6, "magenta", -2.3, 0.5, 0.95, "m3"],
+    ["M", 0.6, 0.45, 0.5, "deep", -1.45, 0, 0.78, "3"],
+    ["M", 0.14, 0.5, 0.6, "magenta", -0.95, 1, 0.25, "m3"],
+    ["M", 0.3, 0.3, 0.45, "deep", 1, 0, -0.82, "3"],
+    ["M", 0.2, 0.45, 0.2, "lilac", 0.68, 0, -0.98, "3"],
+    ["M", 0.3, 0.2, 0.3, "cyan", 0.35, 0, 0.7, "2"],
+    ["M", 0.3, 0.16, 1, "night", 1.4, 0, 0.54, "2"],
+    ["M", 0.12, 0.3, 0.12, "night", 0.9, 0.5, -0.8, "m3"],
   ],
 
   body: [
-    ["M", 1.3, 1.15, 1.1, "white", -1.35, 0, 0],
-    ["M", 0.25, 0.6, 0.8, "orange", -1.35, 0, 0.85, "2"],
-    ["M", 0.91, 0.14, 0.95, "cyan", -1.35, 0, -0.61, "2"],
-    ["M", 0.1, 0.52, 0.6, "pink", -1.3, 0.68, 0.09, "m3"],
-    ["M", 1.25, 1.1, 1.1, "pink", -2.5, 0, 0],
-    ["M", 0.25, 0.57, 0.8, "violet", -2.5, 0, 0.81],
-    ["M", 0.88, 0.14, 0.95, "cyan", -2.5, 0, -0.59, "2"],
-    ["M", 0.1, 0.5, 0.6, "blue", -2.45, 0.66, 0.09, "m3"],
-    ["M", 0.9, 0.12, 0.7, "blue", -2.6, 1.04, -0.1, "m2"],
-    ["M", 1.2, 1.05, 1.1, "white", -3.65, 0, 0],
-    ["M", 0.25, 0.55, 0.8, "cyan", -3.65, 0, 0.78, "2"],
-    ["M", 0.84, 0.14, 0.95, "cyan", -3.65, 0, -0.57, "2"],
-    ["M", 0.1, 0.47, 0.6, "orange", -3.6, 0.63, 0.08, "m3"],
-    ["M", 1.15, 1, 1.1, "violet", -4.8, 0, 0],
-    ["M", 0.25, 0.52, 0.8, "pink", -4.8, 0, 0.74, "2"],
-    ["M", 0.8, 0.14, 0.95, "cyan", -4.8, 0, -0.54, "2"],
-    ["M", 0.1, 0.45, 0.6, "violet", -4.75, 0.6, 0.08, "m3"],
-    ["M", 1.1, 0.95, 1.1, "white", -5.95, 0, 0],
-    ["M", 0.25, 0.49, 0.8, "blue", -5.95, 0, 0.7],
-    ["M", 0.77, 0.14, 0.95, "cyan", -5.95, 0, -0.52, "2"],
-    ["M", 0.1, 0.43, 0.6, "pink", -5.9, 0.58, 0.08, "m3"],
-    ["M", 1, 0.9, 1.1, "blue", -7.1, 0, 0],
-    ["M", 0.25, 0.47, 0.8, "orange", -7.1, 0, 0.67, "2"],
-    ["M", 0.7, 0.14, 0.95, "cyan", -7.1, 0, -0.49, "2"],
-    ["M", 0.9, 0.12, 0.7, "blue", -7.2, 0.92, -0.1, "m2"],
-    ["M", 0.95, 0.85, 1.1, "white", -8.25, 0, 0],
-    ["M", 0.25, 0.44, 0.8, "violet", -8.25, 0, 0.63, "2"],
-    ["M", 0.66, 0.14, 0.95, "cyan", -8.25, 0, -0.46, "2"],
-    ["M", 0.1, 0.38, 0.6, "blue", -8.2, 0.51, 0.07, "m3"],
-    ["M", 0.85, 0.75, 1.1, "orange", -9.4, 0, 0],
-    ["M", 0.24, 0.39, 0.8, "cyan", -9.4, 0, 0.55],
-    ["M", 0.59, 0.14, 0.95, "cyan", -9.4, 0, -0.41, "2"],
-    ["M", 0.75, 0.65, 1.1, "white", -10.55, 0, 0],
-    ["M", 0.21, 0.34, 0.6, "pink", -10.55, 0, 0.48, "2"],
-    ["M", 0.52, 0.14, 0.95, "cyan", -10.55, 0, -0.36, "2"],
-    ["M", 0.1, 0.29, 0.6, "orange", -10.5, 0.41, 0.05, "m3"],
-    ["M", 0.62, 0.55, 1.1, "pink", -11.65, 0, 0],
-    ["M", 0.18, 0.29, 0.6, "blue", -11.65, 0, 0.41, "2"],
-    ["M", 0.43, 0.14, 0.95, "cyan", -11.65, 0, -0.32, "2"],
-    ["M", 0.5, 0.45, 1.05, "white", -12.7, 0, 0],
-    ["M", 0.15, 0.23, 0.6, "orange", -12.7, 0, 0.33, "2"],
-    ["M", 0.38, 0.35, 1, "violet", -13.7, 0, 0],
-    ["M", 0.12, 0.18, 0.6, "violet", -13.7, 0, 0.26, "2"],
-    ["M", 0.7, 0.14, 0.8, "blue", -14.4, 0.4, 0, "m"],
-    ["M", 0.14, 0.6, 0.7, "pink", -14.35, 0, 0.3, "2"],
-    ["M", 0.2, 0.2, 0.6, "white", -15, 0, 0, "3"],
+    ["M", 1.3, 1.15, 1.1, "purple", -1.35, 0, 0],
+    ["M", 0.25, 0.81, 0.8, "magenta", -1.35, 0, 0.95, "2"],
+    ["M", 0.91, 0.14, 0.95, "lilac", -1.35, 0, -0.61, "2"],
+    ["M", 0.1, 0.52, 0.6, "cyan", -1.3, 0.68, 0.09, "m3"],
+    ["M", 1.25, 1.1, 1.1, "deep", -2.5, 0, 0],
+    ["M", 0.25, 0.77, 0.8, "magenta", -2.5, 0, 0.91],
+    ["M", 0.88, 0.14, 0.95, "lilac", -2.5, 0, -0.59, "2"],
+    ["M", 0.1, 0.5, 0.6, "cyan", -2.45, 0.66, 0.09, "m3"],
+    ["M", 1.7, 0.12, 1, "magenta", -2.6, 1.4, -0.1, "m2"],
+    ["M", 0.5, 0.1, 1.5, "lilac", -3.2, 2.3, -0.05, "m3"],
+    ["M", 1.2, 1.05, 1.1, "purple", -3.65, 0, 0],
+    ["M", 0.25, 0.74, 0.8, "magenta", -3.65, 0, 0.87, "2"],
+    ["M", 0.84, 0.14, 0.95, "lilac", -3.65, 0, -0.57, "2"],
+    ["M", 0.1, 0.47, 0.6, "cyan", -3.6, 0.63, 0.08, "m3"],
+    ["M", 1.15, 1, 1.1, "deep", -4.8, 0, 0],
+    ["M", 0.25, 0.7, 0.8, "magenta", -4.8, 0, 0.83, "2"],
+    ["M", 0.8, 0.14, 0.95, "lilac", -4.8, 0, -0.54, "2"],
+    ["M", 0.1, 0.45, 0.6, "cyan", -4.75, 0.6, 0.08, "m3"],
+    ["M", 1.1, 0.95, 1.1, "purple", -5.95, 0, 0],
+    ["M", 0.25, 0.66, 0.8, "magenta", -5.95, 0, 0.78],
+    ["M", 0.77, 0.14, 0.95, "lilac", -5.95, 0, -0.52, "2"],
+    ["M", 0.1, 0.43, 0.6, "cyan", -5.9, 0.58, 0.08, "m3"],
+    ["M", 1, 0.9, 1.1, "deep", -7.1, 0, 0],
+    ["M", 0.25, 0.63, 0.8, "magenta", -7.1, 0, 0.75, "2"],
+    ["M", 0.7, 0.14, 0.95, "lilac", -7.1, 0, -0.49, "2"],
+    ["M", 1.2, 0.12, 0.8, "magenta", -7.2, 1.05, -0.1, "m2"],
+    ["M", 0.95, 0.85, 1.1, "purple", -8.25, 0, 0],
+    ["M", 0.25, 0.59, 0.8, "magenta", -8.25, 0, 0.7, "2"],
+    ["M", 0.66, 0.14, 0.95, "lilac", -8.25, 0, -0.46, "2"],
+    ["M", 0.1, 0.38, 0.6, "cyan", -8.2, 0.51, 0.07, "m3"],
+    ["M", 0.85, 0.75, 1.1, "deep", -9.4, 0, 0],
+    ["M", 0.24, 0.53, 0.8, "magenta", -9.4, 0, 0.62],
+    ["M", 0.59, 0.14, 0.95, "lilac", -9.4, 0, -0.41, "2"],
+    ["M", 0.75, 0.65, 1.1, "purple", -10.55, 0, 0],
+    ["M", 0.21, 0.46, 0.6, "magenta", -10.55, 0, 0.54, "2"],
+    ["M", 0.52, 0.14, 0.95, "lilac", -10.55, 0, -0.36, "2"],
+    ["M", 0.1, 0.29, 0.6, "cyan", -10.5, 0.41, 0.05, "m3"],
+    ["M", 0.62, 0.55, 1.1, "deep", -11.65, 0, 0],
+    ["M", 0.18, 0.39, 0.6, "magenta", -11.65, 0, 0.46, "2"],
+    ["M", 0.43, 0.14, 0.95, "lilac", -11.65, 0, -0.32, "2"],
+    ["M", 0.5, 0.45, 1.05, "purple", -12.7, 0, 0],
+    ["M", 0.15, 0.31, 0.6, "magenta", -12.7, 0, 0.37, "2"],
+    ["M", 0.38, 0.35, 1, "deep", -13.7, 0, 0],
+    ["M", 0.12, 0.24, 0.6, "magenta", -13.7, 0, 0.29, "2"],
+    ["M", 0.7, 0.14, 0.8, "magenta", -14.4, 0.4, 0, "m"],
+    ["M", 0.14, 0.6, 0.7, "cyan", -14.35, 0, 0.3, "2"],
+    ["M", 0.2, 0.2, 0.6, "lilac", -15, 0, 0, "3"],
   ],
 
   flare: [
     ["M", 1.0, 1.0, 1.0, "white", 0, 0, 0, "spin"],
     ["M", 3.0, 0.42, 0.42, "gold", 0, 0, 0],
     ["M", 0.42, 3.0, 0.42, "gold", 0, 0, 0],
-    ["M", 0.42, 0.42, 3.0, "orange", 0, 0, 0],
+    ["M", 0.42, 0.42, 3.0, "magenta", 0, 0, 0],
   ],
 
   blast: [["M", 3.4, 3.4, 3.4, "white", 0, 0, 0, "spin"]],
@@ -132,34 +150,34 @@ var DP_MESH = {
     ["M", 1.9, 1.7, 1.9, "smoke", -1.6, 1.3, 3.3, "lit"],
     ["M", 1.6, 1.4, 1.6, "shade", 2.6, -2.0, 1.2, "lit"],
   ],
-}
 
-var DP_ORBS = [
-  ["violet", 210],
-  ["orange", 90],
-  ["cyan", 330],
-]
-var DP_BEAM_LEN = 4
+  nuke: [
+    ["M", 5, 5, 5, "white", 0, 0, 0, "spin"],
+    ["M", 16, 1.2, 1.2, "magenta", 0, 0, 0],
+    ["M", 1.2, 16, 1.2, "purple", 0, 0, 0],
+    ["M", 1.2, 1.2, 16, "cyan", 0, 0, 0],
+  ],
+
+  stem: [["M", 3.2, 4.4, 3.2, "shade", 0, 0, 0, "lit"]],
+}
 
 var DP_FX = {
-  orbGlow: { tex: "glint", life: [0.25, 0.45], size: [0.25, 0.5], speed: [0.3, 1.2], col: ["tint", "white"], fade: [1, 0], blend: 2 },
-  orbDust: { tex: "square_particle", life: [0.3, 0.5], size: [0.08, 0.16], speed: [1.5, 3], col: ["tint", "tint"], fade: [1, 0], blend: 2, drag: 0.1 },
-  beam: { tex: "square_particle", life: [0.35, 0.6], size: [0.3, 0.55], speed: [0, 0.4], col: ["tint", "white"], fade: [1, 0], blend: 2 },
-  beamSpark: { tex: "glint", life: [0.25, 0.5], size: [0.15, 0.3], speed: [1, 3], col: ["tint", "white"], fade: [1, 0], blend: 2 },
-  flash: { tex: "square_particle", life: [0.15, 0.3], size: [1.5, 3.5], speed: [2, 6], col: ["white", "white"], fade: [1, 0], blend: 2, drag: 0.2 },
+  mote: { tex: "glint", life: [0.5, 0.9], size: [0.15, 0.35], speed: [2, 5], col: ["tint", "tint2"], fade: [1, 0], blend: 2 },
+  flash: { tex: "square_particle", life: [0.15, 0.3], size: [1.5, 3.5], speed: [2, 6], col: ["white", "lilac"], fade: [1, 0], blend: 2, drag: 0.2 },
   aura: { tex: "square_particle", life: [0.4, 0.7], size: [0.4, 0.9], speed: [0.2, 1], col: ["tint", "tint2"], fade: [0.9, 0], blend: 2 },
-  outline: { tex: "glint", life: [0.3, 0.5], size: [0.3, 0.6], speed: [0.2, 0.8], col: ["white", "white"], fade: [1, 0], blend: 2 },
-  wisp: { tex: "soul_0", life: [0.6, 1], size: [0.6, 1.2], speed: [0.1, 0.5], col: ["white", "pink"], fade: [0.7, 0], blend: 2 },
-  impact: { tex: "critical_hit", life: [0.3, 0.5], size: [0.4, 0.9], speed: [4, 9], grav: -6, col: ["gold", "orange"], fade: [1, 0], blend: 2, drag: 0.3 },
-  ring: { tex: "square_particle", life: [0.35, 0.5], size: [0.3, 0.5], speed: [14, 18], col: ["white", "white"], fade: [1, 0], blend: 2, drag: 0.3, flat: 1 },
+  outline: { tex: "glint", life: [0.3, 0.5], size: [0.3, 0.6], speed: [0.2, 0.8], col: ["lilac", "white"], fade: [1, 0], blend: 2 },
+  wisp: { tex: "soul_0", life: [0.6, 1], size: [0.6, 1.2], speed: [0.1, 0.5], col: ["lilac", "magenta"], fade: [0.7, 0], blend: 2 },
+  impact: { tex: "critical_hit", life: [0.3, 0.5], size: [0.4, 0.9], speed: [4, 9], grav: -6, col: ["gold", "magenta"], fade: [1, 0], blend: 2, drag: 0.3 },
+  ring: { tex: "square_particle", life: [0.35, 0.5], size: [0.3, 0.5], speed: [14, 18], col: ["white", "magenta"], fade: [1, 0], blend: 2, drag: 0.3, flat: 1 },
+  wave: { tex: "square_particle", life: [0.6, 0.85], size: [0.8, 1.5], speed: [30, 42], col: ["white", "magenta"], fade: [1, 0], blend: 2, drag: 0.4, flat: 1 },
   smoke: { tex: "square_particle", life: [1.2, 2], size: [1.5, 3], speed: [0.5, 2], grav: 0.8, col: ["smoke", "shade"], fade: [0.85, 0], blend: 1, drag: 0.2 },
-  spark: { tex: "glint", life: [0.5, 1], size: [0.25, 0.5], speed: [1, 4], col: ["violet", "pink"], fade: [1, 0], blend: 2, drag: 0.2 },
+  spark: { tex: "glint", life: [0.5, 1], size: [0.25, 0.5], speed: [1, 4], col: ["purple", "magenta"], fade: [1, 0], blend: 2, drag: 0.2 },
 }
 var DP_SKIN = [
-  ["pink", "violet"],
-  ["blue", "cyan"],
-  ["orange", "pink"],
-  ["white", "pink"],
+  ["purple", "magenta"],
+  ["deep", "purple"],
+  ["magenta", "lilac"],
+  ["cyan", "purple"],
 ]
 
 var dpAdd = (a, b, s) => [a[0] + b[0] * s, a[1] + b[1] * s, a[2] + b[2] * s]
@@ -185,6 +203,8 @@ var dpSound = (name, pos, vol, rate) => {
   } catch (e) {}
 }
 var dpLifeforms = () => api.getMobIds().concat(api.getPlayerIds())
+var DP_UP = dpBasis([0, 0, 1])
+var DP_RING = DP_CIRCLE.map((r) => ["M", r[3], r[9] ? r[3] : 0.06, r[2], r[4], 0, 0, 0, r[9] || ""])
 
 var dpCasts = []
 var dpMeshes = 0
@@ -222,12 +242,12 @@ function dpBox(row, tint, k) {
   }
 }
 
-function dpPut(c, key, row, tint, pos, f) {
+function dpPut(c, key, row, tint, pos, f, k) {
   var id = c.m[key]
   var fresh = !id
   if (fresh) {
     if (dpMeshes >= DP_CFG.maxMeshes) return
-    id = api.attemptCreateMeshEntity("Box", dpBox(row, tint, 1))
+    id = api.attemptCreateMeshEntity("Box", dpBox(row, tint, k || 1))
     if (!id) return
     c.m[key] = id
     dpMeshes++
@@ -242,7 +262,7 @@ function dpGroup(c, name, tag, tint, pos, B, k, still) {
   var rows = dpRows(name)
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i]
-    dpPut(c, tag + i, r, tint, dpAt(pos, B, r[5] * k, r[6] * k, r[7] * k), still ? null : B[0])
+    dpPut(c, tag + i, r, tint, dpAt(pos, B, r[5] * k, r[6] * k, r[7] * k), still ? null : B[0], k)
   }
 }
 
@@ -271,16 +291,30 @@ function dpBody(c) {
   var walked = 0
   for (var i = 0; i < rows.length && j > 0; i++) {
     var r = rows[i]
+    var back = -r[5] * c.k
     var seg = dpLen(dpSub(P[j], P[j - 1]))
-    while (walked + seg < -r[5] && j > 1) {
+    while (walked + seg < back && j > 1) {
       walked += seg
       j--
       seg = dpLen(dpSub(P[j], P[j - 1]))
     }
-    if (walked + seg < -r[5]) return
+    if (walked + seg < back) return
     var f = dpNorm(dpSub(P[j], P[j - 1]))
-    var B = dpBasis(f)
-    dpPut(c, "body_" + i, r, "", dpAt(P[j], B, -(-r[5] - walked), r[6], r[7]), f)
+    dpPut(c, "body_" + i, r, "", dpAt(P[j], dpBasis(f), walked - back, r[6] * c.k, r[7] * c.k), f, c.k)
+  }
+}
+
+function dpCircle(c) {
+  for (var a = 0; a < DP_CIRCLE.length; a++) {
+    var r = DP_CIRCLE[a]
+    var age = c.t - r[7]
+    if (age < 0 || (age > 0 && !r[8])) continue
+    for (var n = 0; n < r[0]; n++) {
+      var ang = (r[5] * Math.PI) / 180 + (n * 2 * Math.PI) / r[0] + r[8] * age
+      var x = Math.cos(ang)
+      var z = Math.sin(ang)
+      dpPut(c, "ring" + a + "_" + n, DP_RING[a], "", [c.home[0] + x * r[1], c.home[1] + r[6], c.home[2] + z * r[1]], [-z, 0, x])
+    }
   }
 }
 
@@ -322,13 +356,6 @@ var dpNext = (c) => {
   c.t = -1
 }
 
-function dpOrbAt(c, i, p) {
-  var q = Math.max(0, p)
-  var rad = 0.9 * (1 - q) + 0.7 * Math.sin(Math.PI * q)
-  var ang = (DP_ORBS[i][1] * Math.PI) / 180 + q * Math.PI * 0.6
-  return dpAt(c.from, c.L, c.reach * q, Math.cos(ang) * rad, Math.sin(ang) * rad)
-}
-
 function dpGoal(c) {
   if (c.target) {
     try {
@@ -344,71 +371,77 @@ function dpGoal(c) {
 function dpFly(c, pos) {
   var last = c.path[c.path.length - 1]
   var f = dpNorm(dpSub(pos, last))
+  var k = c.k
   c.path.push(pos)
-  if (c.path.length > 40) c.path.shift()
-  dpGroup(c, "head", "head_", "", pos, dpBasis(f), 1)
+  if (c.path.length > 60) c.path.shift()
+  dpGroup(c, "head", "head_", "", pos, dpBasis(f), k)
   dpBody(c)
   var skin = DP_SKIN[c.t % DP_SKIN.length]
-  dpFx("aura", pos, 5, 0.9, skin[0], skin[1])
-  dpFx("outline", pos, 3, 1.1)
+  dpFx("aura", pos, 5, 0.9 * k, skin[0], skin[1])
+  dpFx("outline", pos, 3, 1.1 * k)
   var n = c.path.length
   var mid = c.path[Math.max(0, n - 2 - ((c.t * 3) % 9))]
   var skin2 = DP_SKIN[(c.t + 2) % DP_SKIN.length]
-  dpFx("aura", mid, 4, 0.7, skin2[0], skin2[1])
-  if (c.t % 2 === 0) dpFx("wisp", c.path[Math.max(0, n - 10)], 2, 0.6)
+  dpFx("aura", mid, 4, 0.7 * k, skin2[0], skin2[1])
+  if (c.t % 2 === 0) dpFx("wisp", c.path[Math.max(0, n - 10)], 2, 0.6 * k)
+}
+
+function dpSpiral(c, mid, rad, turn) {
+  c.ang += turn
+  c.at = [mid[0] + Math.cos(c.ang) * rad, mid[1], mid[2] + Math.sin(c.ang) * rad]
+  dpFly(c, c.at)
 }
 
 var DP_PHASE = [
   function (c) {
-    var k = c.t < 8 ? 0.6 : 1
-    if (c.t === 0) dpSound("magicAccent1", c.from, 1, 0.8)
-    for (var i = 0; i < 3; i++) {
-      var tint = DP_ORBS[i][0]
-      var p = dpOrbAt(c, i, 0)
-      if (c.t === 0) dpGroup(c, "orb", "orb" + i + "_", tint, p, c.L, 1)
-      if (c.t === 0 || c.t === 8) dpResize(c, "orb", "orb" + i + "_", tint, k)
-      dpFx("orbGlow", p, 3, 0.3 * k, tint)
-      if (c.t % 3 === i) dpFx("orbDust", p, 4, 0.7, tint)
-    }
-    if (c.t >= 15) dpNext(c)
-  },
-
-  function (c) {
-    var T = 14
-    var p = (c.t + 1) / T
-    if (c.t === 0) dpSound("zapAccent1", c.from, 1, 1)
-    for (var i = 0; i < 3; i++) {
-      var tint = DP_ORBS[i][0]
-      var head = dpOrbAt(c, i, p)
-      var f = dpNorm(dpSub(head, dpOrbAt(c, i, p - 0.02)))
-      dpGroup(c, "orb", "orb" + i + "_", tint, head, dpBasis(f), 1)
-      for (var k = 0; k < DP_BEAM_LEN; k++) {
-        var q = p - (k + 1) * 0.085
-        if (q <= 0) break
-        var at = dpOrbAt(c, i, q)
-        dpPut(c, "beam" + i + "_" + k, DP_MESH.beam[0], tint, at, dpNorm(dpSub(dpOrbAt(c, i, q + 0.02), at)))
-      }
-      dpFx("beam", head, 4, 0.2, tint)
-      dpFx("beam", dpOrbAt(c, i, p - 0.5 / T), 3, 0.2, tint)
-      if (c.t % 3 === i) dpFx("beamSpark", head, 3, 0.3, tint)
-    }
+    var T = Math.max(34, Math.round(DP_CFG.summon * 20))
+    if (c.t === 0) dpSound("magicAccent1", c.home, 1, 0.6)
+    dpCircle(c)
+    var skin = DP_SKIN[c.t % DP_SKIN.length]
+    dpFx("mote", c.home, c.t > T - 12 ? 8 : 3, 2.6, skin[0], skin[1], [0, 1, 0])
+    if (c.t % 10 === 9) dpFx("ring", c.home, 10, 0.3)
+    if (c.t === T - 10) dpSound("zapAccent1", c.home, 1, 0.7)
     if (c.t >= T - 1) dpNext(c)
   },
 
   function (c) {
+    var h = c.t + 1
+    var mid = [c.home[0], c.home[1] - 2 + h * 1.25, c.home[2]]
     if (c.t === 0) {
-      dpDrop(c, "orb")
-      dpDrop(c, "beam")
-      c.at = dpAt(c.from, c.L, c.reach, 0, 0)
-      c.path = [dpAt(c.at, c.L, -0.6, 0, 0)]
-      c.far = Math.max(1, dpLen(dpSub(dpGoal(c), c.at)))
-      dpFx("flash", c.at, 10, 0.6)
-      dpFx("ring", c.at, 14, 0.3)
-      dpSound("bearRoar1", c.at, 1, 1.4)
+      c.path = [[mid[0], mid[1] - 1.5, mid[2]]]
+      dpGroup(c, "pillar", "pillar_", "", c.home, DP_UP, 1, true)
+      dpFx("flash", c.home, 12, 1.5)
+      dpFx("ring", c.home, 20, 0.4)
+      dpSound("bearRoar1", c.home, 1, 1.3)
     }
+    dpCircle(c)
+    if (c.t === 7) dpDrop(c, "pillar_")
+    dpFx("mote", c.home, 6, 2.6, "magenta", "lilac", [0, 1, 0])
+    dpSpiral(c, mid, Math.min(2, h * 0.2), 0.5)
+    if (mid[1] >= c.home[1] + c.reach) {
+      dpDrop(c, "ring")
+      dpDrop(c, "pillar_")
+      dpNext(c)
+    }
+  },
+
+  function (c) {
+    var top = [c.home[0], c.home[1] + c.reach + Math.sin(c.t * 0.5) * 0.8, c.home[2]]
+    dpSpiral(c, top, Math.min(3.5, 2 + c.t * 0.15), 0.45)
+    if (c.t < 11) return
+    if (!c.target) c.target = dpPick(c.id, c.home)
+    var goal = dpGoal(c)
+    c.far = Math.max(1, dpLen(dpSub(goal, c.at)))
+    dpFx("ring", goal, 14, 0.3)
+    dpFx("impact", goal, 6, 0.5)
+    dpSound("bearRoar1", c.at, 1, 1.6)
+    dpNext(c)
+  },
+
+  function (c) {
     var goal = dpGoal(c)
     var left = dpLen(dpSub(goal, c.at))
-    var speed = 0.95
+    var speed = 1.15
     if (left <= speed || c.t > 70) {
       c.spin = Math.atan2(c.at[2] - goal[2], c.at[0] - goal[0])
       return dpNext(c)
@@ -445,70 +478,131 @@ var DP_PHASE = [
       dpFx("ring", goal, 24, 0.4)
       dpFx("impact", goal, 14, 0.8)
       dpSound("cannonFire1", goal, 1, 0.7)
-      dpHurt(c, goal)
+      dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
     }
     dpFx("flash", goal, 6, 2)
     if (c.t >= 3) dpNext(c)
   },
 
   function (c) {
-    var goal = c.goal
-    var T = 28
     if (c.t === 0) dpDrop(c, "blast_")
-    var out = 1 - Math.pow(1 - Math.min(1, (c.t + 1) / 14), 2)
-    var k = c.t < 18 ? 1 : c.t < 23 ? 0.65 : 0.35
-    var rows = dpRows("smoke")
-    for (var i = 0; i < rows.length; i++) {
-      var r = rows[i]
-      dpPut(c, "smoke_" + i, r, "", dpAt(goal, c.B, r[5] * out, r[6] * out, 0.3 + r[7] * out + c.t * 0.03))
+    dpCloud(c, 1, 14, 18, 23, 0.03)
+    if (c.t < 20 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5), 5, 2.5)
+    if (c.t % 3 === 0) dpFx("spark", dpAt(c.goal, c.B, 0, 0, 0.5), 5, 2.5)
+    if (c.t >= 27) c.ph = 99
+  },
+
+  function (c) {
+    var h = c.t + 1
+    if (c.t === 0) {
+      dpFx("flash", c.base, 20, 3)
+      dpFx("wave", c.base, 20, 0.5)
+      dpSound("bearRoar1", c.base, 1, 0.6)
+      dpSound("zapAccent1", c.base, 1, 0.5)
     }
-    if (c.t === 18 || c.t === 23) dpResize(c, "smoke", "smoke_", "", k)
-    if (c.t < 20 && c.t % 2 === 0) dpFx("smoke", dpAt(goal, c.B, 0, 0, 1.5), 5, 2.5)
-    if (c.t % 3 === 0) dpFx("spark", dpAt(goal, c.B, 0, 0, 0.5), 5, 2.5)
-    if (c.t >= T - 1) dpNext(c)
+    dpSpiral(c, [c.base[0], c.base[1] + h * 0.8, c.base[2]], Math.min(4, h * 0.4), 0.36)
+    if (c.t % 4 === 0) dpFx("ring", c.at, 12, 0.5)
+    if (h * 0.8 >= c.reach) dpNext(c)
+  },
+
+  function (c) {
+    if (c.t === 0) {
+      dpDrop(c, "")
+      c.goal = c.at
+      c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
+      dpGroup(c, "nuke", "nuke_", "", c.goal, DP_UP, 1, true)
+      dpSound("cannonFire1", c.goal, 1, 0.4)
+      dpSound("cannonFire1", c.ground, 1, 0.55)
+      dpHurt(c, c.ground, DP_CFG.nukeRadius, DP_CFG.nukeDamage, DP_CFG.nukeKnockback, true)
+    }
+    if (c.t && c.t % 3 === 0) dpResize(c, "nuke", "nuke_", "", 1 + c.t * 0.2)
+    dpFx("flash", c.goal, 14, 3 + c.t * 0.5)
+    dpFx("wave", c.goal, 16, 0.5)
+    dpFx("wave", c.ground, 16, 0.5)
+    dpFx("impact", c.goal, 10, 3)
+    if (c.t >= 15) dpNext(c)
+  },
+
+  function (c) {
+    if (c.t === 0) dpDrop(c, "nuke_")
+    dpCloud(c, 3, 20, 34, 42, 0.05)
+    var out = Math.min(1, (c.t + 1) / 12)
+    for (var i = 0; i < 5 && c.t < 36; i++) {
+      dpPut(c, "stem_" + i, DP_MESH.stem[0], "", dpAdd(c.ground, dpSub(c.goal, c.ground), ((i + 0.5) / 5) * out))
+    }
+    if (c.t === 36) dpDrop(c, "stem_")
+    if (c.t < 36 && c.t % 2 === 0) dpFx("smoke", c.goal, 8, 8)
+    if (c.t < 30 && c.t % 2 === 1) dpFx("smoke", c.ground, 8, 6)
+    if (c.t % 2 === 0) dpFx("spark", c.goal, 8, 9)
+    if (c.t >= 49) c.ph = 99
   },
 ]
 
-function dpHurt(c, at) {
+function dpCloud(c, k, grow, small, tiny, lift) {
+  var out = 1 - Math.pow(1 - Math.min(1, (c.t + 1) / grow), 2)
+  var rows = dpRows("smoke")
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i]
+    dpPut(c, "smoke_" + i, r, "", dpAt(c.goal, c.B, r[5] * out * k, r[6] * out * k, 0.3 + r[7] * out * k + c.t * lift), null, k)
+  }
+  if (c.t === small || c.t === tiny) dpResize(c, "smoke", "smoke_", "", k * (c.t === small ? 0.65 : 0.35))
+}
+
+function dpKill(id, by) {
+  try {
+    api.killLifeform(id, by)
+  } catch (e) {
+    api.applyHealthChange(id, -99999, by)
+  }
+}
+
+function dpHurt(c, at, radius, damage, kb, nuke) {
   var ids = dpLifeforms()
   for (var i = 0; i < ids.length; i++) {
     var id = ids[i]
-    if (id === c.id && !DP_CFG.hurtCaster) continue
+    if (c.ids.indexOf(id) >= 0 && !DP_CFG.hurtCaster) continue
     try {
       var p = api.getPosition(id)
       var away = dpSub([p[0], p[1] + 0.9, p[2]], at)
+      if (nuke) away[1] = 0
       var d = dpLen(away)
-      if (d > DP_CFG.radius) continue
+      if (d > radius) continue
       var n = dpNorm([away[0], away[1] + 0.6, away[2]])
-      var kb = DP_CFG.knockback
       api.applyImpulse(id, n[0] * kb, n[1] * kb, n[2] * kb)
-      api.applyHealthChange(id, -Math.round(DP_CFG.damage * (1 - (0.6 * d) / DP_CFG.radius)), c.id)
+      if (DP_CFG.kill && (nuke || id === c.target)) dpKill(id, c.id)
+      else api.applyHealthChange(id, -Math.round(damage * (1 - (0.6 * d) / radius)), c.id)
     } catch (e) {}
+  }
+}
+
+function dpSolid(x, y, z) {
+  try {
+    var name = api.getBlock(Math.floor(x), Math.floor(y), Math.floor(z))
+    return !!name && name !== "Air"
+  } catch (e) {
+    return false
   }
 }
 
 function dpFree(from, dir, max) {
   for (var d = 1; d <= max; d++) {
-    try {
-      var name = api.getBlock(Math.floor(from[0] + dir[0] * d), Math.floor(from[1] + dir[1] * d), Math.floor(from[2] + dir[2] * d))
-      if (name && name !== "Air") return d
-    } catch (e) {}
+    if (dpSolid(from[0] + dir[0] * d, from[1] + dir[1] * d, from[2] + dir[2] * d)) return d
   }
   return max
 }
 
-function dpPick(casterId, eye, f) {
-  var pick = (ids, aimed) => {
+function dpPick(casterId, from, f) {
+  var pick = (ids) => {
     var best = null
     var bestDist = DP_CFG.range
     for (var i = 0; i < ids.length; i++) {
       if (ids[i] === casterId) continue
       try {
         var p = api.getPosition(ids[i])
-        var v = dpSub([p[0], p[1] + 0.9, p[2]], eye)
+        var v = dpSub([p[0], p[1] + 0.9, p[2]], from)
         var dist = dpLen(v)
         if (dist >= bestDist || dist < 1) continue
-        if (aimed && (v[0] * f[0] + v[1] * f[1] + v[2] * f[2]) / dist < 0.94) continue
+        if (f && (v[0] * f[0] + v[1] * f[1] + v[2] * f[2]) / dist < 0.94) continue
         best = ids[i]
         bestDist = dist
       } catch (e) {}
@@ -517,37 +611,81 @@ function dpPick(casterId, eye, f) {
   }
   var mobs = api.getMobIds()
   var players = DP_CFG.hitPlayers ? api.getPlayerIds() : []
-  return pick(mobs.concat(players), true) || pick(mobs, false) || pick(players, false)
+  return f ? pick(mobs.concat(players)) : pick(mobs) || pick(players)
 }
 
 function dragonPulse(playerId, eye, dir) {
   if (dpCasts.length >= DP_CFG.maxCasts) return false
   var face = eye ? { camPos: eye, dir: dir } : api.getPlayerFacingInfo(playerId)
   var f = dpNorm(face.dir)
-  var B = dpBasis(f)
   eye = face.camPos
   var flat = dpNorm([f[0], 0, f[2]])
-  var up = dpNorm([flat[0] * DP_CFG.lean, 1, flat[2] * DP_CFG.lean])
-  var from = dpAt(eye, B, 2.2, 0, 0.1)
-  var c = {
+  var spot = dpAdd(eye, flat, DP_CFG.circleDist)
+  if (dpSolid(spot[0], spot[1], spot[2])) spot = eye
+  var drop = dpFree(spot, [0, -1, 0], 16)
+  var home = [spot[0], drop < 16 ? Math.floor(spot[1] - drop) + 1.06 : spot[1] - 1.5, spot[2]]
+  dpCasts.push({
     id: playerId,
+    ids: [playerId],
     ph: 0,
     t: 0,
     m: {},
-    B: B,
-    L: dpBasis(up),
-    from: from,
-    reach: Math.max(3, dpFree(from, up, DP_CFG.rise) - 2),
+    k: 1,
+    B: dpBasis(flat),
+    home: home,
+    at: home,
+    ang: Math.atan2(flat[2], flat[0]),
+    reach: Math.max(6, dpFree(dpAdd(home, [0, 1, 0], 1), [0, 1, 0], DP_CFG.rise) - 2),
     target: dpPick(playerId, eye, f),
     goal: dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5)),
     path: [],
-  }
-  dpCasts.push(c)
+  })
   return true
 }
 globalThis.dragonPulse = dragonPulse
 
+var dpFlying = (c) => (c.ph >= 1 && c.ph <= 4) || c.ph === 7
+
+function dpTouch(a, b) {
+  var head = a.path[a.path.length - 1]
+  var reach = DP_CFG.mergeDist * Math.max(a.k, b.k)
+  for (var n = b.path.length - 1; n >= 0 && n > b.path.length - 18; n -= 2) {
+    if (dpLen(dpSub(head, b.path[n])) < reach) return true
+  }
+  return false
+}
+
+function dpMerge() {
+  for (var i = 0; i < dpCasts.length; i++) {
+    for (var j = dpCasts.length - 1; j > i; j--) {
+      var a = dpCasts[i]
+      var b = dpCasts[j]
+      if (!dpFlying(a) || !dpFlying(b) || !a.path.length || !b.path.length) continue
+      if (!dpTouch(a, b) && !dpTouch(b, a)) continue
+      if (b.ph === 7) {
+        dpCasts[i] = b
+        b = a
+        a = dpCasts[i]
+      }
+      dpDrop(b, "")
+      dpCasts.splice(j, 1)
+      a.ids = a.ids.concat(b.ids)
+      dpFx("flash", a.at, 16, 2)
+      if (a.ph === 7) continue
+      var mid = dpAdd(a.at, dpSub(b.at, a.at), 0.5)
+      dpDrop(a, "")
+      a.k = DP_CFG.megaScale
+      a.ph = 7
+      a.t = 0
+      a.at = a.base = mid
+      a.path = [[mid[0], mid[1] - 2, mid[2]]]
+      a.reach = Math.max(8, dpFree(mid, [0, 1, 0], DP_CFG.megaRise) - 2)
+    }
+  }
+}
+
 function dpTick() {
+  if (DP_CFG.merge) dpMerge()
   for (var i = dpCasts.length - 1; i >= 0; i--) {
     var c = dpCasts[i]
     try {
@@ -556,7 +694,7 @@ function dpTick() {
     } catch (e) {
       c.ph = 99
     }
-    if (c.ph >= DP_PHASE.length) {
+    if (!DP_PHASE[c.ph]) {
       dpDrop(c, "")
       dpCasts.splice(i, 1)
     }

@@ -3,7 +3,7 @@
 The move from `beam_blast_frames/`, rebuilt for [bloxd.io](https://bloxd.io) with
 mesh entities, particles and code.
 
-![Four moments of the move: beams, dragon, bite, smoke](dragon_pulse/preview/moments.png)
+![Six moments: circle, the dragon coming out, the dive, the merged dragon, the nuke, its cloud](dragon_pulse/preview/moments.png)
 
 *Drawn by `dragon_pulse/tools/render.py` from a test run outside the game. It is a
 rough picture, not a screenshot.*
@@ -18,13 +18,20 @@ rough picture, not a screenshot.*
      into it and click it;
    - set `item` in `DP_CFG` to an item name, hold that item and right click.
 
-The beams fly up into the sky, become the dragon there, and the dragon dives onto
-the target it chose:
+A summoning circle draws itself on the floor 4 blocks in front of you. After 2.5
+seconds the dragon comes up out of it, dashes 16 blocks into the air, circles
+there while it finds a target, then dives onto it and kills it. The target is:
 
-1. the mob or player you are looking at;
-2. otherwise the mob nearest to you within 40 blocks;
+1. the mob or player you were looking at when you cast;
+2. otherwise the mob nearest to the circle within 40 blocks;
 3. otherwise the nearest other player (`hitPlayers: false` turns this off);
-4. with nothing in range, the spot you are looking at.
+4. with nothing in range, the spot you were looking at.
+
+**Two dragons that touch merge.** One dragon 2.2 times the size is left. It climbs
+22 blocks and explodes into a nuke that kills every mob and player within 22
+blocks, except the players who cast the two dragons. Dragons touch when their
+paths cross, for example when two players cast at each other at about the same
+time, or one player casts twice in a row. `merge: false` turns this off.
 
 If your World Code already has `tick`, `onPlayerChat` or `onPlayerAltAction`, do
 not paste the three callbacks at the bottom. Put the one line inside each into
@@ -45,7 +52,7 @@ Paste `goodra.js` into World Code **below** `world_code.js`. It also works alone
 | Chat | What happens |
 |---|---|
 | `!goodra` | Goodra stands where you are, facing the way you look |
-| `!goodra pulse` | It fires Dragon Pulse from its mouth |
+| `!goodra pulse` | It casts Dragon Pulse: the summoning circle appears on the floor in front of it |
 | `!goodra off` | It is removed |
 
 Every mesh is one named row in `GOODRA_MESH`, in 11 groups: `head`, `face`,
@@ -126,30 +133,38 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 20,126 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 30,342 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 36,375 |
+| `world_code.js` | World Code | 24,539 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 34,754 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 40,786 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
 The files to paste hold no `//` comments, to save space. What the settings and
 the table columns mean is written on this page instead.
 
-## What the frames show, and how it is built
+## How the move runs
 
-The 20 frames cover 1.50 s to 6.25 s of the clip.
-
-| Frames | In the clip | In Bloxd | Seconds |
+| Step | What happens | Built from | Seconds |
 |---|---|---|---|
-| 01–03 | Three orbs charge: violet, orange and cyan, each with a white core | 6 meshes (core + turning shell per orb), glow and dust particles | 0.0–0.8 |
-| 04–05 | Three beams with white cores shoot up into the sky side by side | The orbs fly 16 blocks up with 4 beam pieces each, particle streaks behind | 0.8–1.5 |
-| 06 | The beams merge into one white column with a magenta and blue edge | White flash and ring where the beams meet, high up | 1.5 |
-| 07–11 | The energy becomes a serpent dragon: white body, mottled pink, violet, blue and orange, with a head and jaws. It arches over and dives after the target | 94 meshes: a 38-part head and a 56-part body that bends along the path the head flew. Skin shimmer and white outline particles | 1.5–3.3 |
-| 12–16 | It wraps round the target; two yellow-orange stars flash | The dragon circles the target; two 4-part star meshes and gold sparks | 3.3–3.9 |
-| 17 | White explosion with thin arcs | White core mesh, flash, shock ring. Damage and knockback happen here | 3.9–4.1 |
-| 18–20 | Rolling white smoke with blue-grey shading, violet sparks left over | 8 smoke meshes that roll out and shrink, smoke and spark particles | 4.1–5.5 |
+| circle | The summoning circle draws itself ring by ring; the star in it turns | 38 flat meshes in 6 rings, rising sparks | 0.0–2.5 |
+| emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 100 meshes: a 42-part head and a 58-part body that follows the head's path | 2.5–3.15 |
+| seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
+| dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
+| coil | It wraps round the target; two stars flash | two 4-part star meshes, sparks | 4.7–5.3 |
+| blast | White explosion. The target is killed, others within 6 blocks are hurt and pushed | core mesh, flash, shock ring | 5.3–5.5 |
+| smoke | Smoke rolls out and shrinks | 8 smoke meshes, smoke and sparks | 5.5–6.9 |
 
-Seconds are for a cast with nothing in range. How long the dive takes depends on how far the target is.
+After two dragons touch, the one that is left runs these steps instead:
+
+| Step | What happens | Built from | Lasts |
+|---|---|---|---|
+| mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 100 meshes, bigger | 1.2 s |
+| nuke | A fireball with three rays grows until it reaches the ground; shock waves in the sky and on the ground. Everything within 22 blocks dies | 4 meshes that grow, flashes and waves | 0.8 s |
+| cloud | A mushroom cloud: a cap three times the size of the normal smoke on a stem down to the ground | 8 cap meshes, 5 stem meshes, smoke | 2.5 s |
+
+How long the dive takes depends on how far the target is. The clip in
+`beam_blast_frames/` started this move (orbs, beams, a white dragon); the circle,
+the purple dragon and the nuke are changes asked for later.
 
 ## The meshes
 
@@ -161,33 +176,46 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 
 | Group | Rows | What it is |
 |---|---|---|
-| `orb` | 2 | Core and shell, used three times with the colours in `DP_ORBS` |
-| `beam` | 1 | One piece of beam, 4 behind each orb |
-| `head` | 38 | Skull, snout and open jaw; horns with antlers and tips; brows, eyes and pupils; fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek frills, chin and beard |
-| `body` | 56 | 12 segments from thick neck to thin tail, a spine on each, belly plates, coloured patches on both sides, two pairs of side fins, tail fins |
-| `flare` | 4 | The yellow star: a core and three rays |
+| `pillar` | 1 | The pillar of light when the dragon comes out |
+| `head` | 42 | Purple skull, snout and open jaw; two pairs of dark swept-back horns with magenta tips; brows, cyan eyes and pupils; a gem on the forehead; fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins and frills, chin spikes, beard |
+| `body` | 58 | 12 segments from thick neck to thin tail, purple and dark purple in turn; a tall magenta spine on each, lilac belly plates, cyan stripes on both sides, a pair of wings with lilac tips, a pair of fins, tail fins |
+| `flare` | 4 | The star: a core and three rays |
 | `blast` | 1 | The white core of the explosion |
-| `smoke` | 8 | White and blue-grey puffs |
+| `smoke` | 8 | White and violet-grey puffs; also the cap of the mushroom cloud |
+| `nuke` | 4 | The fireball and its three rays |
+| `stem` | 1 | One piece of the mushroom cloud's stem, used 5 times |
 
 To change a part, change its row. To add one, add a row: the engine picks it up.
 
 Every row in `DP_MESH` is named `M`. What each row is, in order:
 
-- `orb`: core, shell.
-- `beam`: one piece of beam.
 - `flare`: core, then the three rays.
-- `blast`: core.
 - `smoke`: puffs 1 to 8.
+- `nuke`: fireball, then the three rays.
 - `body`: for each of the 12 segments from neck to tail tip, the segment itself,
-  then its spine, then (where it has them) its belly plate, side patches and side
-  fins. The last three rows are the tail fins, the tail's top fin and its tip.
-- `head`: skull, snout, jaw,
-horns, crest, eyes, cheek fins, brows, upper fangs, lower fangs, throat, whiskers,
-antlers, mane, pupils, teeth, tongue, nostrils, whisker tips, horn tips, back of
-the mane, cheek frills, chin, beard.
+  then its spine, then (where it has them) its belly plate, side stripes, and
+  wings or fins. The wing tips follow the wings. The last three rows are the tail
+  fins, the tail's top fin and its tip.
+- `head`: skull, snout, jaw, horns, crest, eyes, cheek fins, brows, upper fangs,
+  lower fangs, throat, whiskers, second horns, mane, pupils, teeth, tongue,
+  nostrils, whisker tips, horn tips, back of the mane, cheek frills, chin, beard,
+  forehead gem, snout ridge, chin spikes.
+
 The numbers are meshes made at full detail; parts on both sides are written once
 and mirrored. `detail` in `DP_CFG` sets how much of the dragon is made: 1 gives 27
-meshes, 2 gives 63, 3 gives 94.
+meshes, 2 gives 65, 3 gives 100.
+
+The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
+
+```
+[count, radius, length, width, colour, turn, up, tick, spin, flag]
+```
+
+- count boxes stand round the middle at radius, each length long and width wide.
+- turn: degrees the whole ring is turned. up: blocks above the floor.
+- tick: when the ring appears, in ticks (20 per second) after the cast.
+- spin: how far the ring turns each tick; 0 stands still.
+- flag `spin`: the boxes are cubes that turn by themselves (the six floating runes).
 
 ![The dragon laid out straight](dragon_pulse/preview/dragon.png)
 
@@ -196,23 +224,16 @@ meshes, 2 gives 63, 3 gives 94.
 *Drawn outside the game with plain light so the parts can be told apart. In the
 game they glow.*
 
-At most 98 meshes exist at once in one cast, and all are deleted when the move ends.
+One cast holds at most 138 meshes at once; two dragons about to merge hold up to
+276. All are deleted when the move ends.
 
 ## The particles
 
-The 12 particle looks are in `DP_FX` in `world_code.js`, in seconds and blocks.
+The 10 particle looks are in `DP_FX` in `world_code.js`, in seconds and blocks.
 
-To look at them and change them in the
-[Bloxd Particle Studio](https://epicoo00000.github.io/Bloxd-Particle-studio/),
-press **Open** there and pick
-[`dragon_pulse/studio/dragon_pulse.scene.json`](dragon_pulse/studio/dragon_pulse.scene.json).
-It holds the particles of all six phases in six groups, 598 particles, on the same
-timeline. Press Play to watch it.
-
-The studio shows particles only, not meshes, and its scene always goes up from the
-code block and comes down 28 blocks away. `studio/particles_only.code_block.js` is that scene
-exported by the studio: a version of the move for one code block, without World
-Code, meshes, aiming or damage.
+**The Particle Studio scene is out of date.** `dragon_pulse/studio/` still holds
+the first version of the move (orbs, beams, white dragon). It has not been rebuilt
+for the summoning circle and the nuke.
 
 ## Settings
 
@@ -222,14 +243,23 @@ Code, meshes, aiming or damage.
 |---|---|
 | `chat` | Chat message that casts the move. `""` turns it off |
 | `item` | Held item that casts it on right click. `""` turns it off |
-| `range` | Blocks around the caster in which the dragon finds a target |
-| `rise` | Blocks the beams fly up before they become the dragon |
-| `lean` | How far the beams lean forward on the way up. 0 is straight up |
+| `range` | Blocks around the circle in which the dragon finds a target |
+| `summon` | Seconds the circle is drawn before the dragon comes out (1.7 at least) |
+| `circleDist` | Blocks in front of the caster where the circle appears |
+| `rise` | Blocks the dragon flies up out of the circle |
 | `hitPlayers` | `false`: the dragon only goes for mobs |
-| `damage` | Health taken at the centre of the blast |
+| `kill` | `true`: the target dies, and so does everything the nuke reaches. `false`: they take `damage` or `nukeDamage` |
+| `damage` | Health taken at the centre of the blast from everyone but the target |
 | `radius` | Blast radius in blocks |
 | `knockback` | Push away from the blast |
-| `hurtCaster` | `true`: the blast also hurts whoever cast it |
+| `hurtCaster` | `true`: blast and nuke also hit whoever cast the dragons |
+| `merge` | `false`: dragons that touch do not merge |
+| `mergeDist` | How close two dragons must come to merge, in blocks |
+| `megaScale` | Size of the merged dragon |
+| `megaRise` | Blocks the merged dragon climbs before it explodes |
+| `nukeRadius` | Radius of the nuke in blocks, measured along the ground |
+| `nukeDamage` | Health the nuke takes at its centre when `kill` is `false` |
+| `nukeKnockback` | Push away from the nuke |
 | `rotate` | Turn meshes to face the way they fly |
 | `sounds` | Play sounds |
 | `hideDist` | Players further away than this many blocks do not see it |
@@ -256,7 +286,7 @@ Code, meshes, aiming or damage.
 - forward, right, up: where the part sits, in blocks from the middle of its group.
   In `body`, forward is how far behind the head the part follows (negative). In
   `smoke`, it is where the puff ends up.
-- colour: a name from `DP_COL`. `"tint"` is the colour of the orb it belongs to.
+- colour: a name from `DP_COL`.
 - name: every row is named `M`. The code does not use the name, so tell rows
   apart by their order, which is listed under "The meshes".
 - flag: `spin` turns by itself, `lit` is shaded instead of glowing. `m` makes the
@@ -288,8 +318,7 @@ Code, meshes, aiming or damage.
 | `drag` | Share of its speed left at the end. 1 keeps flying |
 | `flat` | 1: flies level, for rings |
 
-`DP_ORBS` holds the colour of each orb and its place round the launch line in
-degrees. `DP_SKIN` holds the colour pairs the dragon shimmers in. `GOODRA_MOUTH`
+`DP_SKIN` holds the colour pairs the dragon shimmers in. `GOODRA_MOUTH`
 is where Dragon Pulse leaves Goodra: forward, right, up.
 
 ## Not tested in the game
@@ -301,19 +330,22 @@ It cannot show how the game draws it. Things to look at first in your world:
 
 - **Mesh turning.** Meshes are turned to face the way they fly with
   `api.setEntityRotation`. The documentation does not say which way round the
-  angles go. If the beams or the dragon's parts point the wrong way, set
+  angles go. If the circle's lines or the dragon's parts point the wrong way, set
   `rotate: false`: the parts then stay level, in the right places.
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
   If parts of the dragon are missing, lower `detail`.
-- **Many casts at once.** There is no cooldown. Up to `maxCasts` (3) casts run
-  together and share `maxMeshes` (130), so a second dragon at full detail is cut
-  short while the first still flies. Lower `detail` or raise `maxMeshes` for more.
-- **Speed.** At full detail the dragon makes about 160 api calls per tick. If the
-  game stutters or stops the script, lower `detail`.
+- **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
+  together and share `maxMeshes` (300). Two dragons need 276.
+- **Speed.** At full detail one dragon makes about 190 api calls per tick, two
+  about 370. If the game stutters or stops the script, lower `detail`.
+- **Killing.** The target is killed with `api.killLifeform`. If the game refuses
+  that call, the code takes 99,999 health instead.
+- **The nuke** does not break blocks.
 - **Code block.** `code_block.js` calls a function defined in World Code. If your
   world reports that `dragonPulse` is not defined, use the chat word or the item.
-- **Roofs and walls.** Under a roof the beams stop below it. The dragon itself
-  flies through blocks on its way to the target.
+- **Roofs and walls.** Under a roof the dragon stops rising below it. It flies
+  through blocks on its way to the target. The parts of it still below the floor
+  only stay hidden if the floor is solid.
 - **Particle speed and blend.** Lifetimes and speeds assume the particle clock the
   studio measured (0.6 per second).
 
@@ -326,10 +358,10 @@ It cannot show how the game draws it. Things to look at first in your world:
 | `dragon_pulse/goodra.js` | Goodra. Paste into World Code below the move |
 | `dragon_pulse/skin.js` | Skins made of node meshes. Paste into World Code |
 | `dragon_pulse/code_block.js` | One line for a code block that casts it |
-| `dragon_pulse/studio/dragon_pulse.scene.json` | The particles as a Particle Studio scene |
+| `dragon_pulse/studio/dragon_pulse.scene.json` | The particles of the first version as a Particle Studio scene (out of date) |
 | `dragon_pulse/studio/particles_only.code_block.js` | That scene exported by the studio |
 | `dragon_pulse/studio/build_scene.mjs` | Writes the scene and checks it with the studio's code |
-| `dragon_pulse/tools/sim.mjs` | The test run: `node dragon_pulse/tools/sim.mjs --target` |
+| `dragon_pulse/tools/sim.mjs` | The test run: `node dragon_pulse/tools/sim.mjs --target`. It also runs two dragons that merge |
 | `dragon_pulse/tools/goodra_check.mjs` | The test of Goodra: `node dragon_pulse/tools/goodra_check.mjs` |
 | `dragon_pulse/tools/skin_check.mjs` | The test of the skins: `node dragon_pulse/tools/skin_check.mjs` |
 | `dragon_pulse/tools/dragon_model.mjs` | Lays the dragon out straight for a drawing |
