@@ -27,7 +27,7 @@ there while it finds a target, then dives onto it and kills it. The target is:
 3. otherwise the nearest other player (`hitPlayers: false` turns this off);
 4. with nothing in range, the spot you were looking at.
 
-**Two dragons that touch merge.** One dragon 2.2 times the size is left. It climbs
+**Two dragons that touch merge.** One dragon 1.6 times the size is left. It climbs
 22 blocks and explodes as a giant beam (the nuke) that kills every mob and player within 44
 blocks, except the players who cast the two dragons. Dragons touch when their
 paths cross, for example when two players cast at each other at about the same
@@ -144,10 +144,20 @@ the table columns mean is written on this page instead.
 
 ## How the move runs
 
+**Sizes and times now.** With `size: 3` and `circleSize: 3` the dragon is about
+60 blocks long with a head about 4 blocks wide, and the ritual circle is about
+28 blocks across with its top circle 22 blocks up. The ritual takes 6 seconds
+instead of 2.5 and its rings turn 2.4 times slower. The times in the table below
+are from the old size: add 3.35 s to each after the circle (emerge 6.0, seek
+6.7, dive 7.3, coil 8.1, beam 8.7, smoke 11.15, end about 12.9 s). Heights and
+widths in the table are also from the old size, except where a row says
+otherwise: the beam is twice as thick, the explosion twice as wide (blast
+radius 24) and the nuke 1.5 times as big (radius 60).
+
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|
 | circle | The summoning circle draws itself ring by ring; the star in it turns. Then six more circles appear above it, one after another going up, each smaller than the one below and turning the other way | 88 mesh entities: 82 meshes in 13 rings for the main circle and 6 ring particle emitters for the circles above it; a smooth 16-sided outer band with a thin inner band, dashes and dots between them like runes, an octagon, a turning six-pointed star whose points touch it, a hexagon and a square turning the other way, eight spikes outside, a core over a turning plate, and a 7-block-tall cone of six circles above; rising sparks | 0.0–2.5 |
-| emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 113 meshes: a 55-part head and a 58-part body that follows the head's path. The five cloud orbs beside it and the trail behind it are particles | 2.5–3.15 |
+| emerge | A pillar of light, then the dragon comes up through the floor and spirals about 50 blocks up | 113 meshes: a 55-part head and a 58-part body that follows the head's path. The five cloud orbs beside it and the trail behind it are particles | 2.5–3.15 |
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | no meshes: each star is 48 particles placed along 12 rays, plus sparks | 4.7–5.3 |
@@ -161,7 +171,7 @@ After two dragons touch, the one that is left runs these steps instead:
 
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
-| mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 113 meshes, bigger | 1.2 s |
+| mega | The merged dragon, 1.6 times the size again (skull about 8 blocks wide), spirals about 50 blocks up | the same 113 meshes, bigger | 1.2 s |
 | beam | A beam more than twice as thick again shoots from the ground up through the dragon and 50 blocks past it | the same 22 meshes, bigger | 0.6 s |
 | nuke | A second beam joins it and waits about a second, both sink into the ground (up to 15 blocks thick), then it explodes: a burst about 60 blocks across and three shock rings out to the kill radius. Everything within 44 blocks dies | the same meshes as the blast, three times the size | 2.2 s |
 | cloud | Smoke where the beam stood and rings of dust rolling out along the ground | no meshes: smoke balls of 40 and 24 particles and dust rings of 36 | 2.5 s |
@@ -402,9 +412,11 @@ list.
 | `chat` | Chat message that casts the move. `""` turns it off |
 | `item` | Held item that casts it on right click. `""` turns it off |
 | `range` | Blocks around the circle in which the dragon finds a target |
-| `summon` | Seconds the circle is drawn before the dragon comes out (2.3 at least) |
+| `summon` | Seconds the circle is drawn before the dragon comes out (2.3 at least). The rings appear and turn slower the longer this is |
 | `circleDist` | Blocks in front of the caster where the circle appears |
-| `rise` | Blocks the dragon flies up out of the circle |
+| `size` | Size of the dragon: 1 is the old size, 3 is three times as long, wide and tall. Its flight, the beam and the explosion grow with it |
+| `circleSize` | Size of the ritual circle: 1 is the old size |
+| `rise` | Blocks the dragon flies up out of the circle, times `size` |
 | `hitPlayers` | `false`: the dragon only goes for mobs |
 | `kill` | `true`: the target dies, and so does everything the nuke reaches. `false`: they take `damage` or `nukeDamage` |
 | `damage` | Health taken at the centre of the blast from everyone but the target |
@@ -416,8 +428,8 @@ list.
 | `hurtCaster` | `true`: blast and nuke also hit whoever cast the dragons |
 | `merge` | `false`: dragons that touch do not merge |
 | `mergeDist` | How close two dragons must come to merge, in blocks |
-| `megaScale` | Size of the merged dragon |
-| `megaRise` | Blocks the merged dragon climbs before it explodes |
+| `megaScale` | Size of the merged dragon, times `size` |
+| `megaRise` | Blocks the merged dragon climbs before it explodes, times `size` |
 | `nukeRadius` | Radius of the nuke in blocks, measured along the ground |
 | `nukeDamage` | Health the nuke takes at its centre when `kill` is `false` |
 | `nukeKnockback` | Push away from the nuke |
