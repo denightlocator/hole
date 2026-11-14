@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 38,964 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 49,180 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 55,213 |
+| `world_code.js` | World Code | 39,217 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 49,433 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 55,466 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -180,8 +180,8 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | Group | Rows | What it is |
 |---|---|---|
 | `pillar` | 1 | The pillar of light when the dragon comes out |
-| `head` | 55 | Purple skull and a snout that narrows to the tip; open lower jaw with its own tip and hinges; dark horns in three pieces with magenta tips; a three-step crest; cyan eyes in dark sockets with slit pupils under heavy brows; a nose horn, snout ridge and forehead gem; big and small fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins with frill spikes, chin spikes, beard |
-| `body` | 58 | 12 segments from thick neck to thin tail, purple and dark purple in turn; a tall magenta spine on each, lilac belly plates, cyan stripes on both sides, a pair of wings with lilac tips, a pair of fins, tail fins |
+| `head` | 55 | Dark purple skull and a snout that narrows to the tip; open lower jaw with its own tip and hinges; black horns in three pieces with magenta tips; a three-step crest; glowing red eyes in black sockets with slit pupils under heavy brows; a nose horn, snout ridge and forehead gem; big and small fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins with frill spikes, chin spikes, beard |
+| `body` | 58 | 12 segments from thick neck to thin tail, dark purple and near-black in turn; a tall magenta spine on each, bright violet belly plates, red stripes on both sides, a pair of wings with violet tips, a pair of fins, tail fins |
 | `trail` | 10 | The trail behind the tail: 10 flat pieces, each thinner and darker than the one before |
 | `orb` | 4 | One cloud orb: a turning lilac core and three puffs. Used 5 times, at the places in `DP_ORBS` |
 | `flare` | 6 | The star: a core, three rays and two slanted rays |
@@ -381,6 +381,20 @@ list.
   In `body`, forward is how far behind the head the part follows (negative). In
   `smoke`, it is where the puff ends up.
 - colour: a name from `DP_COL`.
+
+### Colours
+
+`DP_COL` holds every colour as red, green, blue from 0 to 255.
+
+- **The ritual** uses only the dark ones: `void` (black) for the pillars and the
+  plate, `wine` (dark purple-red) for the outer band and one halo, `blood` (dark
+  red) for most rings, and `crimson` (bright red) for the star, the cubes over
+  the pillars and the core. Its particles are red too (`DP_RITE`).
+- **The dragon** is dark purple (`deep`) and near-black (`night`) with black
+  horns (`void`), magenta spines, crest and wings, bright violet (`volt`) belly
+  plates, and red (`crimson`) eyes, whiskers and stripes. Its cloud orbs are dark
+  storm clouds. `DP_SKIN` holds the colour pairs it shimmers in.
+- The beams, the stars and the smoke kept their colours.
 - name: every row is named `M`. The code does not use the name, so tell rows
   apart by their order, which is listed under "The meshes".
 - flag: `spin` turns by itself, `lit` is shaded instead of glowing. `a`, `b`, `c`
