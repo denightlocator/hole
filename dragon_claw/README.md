@@ -24,13 +24,13 @@ From other code: `dragonClaw(playerId)`.
 | 0.40–0.70 | The slash: the arm comes down across the body, starting slowly and speeding up | Three slash marks, 4.8 blocks tall, grow from top to bottom together with the arm, a bit more every tick, with sparks at the tips | From half way down: what stands right in front |
 | 0.70–0.90 | Follow-through | The marks hang with a flash | |
 | 0.75–1.30 | Arms go out (from 0.90) | The marks shoot forward, fast at first and slowing down, as far as `range` (10 blocks) | Everything they pass, once |
-| 1.05–1.65 | Side flip: the player is pushed up and rolls over sideways, a full turn in four quarter steps, arms out; the legs go round with the body | An upright loop is drawn round the player, piece by piece, as they roll | |
-| 1.65–2.00 | Second wind-up: left arm goes up and back | On landing the loop drops flat and widens out to `spinRange` (6 blocks); a ring of 18 particles flies outward | Everything the ring reaches, once |
+| 1.05–1.65 | Tilted 360: a full turn on the spot in four quarter steps, arms out, with the body leaning 25° to the side; the legs turn with the body but stay upright | A ring is drawn round the player, piece by piece, as they turn, tilted the same 25° | |
+| 1.65–2.00 | Second wind-up: left arm goes up and back | The ring levels out and widens to `spinRange` (6 blocks); a ring of 18 particles flies outward | Everything the ring reaches, once |
 | 2.00–2.30 | The second slash, the other way | Three more marks grow with the arm, crossing the first | From half way down |
 | 2.30–2.90 | Follow-through, then back to rest at 2.75 | These hang and fly forward too | Everything they pass, once |
 | 2.75–2.90 | Pose is reset | Claws are taken off | |
 
-At most 53 mesh entities at once and 92 api calls in one tick.
+At most 53 mesh entities at once and 75 api calls in one tick.
 
 The timing is in two tables (20 ticks a second). `CLAW_POSE`: the first number
 of each row is the tick that pose is reached. `CLAW_STEP`: when the marks and
@@ -81,8 +81,7 @@ themselves: send the changed file and the numbers can be carried over.
 | `range` | Blocks the claw marks fly forward (15 at most) |
 | `spinRange` | Blocks the ring of the spin widens to (15 at most) |
 | `slashSize` | Size of the claw slashes (1.6; 1 is the old size, 0.5 to 3). The lane they hit is 1.2 + this wide to either side |
-| `spin` | `"side"` = side flip between the two claws; `"turn"` = the flat 360 turn on the spot with a flat ring |
-| `hop` | Upward push at the start of the side flip (7; 0 = stay on the ground) |
+| `tilt` | Degrees the body and the ring lean during the 360 (25; 0 = flat, a negative number leans the other way, 40 at most for the ring) |
 | `damage`, `spinDamage` | Damage of each claw and of the spin |
 | `knockback` | Push on everything that is hit |
 | `lunge` | Push forward on the player at each claw, 0 for none |

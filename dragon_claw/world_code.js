@@ -4,8 +4,7 @@ var CLAW_CFG = {
   range: 10,
   spinRange: 6,
   slashSize: 1.6,
-  spin: "side",
-  hop: 7,
+  tilt: 25,
   damage: 18,
   spinDamage: 10,
   knockback: 6,
@@ -57,11 +56,11 @@ var CLAW_POSE = [
   [11, { TorsoNode: [1, 4, 0], HeadMesh: [0, -3, 0], ArmRightMesh: [-115, 0, -2], ArmLeftMesh: [23, 0, 13], LegRightMesh: [2, 0, 0], LegLeftMesh: [-2, 0, 0] }],
   [14, { TorsoNode: [14, -28, 0], HeadMesh: [0, 20, 0], ArmRightMesh: [-40, 0, 50], ArmLeftMesh: [30, 0, 15], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
   [18, { TorsoNode: [10, -38, 0], HeadMesh: [0, 25, 0], ArmRightMesh: [15, 0, 35], ArmLeftMesh: [10, 0, 20], LegRightMesh: [-18, 0, 0], LegLeftMesh: [18, 0, 0] }],
-  [21, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 0],
-  [24, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 90],
-  [27, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 180],
-  [30, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 270],
-  [33, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 360],
+  [21, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 0, 1],
+  [24, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 90, 1],
+  [27, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 180, 1],
+  [30, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 270, 1],
+  [33, { ArmRightMesh: [0, 0, -75], ArmLeftMesh: [0, 0, 75] }, 360, 1],
   [40, { TorsoNode: [-6, -22, 0], HeadMesh: [0, 15, 0], ArmLeftMesh: [-155, 0, 30], ArmRightMesh: [20, 0, -12], LegLeftMesh: [12, 0, 0], LegRightMesh: [-12, 0, 0] }, 360],
   [43, { TorsoNode: [1, -4, 0], HeadMesh: [0, 3, 0], ArmLeftMesh: [-115, 0, 2], ArmRightMesh: [23, 0, -13], LegLeftMesh: [2, 0, 0], LegRightMesh: [-2, 0, 0] }, 360],
   [46, { TorsoNode: [14, 28, 0], HeadMesh: [0, -20, 0], ArmLeftMesh: [-40, 0, -50], ArmRightMesh: [30, 0, -15], LegLeftMesh: [-18, 0, 0], LegRightMesh: [18, 0, 0] }, 360],
@@ -138,7 +137,8 @@ var clawMeshes = 0
 
 function clawNodePose(row, node) {
   var r = (row[1][node] || [0, 0, 0]).slice()
-  if (CLAW_TURNS.indexOf(node) >= 0) r[CLAW_CFG.spin === "side" ? 2 : 1] += row[2] || 0
+  if (CLAW_TURNS.indexOf(node) >= 0) r[1] += row[2] || 0
+  if (node === "TorsoNode" && row[3]) r[2] += CLAW_CFG.tilt
   return r
 }
 
@@ -309,25 +309,24 @@ function clawRing(c, age) {
   var rows = CLAW_MESH.ring
   var shown = Math.min(rows.length, Math.ceil(((age + 1) / CLAW_STEP.turn) * rows.length))
   var mid = clawAdd(c.pos, [0, 1, 0], 1)
-  var side = CLAW_CFG.spin === "side" && age < CLAW_STEP.turn
   var grow = Math.max(0, Math.min(1, (age - CLAW_STEP.turn) / 6))
-  var rad = side ? 1.9 : 2.3 + grow * Math.max(0, clawReach(true) - 2.6)
+  var rad = 2.3 + grow * Math.max(0, clawReach(true) - 2.6)
   var long = ((Math.PI * 2 * rad) / rows.length) * 1.1
-  var X = side ? c.R : [1, 0, 0]
-  var Y = side ? [0, 1, 0] : [0, 0, 1]
-  var how = age === CLAW_STEP.turn && CLAW_CFG.spin === "side" ? 2 : grow > 0
-  var spot = (a, r, wave) => clawAdd(clawAdd(clawAdd(mid, X, Math.cos(a) * r), Y, Math.sin(a) * r), [0, 1, 0], wave)
+  var lean = ((Math.max(-40, Math.min(40, CLAW_CFG.tilt)) * Math.PI) / 180) * (1 - grow)
+  var X = c.F
+  var Y = clawAdd(clawAdd([0, 0, 0], c.R, Math.cos(lean)), [0, 1, 0], Math.sin(lean))
+  var how = grow > 0 ? 2 : 0
+  var spot = (a, r) => clawAdd(clawAdd(mid, X, Math.cos(a) * r), Y, Math.sin(a) * r)
+  var k = 1 + grow * 0.6
   for (var i = 0; i < shown; i++) {
-    var a = (side ? Math.PI / 2 : c.turn) + (i / rows.length) * Math.PI * 2
+    var a = (i / rows.length) * Math.PI * 2
     var t = clawAdd(clawAdd([0, 0, 0], X, -Math.sin(a)), Y, Math.cos(a))
-    var y = side ? 0 : Math.sin(a * 2) * 0.12
-    var k = 1 + grow * 0.6
-    clawBox(c, "ring_" + i, rows[i][0] * k, long, rows[i][1], spot(a, rad, y), t, how)
-    if (i % 2 === 0) clawBox(c, "ring_g" + i, rows[i][0] * 1.35 * k, long * 1.6, i % 4 ? "deep" : "edge", spot(a, rad - 0.2, y), t, how)
+    clawBox(c, "ring_" + i, rows[i][0] * k, long, rows[i][1], spot(a, rad), t, how)
+    if (i % 2 === 0) clawBox(c, "ring_g" + i, rows[i][0] * 1.35 * k, long * 1.6, i % 4 ? "deep" : "edge", spot(a, rad - 0.2), t, how)
   }
-  var lead = (side ? Math.PI / 2 : c.turn) + (shown / rows.length) * Math.PI * 2 + (side ? 0 : age * 0.9)
+  var lead = (shown / rows.length) * Math.PI * 2
   var tl = clawAdd(clawAdd([0, 0, 0], X, -Math.sin(lead) * 4), Y, Math.cos(lead) * 4)
-  clawFx(spot(lead, rad, 0), tl, "white", "core", 0.3, 0.5, "critical_hit", 3, 0.12)
+  clawFx(spot(lead, rad), tl, "white", "core", 0.3, 0.5, "critical_hit", 3, 0.12)
   if (age === CLAW_STEP.turn) clawWave(c, mid, rad)
   clawSweep(c, "ring", true, rad + 0.6)
 }
@@ -420,10 +419,7 @@ function clawStep(c) {
     clawBurst(c, 1, t - T.slash1)
     clawDrop(c, "a")
   }
-  if (t === T.spin) {
-    clawSound("spin", c.pos)
-    if (CLAW_CFG.spin === "side" && CLAW_CFG.hop) api.applyImpulse(c.id, 0, CLAW_CFG.hop, 0)
-  }
+  if (t === T.spin) clawSound("spin", c.pos)
   if (t >= T.spin && t < T.dropSpin) clawRing(c, t - T.spin)
   if (t === T.dropSpin) clawDrop(c, "ring_")
   if (t >= T.slash2 && t < T.drop2) clawSlash(c, "b", -1, t - T.slash2)
