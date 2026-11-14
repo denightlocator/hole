@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 43,889 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,105 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,138 |
+| `world_code.js` | World Code | 44,585 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 54,801 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 60,834 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 6,430 | 32,000 |
 

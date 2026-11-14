@@ -158,8 +158,8 @@ const F = a.frames
 const circle = of(F, 0)
 const flat = circle[circle.length - 1]
 const solid = (f) => f.meshes.filter((m) => !m.particle && !m.node)
-check(flat.entities === 88 && Math.max(...ys(flat)) < 18 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.entities} mesh entities, ${(circle.length / 20).toFixed(2)} s)`)
-check(one.s.emitters === 8 && solid(flat).filter((m) => m.p[1] > 10.9 && m.width > 0.06).length === 0 && solid(flat).filter((m) => m.width > 0.06).length === 82, 'the six circles above it are ring particle emitters, one entity each; the main circle is still meshes')
+check(flat.entities === 88 && Math.max(...ys(flat)) < 34 && Math.max(...flat.meshes.map((m) => Math.hypot(m.p[0] - flat.meshes[0].p[0], m.p[2] - flat.meshes[0].p[2]))) > 20 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor, three times the size and slower (${flat.entities} mesh entities, ${(circle.length / 20).toFixed(2)} s)`)
+check(one.s.emitters === 8 && solid(flat).filter((m) => m.p[1] > 12.7 && m.width > 0.06).length === 0 && solid(flat).filter((m) => m.width > 0.06).length === 82, 'the six circles above it are ring particle emitters, one entity each; the main circle is still meshes')
 // particles placed one by one: a single particle at an exact point with an exact speed
 const exact = (f) => f.fx.filter((o) => o.manualEmitCount === 1 && o.pos1.every((v, i) => v === o.pos2[i]) && o.minEmitPower === o.maxEmitPower)
 const smokeF = of(F, 6)
@@ -202,8 +202,8 @@ const tall = (f) => Math.max(0, ...f.meshes.map((m) => m.height))
 const bl = of(F, 5)
 check(tall(bl[0]) < tall(bl[4]) && tall(bl[9]) > 40 && bl[9].meshes.length === 22, `a fast beam shoots ${tall(bl[9]).toFixed(0)} blocks up in ${(10 / 20).toFixed(2)} s`)
 const yaws = (f, pick) => new Set(f.meshes.filter(pick).map((m) => Math.round((((m.r ? m.r[1] : 0) * 180) / Math.PI + 360) % 360)))
-check(yaws(bl[28], (m) => m.height > 5 && m.depth > 2.5).size === 4 && yaws(bl[28], (m) => m.height < 0.4 && m.depth > 8).size === 4, 'the beam is round, not square: its core and its foot are eight-sided (four boxes each, 45 degrees apart), also while it sinks')
-const low = (f) => exact(f).filter((o) => Math.abs(o.pos1[1] - bl[32].meshes[0].p[1] + 0.7) < 0.2 && o.dir1[1] === 0)
+check(yaws(bl[28], (m) => m.height > 5 && m.depth > 2.5).size === 4 && yaws(bl[28], (m) => m.height < 2 && m.depth > 8).size === 4, 'the beam is round, not square: its core and its foot are eight-sided (four boxes each, 45 degrees apart), also while it sinks')
+const low = (f) => exact(f).filter((o) => Math.abs(o.pos1[1] - bl[32].meshes[0].p[1] + 1.7) < 0.2 && o.dir1[1] === 0)
 check([33, 34, 36, 37].every((n) => low(bl[n]).length >= 32) && bl[36].meshes.every((m) => m.height > 0.4 || Math.max(m.width, m.depth) < 30), `no shock disc mesh: particles spread out in a circle over the ground instead (${[33, 34, 36, 37].map((n) => low(bl[n]).length).join(', ')} in four waves)`)
 check(bl[10].meshes.length === 30 && bl[25].meshes.length === 30, `a second beam joins it and waits ${(16 / 20).toFixed(2)} s`)
 check(tall(bl[26]) < tall(bl[25]) && tall(bl[31]) < 2 && bl[31].meshes.length === 30, 'then it all comes down: the beams sink into the ground in 0.30 s')
@@ -234,7 +234,7 @@ check(same(solid(flat).filter((m) => m.width > 0.051), nflat.meshes), 'every pie
 const nfly = of(N, 3)
 const nlast = nfly[nfly.length - 1]
 check(nlast.entities === 113 - 55 + 1 + 2, `the dragon is ${nlast.entities} mesh entities: its 55-part head is one entity`)
-const headAt = (f) => f.meshes.filter((m) => m.width > 1.39 && m.width < 1.41 && m.depth > 1.39 && m.depth < 1.41)[0]
+const headAt = (f) => f.meshes.filter((m) => m.width > 4.19 && m.width < 4.21 && m.depth > 4.19 && m.depth < 4.21)[0]
 check(Math.hypot(...headAt(nlast).p.map((v, i) => v - headAt(last).p[i])) < 0.02 && same(last.meshes, nlast.meshes), 'the head sits and points the same as without node meshes')
 check(nd.s.errors.length === 0 && nd.s.meshes.size === 0 && nd.game.held() === 0, 'every call is well formed and everything is deleted at the end' + [...new Set(nd.s.errors)].join('; '))
 console.log(`  most mesh entities at once: ${nd.s.peak} (without node meshes ${one.s.peak}); node meshes attached: ${nd.s.hung}; most api calls in one tick: ${c.worst}`)

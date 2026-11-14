@@ -87,14 +87,14 @@ check(all.length === s.meshes.size && [...s.meshes.values()].every((m) => m.r.ev
 console.log('Below world_code.js')
 s = game(world + '\n' + model)
 check(s.run.chat('!dp') === false && s.run.casts.length === 1, '!dp still casts')
-ticks(s, 240)
+ticks(s, 320)
 check(s.run.casts.length === 0 && s.meshes.size === 0, 'the cast runs to its end')
 s.run.chat('!goodra'); ticks(s, 60)
 const before = s.particles
 check(s.run.chat('!goodra pulse') === false && s.run.casts.length === 1, 'Goodra fires Dragon Pulse')
 ticks(s, 3)
 check(s.particles > before, 'the circle appears')
-ticks(s, 240)
+ticks(s, 320)
 check(s.meshes.size === counts[2], 'after the move only Goodra is left')
 
 if (fail.length) { console.log(`\n${fail.length} check(s) failed`); process.exit(1) }

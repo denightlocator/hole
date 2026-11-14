@@ -1,9 +1,11 @@
 var DP_CFG = {
   chat: "!dp",
   item: "",
-  range: 40,
-  summon: 2.5,
-  circleDist: 4,
+  range: 60,
+  summon: 6,
+  circleDist: 16,
+  size: 3,
+  circleSize: 3,
   rise: 16,
   hitPlayers: true,
   kill: true,
@@ -11,19 +13,19 @@ var DP_CFG = {
   boom: 1,
   beam: 0.5,
   hold: 0.8,
-  radius: 16,
+  radius: 24,
   knockback: 24,
   hurtCaster: false,
   merge: true,
   mergeDist: 4,
-  megaScale: 2.2,
-  megaRise: 22,
-  nukeRadius: 44,
+  megaScale: 1.6,
+  megaRise: 20,
+  nukeRadius: 60,
   nukeDamage: 400,
   nukeKnockback: 30,
   rotate: true,
   sounds: true,
-  hideDist: 160,
+  hideDist: 400,
   maxCasts: 4,
   detail: 3,
   maxMeshes: 399,
@@ -551,7 +553,7 @@ function dpRigid(c, name, tag, pos, B, k) {
   if (id && c.fresh) dpRows(name).forEach((r) => dpHang(id, r, k, [r[6] * k, r[7] * k, r[5] * k], 0))
 }
 
-function dpEmitter(rad, col) {
+function dpEmitter(rad, col, C) {
   var a = DP_COL[col]
   var b = DP_COL.crimson
   return {
@@ -559,9 +561,9 @@ function dpEmitter(rad, col) {
     minLifeTime: 0.24,
     maxLifeTime: 0.45,
     minEmitPower: 0.05,
-    maxEmitPower: 0.25,
-    minSize: 0.12,
-    maxSize: 0.3,
+    maxEmitPower: 0.25 * C,
+    minSize: 0.12 * C,
+    maxSize: 0.3 * C,
     gravity: [0, 0.4, 0],
     velocityGradients: [{ timeFraction: 0, factor: 1, factor2: 1 }],
     colorGradients: [
@@ -571,9 +573,9 @@ function dpEmitter(rad, col) {
     ],
     blendMode: 2,
     hideDist: DP_CFG.hideDist,
-    width: rad * 2,
-    depth: rad * 2,
-    height: 0.08,
+    width: rad * 2 * C,
+    depth: rad * 2 * C,
+    height: 0.08 * C,
     emitRate: Math.round((30 + rad * 40) * DP_CFG.ringDensity),
     emitterShape: "ring",
   }
@@ -582,7 +584,10 @@ function dpEmitter(rad, col) {
 function dpCircle(c) {
   var node = DP_CFG.nodes
   for (var a = 0; a < DP_CIRCLE.length; a++) {
-    var r = DP_CIRCLE[a]
+    var q = DP_CIRCLE[a]
+    var C = DP_CFG.circleSize
+    var slow = c.T / 50
+    var r = [q[0], q[1] * C, 0, 0, 0, q[5], q[6], q[7] * C, Math.round(q[8] * slow), q[9] / slow]
     var age = c.ct - r[8]
     var row = DP_RING[a]
     if (age < 0) continue
@@ -591,7 +596,7 @@ function dpCircle(c) {
     if (DP_CFG.ringParticles && dpFlag(row, "e")) {
       if (!c.m["ring" + a + "_e"] && dpMeshes + dpOther() < DP_CFG.maxMeshes) {
         try {
-          var e = api.attemptCreateMeshEntity("ParticleEmitter", dpEmitter(r[1], r[5]))
+          var e = api.attemptCreateMeshEntity("ParticleEmitter", dpEmitter(q[1], r[5], C))
           if (e) {
             c.m["ring" + a + "_e"] = e
             dpMeshes++
@@ -604,12 +609,12 @@ function dpCircle(c) {
       if (DP_CFG.ringParticles) continue
     }
     if (node) {
-      var id = dpCarrier(c, "ringc" + r[9], c.home, null, -r[9] * c.ct)
+      var id = dpCarrier(c, "ringc" + q[9], c.home, null, -r[9] * c.ct)
       if (!id || c.hung[a]) continue
       c.hung[a] = 1
       for (var n = 0; n < r[0]; n++) {
         var ang = (r[6] * Math.PI) / 180 + (n * 2 * Math.PI) / r[0] - r[9] * r[8]
-        dpHang(id, row, 1, [Math.cos(ang) * r[1], r[7], Math.sin(ang) * r[1]], radial ? Math.atan2(Math.cos(ang), Math.sin(ang)) : Math.atan2(-Math.sin(ang), Math.cos(ang)))
+        dpHang(id, row, C, [Math.cos(ang) * r[1], r[7], Math.sin(ang) * r[1]], radial ? Math.atan2(Math.cos(ang), Math.sin(ang)) : Math.atan2(-Math.sin(ang), Math.cos(ang)))
       }
       continue
     }
@@ -618,7 +623,7 @@ function dpCircle(c) {
       var ang = (r[6] * Math.PI) / 180 + (n * 2 * Math.PI) / r[0] + r[9] * age
       var x = Math.cos(ang)
       var z = Math.sin(ang)
-      dpPut(c, "ring" + a + "_" + n, row, "", [c.home[0] + x * r[1], c.home[1] + r[7], c.home[2] + z * r[1]], radial ? [x, 0, z] : [-z, 0, x])
+      dpPut(c, "ring" + a + "_" + n, row, "", [c.home[0] + x * r[1], c.home[1] + r[7], c.home[2] + z * r[1]], radial ? [x, 0, z] : [-z, 0, x], C)
     }
   }
 }
@@ -815,40 +820,42 @@ var DP_PHASE = [
     var T = (c.T = Math.max(46, Math.round(DP_CFG.summon * 20)))
     c.ct = c.t
     if (c.t === 0) dpSound("cast", c.home)
-    if (c.t % 10 === 5) dpSound("pulse", c.home, 0.7 + c.t / T)
+    if (c.t % 16 === 5) dpSound("pulse", c.home, 0.7 + c.t / T)
     dpCircle(c)
+    var C = DP_CFG.circleSize
     var skin = DP_RITE[c.t % DP_RITE.length]
-    dpFx("mote", c.home, c.t > T - 12 ? 8 : 3, 2.6, skin[0], skin[1], [0, 1, 0])
-    if (c.t % 10 === 9) dpRingFx("shock", c.home, 0.6, 2, 1, 0.03, "blood", "crimson", 6, c.t)
-    if (c.t % 2 === 0) dpFx("ember", c.home, 3, 3.4, skin[0], "crimson", null, 0.4)
-    if (c.t % 3 === 0 && c.t > 12) dpRingFx("gather", dpAdd(c.home, [0, 1, 0], 0.5), 3.6, 2, -1, 0.05, "crimson", "purple", 6, c.t * 0.3)
-    if (c.t > T - 16) dpFx("mote", c.home, 4, 0.5, "crimson", "blood", [0, 1, 0], 0.5)
-    if (c.t > T - 6 && c.t % 2 === 0) dpFx("glow", dpAdd(c.home, [0, 1, 0], 0.7), 1, 0.3, "crimson")
+    dpFx("mote", c.home, c.t > T - 12 ? 8 : 3, 2.6 * C, skin[0], skin[1], [0, 1, 0])
+    if (c.t % 10 === 9) dpRingFx("shock", c.home, 0.6 * C, 2, 1, 0.03, "blood", "crimson", 6, c.t)
+    if (c.t % 2 === 0) dpFx("ember", c.home, 5, 3.4 * C, skin[0], "crimson", null, 0.4)
+    if (c.t % 3 === 0 && c.t > 12) dpRingFx("gather", dpAdd(c.home, [0, 1, 0], 0.5), 3.6 * C, 2, -1, 0.05, "crimson", "purple", 6, c.t * 0.3)
+    if (c.t > T - 16) dpFx("mote", c.home, 4, 0.5 * C, "crimson", "blood", [0, 1, 0], 0.5)
+    if (c.t > T - 6 && c.t % 2 === 0) dpFx("glow", dpAdd(c.home, [0, 1, 0], 0.7 * C), 1, 0.3, "crimson")
     if (c.t === T - 24) dpSound("build", c.home)
     if (c.t >= T - 1) dpNext(c)
   },
 
   function (c) {
     var h = c.t + 1
-    var mid = [c.home[0], c.home[1] - 2 + h * 1.25, c.home[2]]
+    var s = c.k
+    var mid = [c.home[0], c.home[1] + (h * 1.25 - 2) * s, c.home[2]]
     if (c.t === 0) {
-      c.path = [[mid[0], mid[1] - 1.5, mid[2]]]
-      dpGroup(c, "pillar", "pillar_", "", c.home, DP_UP, 1, true)
-      dpFx("flash", c.home, 12, 1.5)
-      dpFx("ring", c.home, 20, 0.4)
+      c.path = [[mid[0], mid[1] - 1.5 * s, mid[2]]]
+      dpGroup(c, "pillar", "pillar_", "", c.home, DP_UP, s, true)
+      dpFx("flash", c.home, 12, 1.5 * s)
+      dpFx("ring", c.home, 20, 0.4 * s)
       dpFx("glow", c.home, 5, 1.5, "crimson")
-      dpFx("debris", c.home, 10, 1.2, "", "", [0, 1, 0])
-      dpRingFx("shock", c.home, 1.5, 4, 1, 0.08, "crimson", "purple", 8)
+      dpFx("debris", c.home, 10, 1.2 * s, "", "", [0, 1, 0])
+      dpRingFx("shock", c.home, 1.5 * s, 4, 1, 0.08, "crimson", "purple", 8)
       dpSound("emerge", c.home)
     }
     c.ct = c.T + c.t
     if (c.t === 0 && !DP_CFG.nodes) DP_RING.forEach((row, a) => dpFlag(row, "k") || dpDrop(c, "ring" + a + "_"))
     dpCircle(c)
     if (c.t === 7) dpDrop(c, "pillar_")
-    dpFx("mote", c.home, 6, 2.6, "crimson", "purple", [0, 1, 0])
-    dpFx("streak", c.home, 4, 1.2, "", "", [0, 1, 0], h * 1.2)
-    if (c.t % 3 === 1) dpRingFx("shock", c.home, 1 + c.t * 0.35, 2, 0.6, 0.05, "blood", "crimson", 6, c.t)
-    dpSpiral(c, mid, Math.min(2, h * 0.2), 0.5)
+    dpFx("mote", c.home, 6, 2.6 * s, "crimson", "purple", [0, 1, 0])
+    dpFx("streak", c.home, 4, 1.2 * s, "", "", [0, 1, 0], h * 1.2 * s)
+    if (c.t % 3 === 1) dpRingFx("shock", c.home, (1 + c.t * 0.35) * s, 2, 0.6, 0.05, "blood", "crimson", 6, c.t)
+    dpSpiral(c, mid, Math.min(2, h * 0.2) * s, 0.5)
     if (mid[1] >= c.home[1] + c.reach) {
       dpDrop(c, "ring")
       dpDrop(c, "pillar_")
@@ -857,8 +864,8 @@ var DP_PHASE = [
   },
 
   function (c) {
-    var top = [c.home[0], c.home[1] + c.reach + Math.sin(c.t * 0.5) * 0.8, c.home[2]]
-    dpSpiral(c, top, Math.min(3.5, 2 + c.t * 0.15), 0.45)
+    var top = [c.home[0], c.home[1] + c.reach + Math.sin(c.t * 0.5) * 0.8 * c.k, c.home[2]]
+    dpSpiral(c, top, Math.min(3.5, 2 + c.t * 0.15) * c.k, 0.45)
     if (c.t < 11) return
     if (!c.target) c.target = dpPick(c.id, c.home)
     var goal = dpGoal(c)
@@ -876,26 +883,30 @@ var DP_PHASE = [
   function (c) {
     var goal = dpGoal(c)
     var left = dpLen(dpSub(goal, c.at))
-    var speed = 1.15
+    var s = c.k
+    var speed = 1.15 * s
     if (left <= speed || c.t > 70) {
       c.spin = Math.atan2(c.at[2] - goal[2], c.at[0] - goal[0])
       return dpNext(c)
     }
     var B = dpBasis(dpNorm(dpSub(goal, c.at)))
     c.at = dpAdd(c.at, B[0], speed)
-    var weave = Math.min(2.2, left * 0.25, c.t * 0.3)
-    var arch = Math.sin(Math.PI * Math.min(1, left / c.far)) * Math.min(4, c.far * 0.2)
+    var weave = Math.min(2.2 * s, left * 0.25, c.t * 0.3 * s)
+    var arch = Math.sin(Math.PI * Math.min(1, left / c.far)) * Math.min(4 * s, c.far * 0.2)
     dpFly(c, dpAt(c.at, B, 0, Math.sin(c.t * 0.42) * weave, Math.sin(c.t * 0.21 + 1) * weave * 0.6 + arch))
   },
 
   function (c) {
     var goal = dpGoal(c)
-    var rad = c.t < 4 ? 0.65 * (c.t + 1) : 2.6 - (c.t - 3) * 0.15
+    var s = c.k
+    var rad = (c.t < 4 ? 0.65 * (c.t + 1) : 2.6 - (c.t - 3) * 0.15) * s
     var ang = c.spin + c.t * 0.55
-    dpFly(c, [goal[0] + Math.cos(ang) * rad, goal[1] - 0.5 + c.t * 0.2, goal[2] + Math.sin(ang) * rad])
+    dpFly(c, [goal[0] + Math.cos(ang) * rad, goal[1] + (c.t * 0.2 - 0.5) * s, goal[2] + Math.sin(ang) * rad])
     if (c.t === 2 || c.t === 7) {
-      var at = dpAt(goal, c.B, 0, c.t === 2 ? -0.8 : 0.9, c.t === 2 ? 0.2 : 0.7)
-      for (var j = 1; j < 5; j++) dpShape("ray", at, dpBall(12), 0.3 * j, 3 * j)
+      var at = dpAt(goal, c.B, 0, (c.t === 2 ? -0.8 : 0.9) * s, (c.t === 2 ? 0.2 : 0.7) * s)
+      dpSize = s
+      for (var j = 1; j < 5; j++) dpShape("ray", at, dpBall(12), 0.3 * j * s, 3 * j * s)
+      dpSize = 1
       dpFx("impact", at, 12, 0.3)
       dpFx("glow", at, 3, 0.4, c.t === 2 ? "cyan" : "gold")
       dpRingFx("shock", at, 0.6, 3, 1, 0, "lilac", c.t === 2 ? "cyan" : "gold", 6)
@@ -906,9 +917,9 @@ var DP_PHASE = [
 
   function (c) {
     var goal = dpGoal(c)
-    var b = DP_CFG.boom
+    var b = DP_CFG.boom * Math.max(1, DP_CFG.size / 1.5)
     if (c.t === 0) dpDrop(c, "")
-    var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 72 * b, DP_CFG.radius, 1, b)
+    var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 72 * DP_CFG.boom, DP_CFG.radius, 1, b)
     if (st === 1) {
       dpSound("blast", goal)
       dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
@@ -918,7 +929,7 @@ var DP_PHASE = [
 
   function (c) {
     if (c.t === 0) dpDrop(c, "blast_")
-    var b = 1.2 * DP_CFG.boom
+    var b = 1.2 * DP_CFG.boom * Math.max(1, DP_CFG.size / 1.5)
     if (c.t % 8 === 0 && c.t < 17) dpShape("puff", [c.goal[0], c.goal[1] + 1.5 * b + c.t * 0.1, c.goal[2]], dpBall(c.t ? 14 : 26), (2.2 - c.t * 0.08) * b, 1.2, "", "", 0.8)
     if (c.t === 0) dpShape("puff", [c.goal[0], c.goal[1] + 0.5, c.goal[2]], dpRing(20), 2 * b, 4)
     if (c.t < 26 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5 * b), 7, 2.5 * b)
@@ -930,6 +941,7 @@ var DP_PHASE = [
 
   function (c) {
     var h = c.t + 1
+    var z = DP_CFG.size
     if (c.t === 0) {
       dpFx("flash", c.base, 20, 3)
       dpFx("wave", c.base, 20, 0.5)
@@ -939,14 +951,14 @@ var DP_PHASE = [
       dpSound("merge", c.base)
       dpSound("climb", c.base)
     }
-    dpSpiral(c, [c.base[0], c.base[1] + h * 0.8, c.base[2]], Math.min(4, h * 0.4), 0.36)
+    dpSpiral(c, [c.base[0], c.base[1] + h * 0.8 * z, c.base[2]], Math.min(4, h * 0.4) * z, 0.36)
     if (c.t % 4 === 0) dpFx("ring", c.at, 12, 0.5)
     if (c.t % 3 === 0) dpRingFx("gather", c.at, 6, 3, -1, 0, "cyan", "magenta", 6, c.t)
-    if (h * 0.8 >= c.reach) dpNext(c)
+    if (h * 0.8 * z >= c.reach) dpNext(c)
   },
 
   function (c) {
-    var b = DP_CFG.boom
+    var b = DP_CFG.boom * Math.max(1, DP_CFG.size / 2)
     if (c.t === 0) {
       dpDrop(c, "")
       c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
@@ -962,7 +974,7 @@ var DP_PHASE = [
   },
 
   function (c) {
-    var b = DP_CFG.boom
+    var b = DP_CFG.boom * Math.max(1, DP_CFG.size / 2)
     if (c.t === 0) dpDrop(c, "blast_")
     if (c.t % 8 === 0 && c.t < 33) dpSound("rumble", c.ground, 1 - c.t * 0.01)
     var wide = (4 + 16 * (1 - Math.pow(1 - Math.min(1, (c.t + 1) / 26), 2))) * b
@@ -1061,13 +1073,13 @@ function dragonPulse(playerId, eye, dir) {
     ph: 0,
     t: 0,
     m: {},
-    k: 1,
+    k: DP_CFG.size,
     hung: {},
     B: dpBasis(flat),
     home: home,
     at: home,
     ang: Math.atan2(flat[2], flat[0]),
-    reach: Math.max(6, dpFree(dpAdd(home, [0, 1, 0], 1), [0, 1, 0], DP_CFG.rise) - 2),
+    reach: Math.max(6, dpFree(dpAdd(home, [0, 1, 0], 1), [0, 1, 0], DP_CFG.rise * DP_CFG.size) - 2),
     target: dpPick(playerId, eye, f),
     goal: dpAdd(eye, f, Math.max(2, dpFree(eye, f, DP_CFG.range) - 0.5)),
     path: [],
@@ -1106,12 +1118,12 @@ function dpMerge() {
       if (a.ph === 7) continue
       var mid = dpAdd(a.at, dpSub(b.at, a.at), 0.5)
       dpDrop(a, "")
-      a.k = DP_CFG.megaScale
+      a.k = DP_CFG.megaScale * DP_CFG.size
       a.ph = 7
       a.t = 0
       a.at = a.base = mid
-      a.path = [[mid[0], mid[1] - 2, mid[2]]]
-      a.reach = Math.max(8, dpFree(mid, [0, 1, 0], DP_CFG.megaRise) - 2)
+      a.path = [[mid[0], mid[1] - 2 * DP_CFG.size, mid[2]]]
+      a.reach = Math.max(8, dpFree(mid, [0, 1, 0], DP_CFG.megaRise * DP_CFG.size) - 2)
     }
   }
 }
