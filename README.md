@@ -40,7 +40,7 @@ your own callback instead.
 ## Goodra
 
 The Pokemon that fires the move in frame 01 is Goodra.
-[`dragon_pulse/goodra.js`](dragon_pulse/goodra.js) builds it from 92 Box meshes (125 at `detail: 3`, which is over a 100-mesh limit).
+[`dragon_pulse/goodra.js`](dragon_pulse/goodra.js) builds it from 125 Box meshes.
 
 ![Goodra from four sides](dragon_pulse/preview/goodra.png)
 
@@ -60,12 +60,8 @@ Every mesh is one named row in `GOODRA_MESH`, in 11 groups: `head`, `face`,
 Parts that exist on both sides are written once and mirrored.
 
 `GOODRA_CFG` sets the size (`scale`, 0.6 is about 4 blocks tall) and the number of
-parts (`detail`): 1 is the body and eyes with 51 meshes, 2 (the default) adds
-face, spots and belly for 92, 3 is everything with 125. The picture shows 3.
-
-Goodra and the dragon share the 100 meshes. With Goodra at 92, `!goodra pulse`
-has 7 left and shows almost nothing. Set Goodra's `detail` to 1 to leave room for
-a small dragon.
+parts (`detail`): 1 is the body and eyes with 51 meshes, 2 adds face, spots and
+belly for 92, 3 is everything with 125.
 
 The eyes stand out from the head and glow, so they show from the ground and at
 night.
@@ -137,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 29,605 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 39,821 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 45,854 |
+| `world_code.js` | World Code | 30,893 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 41,109 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 47,142 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -150,8 +146,8 @@ the table columns mean is written on this page instead.
 
 | Step | What happens | Built from | Seconds |
 |---|---|---|---|
-| circle | The summoning circle draws itself ring by ring; the star in it turns | 87 meshes in 14 rings: two outer rings with tick marks, an octagon, a turning six-pointed star, a hexagon and a square turning the other way, four spikes, six floating runes, six standing crystals, two halos above and a core; rising sparks | 0.0–2.5 |
-| emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up. Only the outer ring of the circle stays while it does | 78 meshes: a 34-part head, a 30-part body that follows the head's path, three cloud orbs beside it (9 meshes) and a trail of 5 pieces behind the tail that get thinner and darker; particles that fade out mark where it flew | 2.5–3.15 |
+| circle | The summoning circle draws itself ring by ring; the star in it turns | 83 meshes in 13 rings: two outer rings with tick marks, an octagon, a turning six-pointed star, a hexagon and a square turning the other way, four spikes, six floating runes, six standing crystals, a halo above and a core; rising sparks | 0.0–2.5 |
+| emerge | A pillar of light, then the dragon comes up through the floor and spirals 16 blocks up | 143 meshes: a 55-part head, a 58-part body that follows the head's path, five cloud orbs beside it (20 meshes) and a trail of 10 pieces behind the tail that get thinner and darker; particles that fade out mark where it flew | 2.5–3.15 |
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | two 4-part star meshes, sparks | 4.7–5.3 |
@@ -163,7 +159,7 @@ After two dragons touch, the one that is left runs these steps instead:
 
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
-| mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 78 meshes, bigger | 1.2 s |
+| mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 143 meshes, bigger | 1.2 s |
 | beam | A beam three times as thick shoots from the ground up through the dragon and 40 blocks past it | the same 10 meshes, bigger | 0.6 s |
 | nuke | That beam swells to 11 blocks thick, a shock ring widens on the ground out to the kill radius, then it thins out. Everything within 34 blocks dies | the same beam, a 10-piece ring, flashes and waves | 0.65 s |
 | cloud | Smoke where the beam stood and a ring of dust rolling out along the ground | 12 smoke meshes, 8 dust meshes, smoke | 2.5 s |
@@ -183,10 +179,10 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | Group | Rows | What it is |
 |---|---|---|
 | `pillar` | 1 | The pillar of light when the dragon comes out |
-| `head` | 34 | Purple skull and a snout that narrows to the tip; a lower jaw that hangs open at a slant; long dark horns swept back, up and outward with magenta tips, and a second pair; a slanted crest; cyan eyes with slit pupils under angry slanted brows; a nose horn, snout ridge and forehead gem; fangs that point down and up, teeth, tongue and a glowing throat; long whiskers that trail back; flared cheek fins, mane, beard |
-| `body` | 30 | 10 segments from thick neck to thin tail, purple and dark purple in turn; magenta spines that lean back; lilac belly plates on the neck; a pair of swept-back wings with lilac tips, a pair of fins, tail fins and a tail spike |
-| `trail` | 5 | The trail behind the tail: 5 flat pieces, each thinner and darker than the one before |
-| `orb` | 3 | One cloud orb: a turning lilac core and two puffs. Used 3 times, at the places in `DP_ORBS` |
+| `head` | 55 | Purple skull and a snout that narrows to the tip; open lower jaw with its own tip and hinges; dark horns in three pieces with magenta tips; a three-step crest; cyan eyes in dark sockets with slit pupils under heavy brows; a nose horn, snout ridge and forehead gem; big and small fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins with frill spikes, chin spikes, beard |
+| `body` | 58 | 12 segments from thick neck to thin tail, purple and dark purple in turn; a tall magenta spine on each, lilac belly plates, cyan stripes on both sides, a pair of wings with lilac tips, a pair of fins, tail fins |
+| `trail` | 10 | The trail behind the tail: 10 flat pieces, each thinner and darker than the one before |
+| `orb` | 4 | One cloud orb: a turning lilac core and three puffs. Used 5 times, at the places in `DP_ORBS` |
 | `flare` | 6 | The star: a core, three rays and two slanted rays |
 | `beam` | 5 | The beam before each explosion: a core and four thin beams |
 | `beamTop` | 3 | The ball on the beam's tip, the disc at its foot, and a collar that is used 3 times and travels up the beam |
@@ -204,22 +200,25 @@ To change a part, change its row. To add one, add a row: the engine picks it up.
 Every row in `DP_MESH` is named `M`. What each row is, in order:
 
 - `trail`: nearest the tail first.
-- `orb`: core, then the two puffs.
+- `orb`: core, then the three puffs.
 - `flare`: core, the three rays, the two slanted rays.
 - `beam`: core, front, back, then the two side beams.
 - `beamTop`: tip, foot, collar.
 - `smoke`: puffs 1 to 11, then the glowing core.
-- `body`: for each of the 10 segments from neck to tail tip, the segment itself,
-  then (where it has them) its spine and its belly plate. The wings and wing tips
-  follow the second segment, the fins the sixth. The last two rows are the tail
-  fins and the tail spike.
-- `head`: skull, snout, snout tip, jaw, horns, crest, eyes, cheek fins, second
-  horns, brows, upper fangs, lower fangs, throat, nose horn, whiskers, forehead
-  gem, mane, horn tips, pupils, teeth, tongue, beard, snout ridge.
+- `body`: for each of the 12 segments from neck to tail tip, the segment itself,
+  then its spine, then (where it has them) its belly plate, side stripes, and
+  wings or fins. The wing tips follow the wings. The last three rows are the tail
+  fins, the tail's top fin and its tip.
+- `head`: skull, snout, snout tip, jaw, horns, crest, eyes, cheek fins, jaw tip,
+  second horn pieces, front and back of the crest, eye sockets, brows, upper
+  fangs, lower fangs, throat, nose horn, snout ridge, whiskers, forehead gem,
+  mane, jaw hinges, horn tips, pupils, upper and lower frill spikes, small fangs,
+  teeth, tongue, nostrils, whisker tips, back of the mane, chin, beard, chin
+  spikes.
 
 The numbers are meshes made at full detail; parts on both sides are written once
-and mirrored. `detail` in `DP_CFG` sets how much of the dragon is made: 1 gives 34
-meshes, 2 gives 60, 3 gives 78 (head, body, orbs and trail together).
+and mirrored. `detail` in `DP_CFG` sets how much of the dragon is made: 1 gives 39
+meshes, 2 gives 99, 3 gives 143 (head, body, orbs and trail together).
 
 The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 
@@ -233,9 +232,7 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 - tick: when the ring appears, in ticks (20 per second) after the cast.
 - spin: how far the ring turns each tick; 0 stands still.
 - flag `spin`: the boxes turn by themselves (the runes and the core). Flag `r`:
-  the boxes point away from the middle instead of along the ring. `2` or `3`: the
-  ring is only made at that detail level or higher. `k`: the ring stays while the
-  dragon comes out.
+  the boxes point away from the middle instead of along the ring.
 
 ![The dragon laid out straight](dragon_pulse/preview/dragon.png)
 
@@ -244,24 +241,11 @@ The summoning circle is in `DP_CIRCLE`. One row is one ring of equal boxes:
 *Drawn outside the game with plain light so the parts can be told apart. In the
 game they glow.*
 
-### Under 100 meshes
-
-The whole move stays under 100 mesh entities at every moment:
-
-- One cast holds at most 88: the circle is 87, the dragon 78, and while the
-  dragon comes out only the outer ring of the circle (12) stays.
-- While two casts run, both switch to detail 1 (a 34-mesh dragon, a 45-mesh
-  circle), together at most 91. When they have merged, the one dragon that is
-  left goes back to full detail.
-- While Goodra stands, the move also uses detail 1 and only the meshes Goodra
-  leaves free.
-- `maxMeshes` is 99 and `maxCasts` is 2, so nothing can go over.
-
-### Slanted parts
-
-A row may end with a tenth entry, `[forward, right, up]`: the direction the
-part's depth points in, seen from the dragon. That is how horns sweep back, wings
-spread and fangs point down. Parts without it point the way the dragon flies.
+The move stays under 400 meshes. One cast holds at most 192 meshes at once (circle and dragon together, while it
+comes out); two dragons about to merge hold up to 371. To fit, three
+rings of the circle (the thin outer ring, the tick marks and the four spikes) are
+removed as soon as the dragon starts to come out. `maxMeshes` is 399, and the
+meshes of a standing Goodra count toward it, so the code never asks for a 400th. All are deleted when the move ends.
 
 ## The particles
 
@@ -339,7 +323,7 @@ list.
 
 ## The table columns
 
-**`DP_MESH`** (the move): `[name, width, height, depth, colour, forward, right, up, flag, aim]`
+**`DP_MESH`** (the move): `[name, width, height, depth, colour, forward, right, up, flag]`
 
 - width is left to right, height bottom to top, depth along the flight.
 - forward, right, up: where the part sits, in blocks from the middle of its group.
@@ -389,18 +373,19 @@ I could not run Bloxd from here. The code was run against a stand-in for the gam
 That checks sizes, that every call is well formed and that every mesh is deleted.
 It cannot show how the game draws it. Things to look at first in your world:
 
-- **Slanted parts.** Horns, wings, fangs, spines, the slanted rays of the stars
-  and the shock rings need mesh turning to work. With `rotate: false` they lie
-  along the axes and the dragon looks wrong.
+- **Slanted rays and rings.** The slanted rays of the stars and the shock rings
+  need mesh turning to work. With `rotate: false` they lie along the axes.
 - **Mesh turning.** Meshes are turned to face the way they fly with
   `api.setEntityRotation`. The documentation does not say which way round the
   angles go. If the circle's lines or the dragon's parts point the wrong way, set
   `rotate: false`: the parts then stay level, in the right places.
 - **Mesh limit.** The game limits mesh entities but does not publish the number.
   If parts of the dragon are missing, lower `detail`.
-- **Many casts at once.** There is no cooldown. Up to `maxCasts` (2) casts run
-  together, at lower detail, and share `maxMeshes` (99).
-- **Speed.** At full detail one dragon or two together make up to 200 api calls per tick. If the game stutters or stops the script, lower `detail`.
+- **Many casts at once.** There is no cooldown. Up to `maxCasts` (4) casts run
+  together and share `maxMeshes` (399). Two dragons need 371; a third at the same time is cut
+  short.
+- **Speed.** At full detail one dragon makes up to 280 api calls per tick, two
+  up to 530. If the game stutters or stops the script, lower `detail`.
 - **Killing.** The target is killed with `api.killLifeform`. If the game refuses
   that call, the code takes 99,999 health instead.
 - **The nuke** does not break blocks.

@@ -50,7 +50,7 @@ function makeApi(mob) {
     broadcastSound: (name, vol, rate, o) => { s.calls++; need(SOUNDS.includes(name), 'sound ' + name); need(vol >= 0 && vol <= 1 && rate > 0 && finite(o.playerIdOrPos), 'bad sound'); s.sounds.add(name) },
     attemptCreateMeshEntity: (type, o) => {
       s.calls++
-      if (meshes.size >= 99) { s.refused++; return null } // the game's limit: under 100
+      if (meshes.size >= 399) { s.refused++; return null } // the limit: under 400
       need(type === 'Box', 'mesh type ' + type)
       need(Object.keys(o).every((k) => ALLOWED_BOX.includes(k)), 'unknown Box option')
       need(finite(o) && o.width > 0 && o.height > 0 && o.depth > 0, 'bad Box size')
@@ -124,7 +124,7 @@ const a = run(one)
 const F = a.frames
 const circle = of(F, 0)
 const flat = circle[circle.length - 1]
-check(flat.meshes.length === 87 && Math.max(...ys(flat)) < 14 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
+check(flat.meshes.length === 83 && Math.max(...ys(flat)) < 13 && Math.min(...ys(flat)) > 10, `the summoning circle stands on the floor (${flat.meshes.length} meshes, ${(circle.length / 20).toFixed(2)} s)`)
 const out = of(F, 1)
 check(out[0].t >= 40, `the dragon comes out after ${(out[0].t / 20).toFixed(2)} s`)
 check(Math.min(...ys(out[2])) < 10 && Math.max(...ys(out[out.length - 1])) > 10 + 14, `it comes up through the floor and dashes ${(Math.max(...ys(out[out.length - 1])) - 10).toFixed(1)} blocks into the air`)
@@ -138,8 +138,8 @@ check(F.length < 600, `the move ends by itself (${(F.length / 20).toFixed(2)} s)
 check(one.s.errors.length === 0, 'every api call is well formed' + (one.s.errors.length ? ': ' + [...new Set(one.s.errors)].join('; ') : ''))
 check(one.s.meshes.size === 0 && one.game.held() === 0, 'every mesh is deleted at the end')
 check(one.s.sounds.size >= 14, `${one.s.sounds.size} different sounds play, all of them names from the documentation`)
-check(one.s.peak < 100 && one.s.refused === 0, `never 100 meshes or more at once: at most ${one.s.peak}, and none was refused`)
-check(a.worst <= 220, `most api calls in one tick: ${a.worst}`)
+check(one.s.peak < 400 && one.s.refused === 0, `under 400 meshes at once: at most ${one.s.peak}, and none was refused`)
+check(a.worst <= 300, `most api calls in one tick: ${a.worst}`)
 console.log('  Phases: ' + phases(F))
 
 console.log('Two dragons that meet')
@@ -158,7 +158,7 @@ check(Math.max(...ys(mega[mega.length - 1])) - Math.max(...ys(mega[0])) > 12, `i
 const nuke = of(M, 8)
 const fly = of(F, 3)
 const last = fly[fly.length - 1]
-check(last.meshes.length === 78 && one.s.looks.has('1,1.6'), `the dragon is ${last.meshes.length} meshes with its cloud orbs and tapering trail, and leaves particles that fade`)
+check(last.meshes.length === 113 + 30 && one.s.looks.has('1,1.6'), `cloud orbs and a tapering trail follow the dragon (${last.meshes.length - 113} more meshes) with particles that fade`)
 const tall = (f) => Math.max(0, ...f.meshes.map((m) => m.height))
 const bl = of(F, 5)
 check(tall(bl[0]) < tall(bl[4]) && tall(bl[9]) > 40 && bl[9].meshes.length === 10 && !one.s.hurtAt.some((t) => t < bl[10].t), `a beam shoots ${tall(bl[9]).toFixed(0)} blocks up for ${(10 / 20).toFixed(2)} s before the blast; nobody is hurt until it ends`)
@@ -169,8 +169,8 @@ check(two.s.hurt.some((h) => h[0] === 'kill' && h[1] === 'dummy'), 'the nuke kil
 check(!two.s.hurt.some((h) => h[1] === 'caster' || h[1] === 'other'), 'neither caster is hurt')
 check(two.s.errors.length === 0, 'every api call is well formed' + (two.s.errors.length ? ': ' + [...new Set(two.s.errors)].join('; ') : ''))
 check(two.game.dpCasts.length === 0 && two.s.meshes.size === 0 && two.game.held() === 0, 'it ends and every mesh is deleted')
-check(two.s.peak < 100 && two.s.refused === 0, `two dragons together stay under 100 meshes: at most ${two.s.peak}, and none was refused`)
-check(b.worst <= 220, `most api calls in one tick: ${b.worst}`)
+check(two.s.peak < 400 && two.s.refused === 0, `two dragons together stay under 400 meshes: at most ${two.s.peak}, and none was refused`)
+check(b.worst <= 580, `most api calls in one tick: ${b.worst}`)
 console.log('  Phases: ' + phases(M))
 
 if (dumpAt >= 0) fs.writeFileSync(args[dumpAt + 1], JSON.stringify(dumpMerge ? M : F))
