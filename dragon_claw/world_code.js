@@ -22,10 +22,13 @@ var CLAW_CFG = {
 var CLAW_MAX_RANGE = 15
 
 var CLAW_COL = {
-  white: [235, 255, 240],
-  core: [120, 255, 150],
-  edge: [20, 190, 90],
-  deep: [8, 90, 60],
+  white: [240, 255, 250],
+  hot: [150, 255, 220],
+  core: [60, 245, 170],
+  mid: [0, 200, 130],
+  edge: [0, 140, 120],
+  deep: [20, 70, 110],
+  void: [70, 30, 140],
 }
 
 var CLAW_SND = {
@@ -73,22 +76,31 @@ var CLAW_TURNS = ["TorsoNode", "LegLeftMesh", "LegRightMesh"]
 
 var CLAW_MESH = {
   talon: [
-    [-1, 0.025, "edge"],
-    [-0.75, 0.055, "core"],
-    [-0.5, 0.09, "white"],
-    [-0.25, 0.115, "white"],
+    [-1, 0.02, "edge"],
+    [-0.8, 0.045, "mid"],
+    [-0.6, 0.075, "core"],
+    [-0.4, 0.1, "hot"],
+    [-0.2, 0.12, "white"],
     [0, 0.13, "white"],
-    [0.25, 0.115, "white"],
-    [0.5, 0.09, "white"],
-    [0.75, 0.055, "core"],
-    [1, 0.025, "edge"],
+    [0.2, 0.12, "white"],
+    [0.4, 0.1, "hot"],
+    [0.6, 0.075, "core"],
+    [0.8, 0.045, "mid"],
+    [1, 0.02, "edge"],
   ],
   glow: [
-    [-0.75, 0.09, "deep"],
-    [-0.375, 0.16, "edge"],
-    [0, 0.19, "edge"],
-    [0.375, 0.16, "edge"],
-    [0.75, 0.09, "deep"],
+    [-0.85, 0.07, "void"],
+    [-0.57, 0.13, "deep"],
+    [-0.28, 0.175, "edge"],
+    [0, 0.2, "mid"],
+    [0.28, 0.175, "edge"],
+    [0.57, 0.13, "deep"],
+    [0.85, 0.07, "void"],
+  ],
+  shard: [
+    [-0.5, 0.03, "hot", 0.2, 0.5],
+    [0.1, 0.035, "core", -0.2, 0.7],
+    [0.6, 0.028, "void", 0.17, 0.45],
   ],
   mark: [
     [-0.6, 0.82, 0.85],
@@ -114,13 +126,17 @@ var CLAW_MESH = {
     [0.04, "edge"],
   ],
   hand: [
-    [0.08, 0.3, 0.1, "core", -0.11, -0.88, 0, 0],
-    [0.05, 0.28, 0.07, "white", -0.11, -1.12, 0.05, 0.4],
-    [0.08, 0.34, 0.1, "core", 0, -0.9, 0, 0],
-    [0.05, 0.3, 0.07, "white", 0, -1.16, 0.05, 0.4],
-    [0.08, 0.3, 0.1, "core", 0.11, -0.88, 0, 0],
-    [0.05, 0.28, 0.07, "white", 0.11, -1.12, 0.05, 0.4],
-    [0.3, 0.34, 0.05, "edge", 0, -0.92, 0, 0],
+    [0.09, 0.2, 0.11, "edge", -0.11, -0.82, 0, 0],
+    [0.07, 0.24, 0.09, "core", -0.11, -1.0, 0.02, 0.2],
+    [0.045, 0.24, 0.06, "white", -0.11, -1.2, 0.08, 0.5],
+    [0.09, 0.2, 0.11, "edge", 0, -0.86, 0, 0],
+    [0.07, 0.24, 0.09, "core", 0, -1.04, 0.02, 0.2],
+    [0.045, 0.24, 0.06, "white", 0, -1.24, 0.08, 0.5],
+    [0.09, 0.2, 0.11, "edge", 0.11, -0.82, 0, 0],
+    [0.07, 0.24, 0.09, "core", 0.11, -1.0, 0.02, 0.2],
+    [0.045, 0.24, 0.06, "white", 0.11, -1.2, 0.08, 0.5],
+    [0.34, 0.1, 0.16, "void", 0, -0.7, 0, 0],
+    [0.3, 0.34, 0.05, "mid", 0, -0.92, 0, 0],
   ],
 }
 
@@ -252,7 +268,7 @@ function clawFront(age) {
   return (1 - fly * fly) * Math.max(0, clawReach(false) - clawNear())
 }
 
-function clawPoint(c, side, arc, u, drift, back) {
+function clawPoint(c, side, arc, u, drift, back, off) {
   var m = CLAW_MESH.mark[arc]
   var S = clawNorm(clawAdd(clawAdd([0, 0, 0], c.R, -side), [0, 1, 0], -0.9))
   var W = clawNorm(clawAdd(clawAdd([0, 0, 0], c.R, 0.9 * side), [0, 1, 0], -1))
@@ -260,7 +276,7 @@ function clawPoint(c, side, arc, u, drift, back) {
   var k = clawSize()
   var at = clawAdd(c.from, [0, 1, 0], 0.55 + 1.1 * k)
   at = clawAdd(at, S, x * 1.9 * k)
-  at = clawAdd(at, W, m[0] * (1 - 0.22 * u) * k)
+  at = clawAdd(at, W, (m[0] * (1 - 0.22 * u) + (off || 0)) * k)
   at = clawAdd(at, c.F, 0.9 + 0.6 * k + 0.7 * k * (1 - x * x) + drift - (back || 0))
   var t = clawNorm(clawAdd(clawAdd([0, 0, 0], S, 1.9), c.F, -1.4 * x))
   return { at: at, t: t }
@@ -277,19 +293,24 @@ function clawSlash(c, tag, side, age) {
     var shown = Math.max(1, Math.round(rows.length * part))
     for (var i = 0; i < shown; i++) {
       var q = clawPoint(c, side, arc, rows[i][0], drift)
-      clawBox(c, tag + arc + "_" + i, rows[i][1] * m[2] * k, 0.6 * m[1] * k, rows[i][2], q.at, q.t)
+      clawBox(c, tag + arc + "_" + i, rows[i][1] * m[2] * k, 0.5 * m[1] * k, rows[i][2], q.at, q.t)
     }
     for (var g = 0; g < Math.round(glow.length * part); g++) {
       var h = clawPoint(c, side, arc, glow[g][0], drift, 0.2)
       clawBox(c, tag + arc + "g" + g, glow[g][1] * m[2] * k, 0.9 * m[1] * k, glow[g][2], h.at, h.t)
     }
+    for (var e = 0; e < Math.round(CLAW_MESH.shard.length * part); e++) {
+      var sh = CLAW_MESH.shard[e]
+      var w = clawPoint(c, side, arc, sh[0], drift, 0.1, sh[3])
+      clawBox(c, tag + arc + "s" + e, sh[1] * k, sh[4] * m[1] * k, sh[2], w.at, w.t)
+    }
     var tip = clawPoint(c, side, arc, rows[shown - 1][0], drift)
-    if (age < CLAW_STEP.draw) clawFx(tip.at, [tip.t[0] * 4, tip.t[1] * 4, tip.t[2] * 4], "white", "core", 0.3 * k, 0.5, "critical_hit", 4, 0.15)
+    if (age < CLAW_STEP.draw) clawFx(tip.at, [tip.t[0] * 4, tip.t[1] * 4, tip.t[2] * 4], "white", "hot", 0.3 * k, 0.5, "critical_hit", 4, 0.15)
     else if (age === CLAW_STEP.draw) clawFx(clawPoint(c, side, arc, 0, drift).at, null, "white", "core", 0.3 * k, 0.4, "glint", 3, 0.4 * k)
     else {
       var u = ((age * 5 + arc * 3) % 9) / 4 - 1
       clawFx(clawPoint(c, side, arc, u, drift, 0.5).at, [-c.F[0], 0.1, -c.F[2]], "core", "edge", 0.26 * k, 0.5, "glint", 2, 0.15)
-      clawFx(clawPoint(c, side, arc, -u, drift, 0.9).at, null, "edge", "deep", 0.34 * k, 0.6, "square_particle", 1, 0.1)
+      clawFx(clawPoint(c, side, arc, -u, drift, 0.9).at, null, "deep", "void", 0.34 * k, 0.6, "square_particle", 1, 0.1)
     }
   }
   if (age >= CLAW_STEP.draw / 2) clawSweep(c, tag, false, clawNear() + 0.3 + drift)
@@ -322,7 +343,7 @@ function clawRing(c, age) {
     var a = (i / rows.length) * Math.PI * 2
     var t = clawAdd(clawAdd([0, 0, 0], X, -Math.sin(a)), Y, Math.cos(a))
     clawBox(c, "ring_" + i, rows[i][0] * k, long, rows[i][1], spot(a, rad), t, how)
-    if (i % 2 === 0) clawBox(c, "ring_g" + i, rows[i][0] * 1.35 * k, long * 1.6, i % 4 ? "deep" : "edge", spot(a, rad - 0.2), t, how)
+    if (i % 2 === 0) clawBox(c, "ring_g" + i, rows[i][0] * 1.35 * k, long * 1.6, i % 4 ? "void" : "deep", spot(a, rad - 0.2), t, how)
   }
   var lead = (shown / rows.length) * Math.PI * 2
   var tl = clawAdd(clawAdd([0, 0, 0], X, -Math.sin(lead) * 4), Y, Math.cos(lead) * 4)

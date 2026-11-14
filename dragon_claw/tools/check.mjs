@@ -100,7 +100,7 @@ check(s.errors.length === 0, 'every api call is well formed ' + [...new Set(s.er
 const at = (n) => frames[n].meshes
 const marks = (n) => at(n).filter((m) => Math.abs(m.r[0]) > 0.05 || m.p[1] > 11.4 || m.p[1] < 10.9)
 const grown = [...Array(T.draw).keys()].map((k) => at(T.slash1 + k).length)
-check(grown[T.draw - 1] === 42 && grown.every((n, k) => !k || n > grown[k - 1]), `first claw: three slash marks, each 9 bright meshes on 5 wider dark ones, drawn bit by bit while the arm comes down (${grown.join(', ')} meshes)`)
+check(grown[T.draw - 1] === 63 && grown.every((n, k) => !k || n > grown[k - 1]), `first claw: three slash marks, each 11 bright meshes on 7 wider dark ones with 3 splinters beside it, drawn bit by bit while the arm comes down (${grown.join(', ')} meshes)`)
 const tall = (n) => { const y = at(n).filter((m) => Math.abs(m.r[0]) > 0.2).map((m) => m.p[1]); return Math.max(...y) - Math.min(...y) }
 check(tall(T.slash1 + T.draw - 1) > 3.5 && Math.min(...at(T.slash1 + T.draw - 1).map((m) => m.p[1])) > 9.9, `each claw is ${tall(T.slash1 + T.draw - 1).toFixed(1)} blocks tall (lowest point ${(Math.min(...at(T.slash1 + T.draw - 1).map((m) => m.p[1])) - 10).toFixed(2)} above the floor)`)
 const zs = (n) => at(n).filter((m) => m.depth < 1.2 && m.width < 0.45).map((m) => m.p[2] - 0.5)
@@ -139,8 +139,8 @@ check(Math.min(...steps.map((a) => end(a, 'ArmRightMesh')[0])) < -2.5 && Math.mi
 
 console.log('Node meshes')
 const on = s.hands.filter((h) => h.on), off = s.hands.filter((h) => !h.on)
-check(on.length === 14 && on.every((h) => h.t === 0) && new Set(on.map((h) => h.node)).size === 2, 'claws are attached to both arms at the start: 7 node meshes each (three talons of two pieces, and a blade)')
-check(on[6].o.width > 0.25 && on[13].o.width > 0.25, 'the last one on each arm is the wide blade, so a claw shows even if the game keeps one mesh per node')
+check(on.length === 22 && on.every((h) => h.t === 0) && new Set(on.map((h) => h.node)).size === 2, 'claws are attached to both arms at the start: 11 node meshes each (three talons of three pieces, a knuckle plate and a blade)')
+check(on[10].o.width > 0.25 && on[21].o.width > 0.25, 'the last one on each arm is the wide blade, so a claw shows even if the game keeps one mesh per node')
 check(off.length === 2 && off.every((h) => h.t === T.rest + 3), 'and taken off again when the player is back at rest')
 
 console.log('Hits')

@@ -30,7 +30,7 @@ From other code: `dragonClaw(playerId)`.
 | 2.30–2.90 | Follow-through, then back to rest at 2.75 | These hang and fly forward too | Everything they pass, once |
 | 2.75–2.90 | Pose is reset | Claws are taken off | |
 
-At most 53 mesh entities at once and 75 api calls in one tick.
+At most 74 mesh entities at once and 93 api calls in one tick.
 
 The timing is in two tables (20 ticks a second). `CLAW_POSE`: the first number
 of each row is the tick that pose is reached. `CLAW_STEP`: when the marks and
@@ -98,11 +98,16 @@ timings in ticks in `CLAW_STEP`.
 
 | Group | Rows | What |
 |---|---|---|
-| `talon` | 9 | The bright core of one slash mark from end to end: place along it (-1 to 1), thickness, colour |
-| `glow` | 5 | The wider, darker edge behind that core |
-| `mark` | 3 | The three marks of one claw: sideways offset, length, thickness. One claw is 3 × (9 + 5) = 42 meshes |
-| `ring` | 16 | The ring of the spin: thickness, colour. Every second piece gets a darker piece behind it (24 meshes) |
-| `hand` | 7 | Node meshes on each arm: three talons of two pieces each (the tip bent forward), then a wide blade |
+| `talon` | 11 | The bright core of one slash mark from end to end: place along it (-1 to 1), thickness, colour. White in the middle, then mint, green and teal to the tips |
+| `glow` | 7 | The wider, darker edge behind that core: teal in the middle, navy, violet at the ends |
+| `shard` | 3 | Thin splinters beside each mark: place along it, thickness, colour, sideways offset, length |
+| `mark` | 3 | The three marks of one claw: sideways offset, length, thickness. One claw is 3 × (11 + 7 + 3) = 63 meshes |
+| `ring` | 16 | The ring of the spin: thickness, colour. Every second piece gets a navy or violet piece behind it (24 meshes) |
+| `hand` | 11 | Node meshes on each arm: three talons of three pieces each (teal base, green middle, white tip bent forward), a violet knuckle plate, then a wide blade |
+
+Colours are in `CLAW_COL`: `white`, `hot` (mint), `core` (bright green), `mid`,
+`edge` (teal), `deep` (navy), `void` (violet). Change them there and every
+mesh and particle follows.
 
 The blade is attached last on purpose. The documentation only shows one node
 mesh per body part; if the game keeps only the last one, the blade is what
