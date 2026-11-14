@@ -30,6 +30,7 @@ function game(code, limit = Infinity) {
       if (type !== 'Box' || !finite([o.width, o.height, o.depth]) || !(o.width > 0 && o.height > 0 && o.depth > 0)) s.errors.push('bad Box')
       const id = 'm' + next++
       meshes.set(id, { o, p: null, r: [0, 0, 0] })
+      s.peak = Math.max(s.peak || 0, meshes.size)
       return id
     },
     setPosition: (id, x, y, z) => { if (!meshes.has(id) || !finite([x, y, z])) s.errors.push('bad setPosition'); else meshes.get(id).p = [x, y, z] },
@@ -82,7 +83,7 @@ console.log('Without mesh turning')
 s = game(model)
 s.run.cfg.rotate = false
 s.run.chat('!goodra'); ticks(s, 40)
-check(all.length === s.meshes.size && [...s.meshes.values()].every((m) => m.r.every((v) => v === 0)), 'no mesh is turned')
+check(s.meshes.size === counts[1] && [...s.meshes.values()].every((m) => m.r.every((v) => v === 0)), 'no mesh is turned')
 
 console.log('Below world_code.js')
 s = game(world + '\n' + model)
@@ -95,7 +96,8 @@ check(s.run.chat('!goodra pulse') === false && s.run.casts.length === 1, 'Goodra
 ticks(s, 3)
 check(s.particles > before, 'the circle appears')
 ticks(s, 200)
-check(s.meshes.size === counts[2], 'after the move only Goodra is left')
+check(s.meshes.size === counts[1], 'after the move only Goodra is left')
+check(s.peak < 100, `Goodra and its Dragon Pulse together stay under 100 meshes (at most ${s.peak})`)
 
 if (fail.length) { console.log(`\n${fail.length} check(s) failed`); process.exit(1) }
 console.log('\nAll checks passed')

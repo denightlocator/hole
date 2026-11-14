@@ -1,7 +1,7 @@
 var GOODRA_CFG = {
   chat: "!goodra",
   scale: 0.6,
-  detail: 3,
+  detail: 2,
   rotate: true,
   perTick: 10,
   hideDist: 96,

@@ -23,9 +23,9 @@ var DP_CFG = {
   rotate: true,
   sounds: true,
   hideDist: 160,
-  maxCasts: 4,
+  maxCasts: 2,
   detail: 3,
-  maxMeshes: 460,
+  maxMeshes: 99,
 }
 
 var DP_COL = {
@@ -42,18 +42,19 @@ var DP_COL = {
 }
 
 var DP_CIRCLE = [
-  [12, 3.6, 1.95, 0.22, 0.06, "purple", 0, 0, 0, 0],
-  [12, 4.05, 2.18, 0.08, 0.06, "lilac", 15, 0, 4, 0],
-  [12, 3.83, 0.36, 0.1, 0.06, "magenta", 15, 0, 8, 0, "r"],
+  [12, 3.6, 1.95, 0.22, 0.06, "purple", 0, 0, 0, 0, "k"],
+  [12, 4.05, 2.18, 0.08, 0.06, "lilac", 15, 0, 4, 0, "2"],
+  [12, 3.83, 0.36, 0.1, 0.06, "magenta", 15, 0, 8, 0, "r3"],
   [8, 2.95, 2.45, 0.1, 0.06, "magenta", 22.5, 0, 12, 0],
   [3, 1.48, 5.1, 0.12, 0.06, "cyan", 0, 0.02, 16, 0.05],
   [3, 1.48, 5.1, 0.12, 0.06, "cyan", 60, 0.02, 16, 0.05],
   [6, 0.9, 1.04, 0.14, 0.06, "magenta", 0, 0.04, 22, -0.08],
-  [4, 0.42, 0.84, 0.1, 0.06, "lilac", 0, 0.06, 26, 0.12],
-  [4, 4.75, 1.3, 0.2, 0.06, "magenta", 0, 0, 30, 0, "r"],
+  [4, 0.42, 0.84, 0.1, 0.06, "lilac", 0, 0.06, 26, 0.12, "3"],
+  [4, 4.75, 1.3, 0.2, 0.06, "magenta", 0, 0, 30, 0, "r2"],
   [6, 3.28, 0.3, 0.3, 0.3, "lilac", 30, 0.45, 34, 0, "spin"],
-  [6, 3.28, 0.16, 0.16, 1.3, "purple", 0, 0.65, 38, 0],
+  [6, 3.28, 0.16, 0.16, 1.3, "purple", 0, 0.65, 38, 0, "2"],
   [6, 2.1, 2.42, 0.1, 0.08, "cyan", 0, 2.4, 42, -0.1],
+  [4, 1.1, 2.2, 0.1, 0.08, "magenta", 0, 3.5, 43, 0.14, "3"],
   [1, 0, 0.5, 0.5, 0.5, "white", 0, 0.7, 44, 0, "spin"],
 ]
 
@@ -81,109 +82,69 @@ var DP_MESH = {
     ["M", 1.4, 1.1, 1.4, "purple", 0, 0, 0],
     ["M", 1.1, 0.7, 1, "purple", 1.1, 0, 0.05],
     ["M", 0.85, 0.5, 0.8, "purple", 1.9, 0, -0.02],
-    ["M", 0.95, 0.24, 1.5, "deep", 1.25, 0, -0.62],
-    ["M", 0.26, 0.26, 1.6, "night", -1.2, 0.5, 0.8, "m"],
-    ["M", 0.24, 0.7, 0.6, "magenta", -0.4, 0, 0.9],
-    ["M", 0.14, 0.24, 0.42, "cyan", 0.6, 0.76, 0.22, "m"],
-    ["M", 0.16, 0.8, 1, "deep", -0.5, 0.8, -0.05, "m"],
-    ["M", 0.7, 0.2, 0.6, "deep", 2, 0, -0.72, "2"],
-    ["M", 0.22, 0.22, 1, "night", -2.1, 0.6, 1.1, "m2"],
-    ["M", 0.24, 0.5, 0.6, "magenta", 0.2, 0, 0.8, "2"],
-    ["M", 0.24, 0.5, 0.6, "magenta", -1, 0, 0.8, "2"],
-    ["M", 0.12, 0.4, 0.6, "night", 0.55, 0.71, 0.2, "m2"],
-    ["M", 0.4, 0.18, 0.9, "night", 0.55, 0.6, 0.52, "m2"],
-    ["M", 0.14, 0.42, 0.14, "white", 2.15, 0.4, -0.42, "m2"],
-    ["M", 0.12, 0.3, 0.12, "white", 2.15, 0.26, -0.42, "m2"],
+    ["M", 0.95, 0.24, 1.7, "deep", 1.3, 0, -0.62, "", [1, 0, -0.2]],
+    ["M", 0.28, 0.28, 1.9, "night", -1.3, 0.58, 0.92, "m", [-1, 0.25, 0.45]],
+    ["M", 0.22, 0.55, 1.7, "magenta", -0.3, 0, 0.88, "", [1, 0, -0.12]],
+    ["M", 0.14, 0.26, 0.46, "cyan", 0.6, 0.76, 0.22, "m", [1, 0, -0.3]],
+    ["M", 0.14, 0.9, 1.4, "deep", -0.8, 0.9, -0.05, "m", [-1, 0.4, 0]],
+    ["M", 0.2, 0.2, 1.5, "night", -1.25, 0.85, 0.45, "m2", [-1, 0.55, 0.1]],
+    ["M", 0.42, 0.18, 1, "night", 0.6, 0.6, 0.5, "m2", [1, 0, -0.32]],
+    ["M", 0.14, 0.14, 0.5, "white", 2.15, 0.4, -0.44, "m2", [0.25, 0, -1]],
+    ["M", 0.12, 0.12, 0.4, "white", 2, 0.28, -0.56, "m2", [0.2, 0, 1]],
     ["M", 0.7, 0.36, 0.5, "magenta", 0.75, 0, -0.3, "2"],
-    ["M", 0.22, 0.3, 0.3, "night", 2.05, 0, 0.33, "2"],
-    ["M", 0.26, 0.14, 1.2, "night", 1.3, 0, 0.44, "2"],
-    ["M", 0.1, 0.1, 1.5, "cyan", 1.5, 0.75, -0.1, "m2"],
+    ["M", 0.2, 0.2, 0.55, "night", 2.05, 0, 0.38, "2", [-0.45, 0, 1]],
+    ["M", 0.1, 0.1, 2.3, "cyan", 1, 1.05, -0.25, "m2", [-1, 0.45, -0.2]],
     ["M", 0.34, 0.2, 0.34, "cyan", 0.45, 0, 0.6, "2"],
-    ["M", 1, 0.6, 0.6, "deep", -0.95, 0, 0.5, "2"],
-    ["M", 0.2, 0.6, 0.5, "deep", 0.25, 0.62, -0.45, "m2"],
-    ["M", 0.16, 0.16, 0.6, "magenta", -2.8, 0.68, 1.35, "m3"],
-    ["M", 0.06, 0.26, 0.12, "white", 0.66, 0.83, 0.22, "m3"],
-    ["M", 0.12, 0.2, 0.7, "magenta", -1.1, 0.86, 0.3, "m3"],
-    ["M", 0.12, 0.2, 0.7, "magenta", -1.1, 0.86, -0.3, "m3"],
-    ["M", 0.1, 0.26, 0.1, "white", 1.6, 0.44, -0.4, "m3"],
-    ["M", 0.06, 0.14, 0.8, "white", 1.1, 0.46, -0.36, "m3"],
-    ["M", 0.36, 0.08, 1, "magenta", 1.3, 0, -0.47, "3"],
-    ["M", 0.16, 0.14, 0.2, "magenta", 2.2, 0.26, 0.24, "m3"],
-    ["M", 0.08, 0.08, 0.9, "lilac", 0.5, 1.05, -0.3, "m3"],
-    ["M", 0.7, 0.5, 0.6, "deep", -1.45, 0, 0.7, "3"],
-    ["M", 0.3, 0.26, 0.5, "deep", 1, 0, -0.84, "3"],
-    ["M", 0.18, 0.5, 0.18, "lilac", 0.75, 0, -1, "3"],
-    ["M", 0.12, 0.3, 0.12, "night", 1.3, 0.36, -0.84, "m3"],
+    ["M", 1, 0.6, 0.7, "deep", -1, 0, 0.5, "2"],
+    ["M", 0.18, 0.18, 0.8, "magenta", -2.45, 0.87, 1.44, "m3", [-1, 0.25, 0.45]],
+    ["M", 0.06, 0.28, 0.12, "white", 0.68, 0.83, 0.2, "m3"],
+    ["M", 0.06, 0.14, 0.9, "white", 1.2, 0.46, -0.36, "m3"],
+    ["M", 0.34, 0.08, 1.1, "magenta", 1.35, 0, -0.5, "3", [1, 0, -0.2]],
+    ["M", 0.16, 0.16, 0.7, "lilac", 0.9, 0, -0.98, "3", [-0.5, 0, -1]],
+    ["M", 0.24, 0.14, 1.2, "night", 1.3, 0, 0.44, "3"],
   ],
 
   body: [
-    ["M", 1.3, 1.15, 1.1, "purple", -1.35, 0, 0],
-    ["M", 0.25, 0.81, 0.8, "magenta", -1.35, 0, 0.95, "2"],
-    ["M", 0.91, 0.14, 0.95, "lilac", -1.35, 0, -0.61, "2"],
-    ["M", 0.1, 0.52, 0.6, "cyan", -1.3, 0.68, 0.09, "m3"],
-    ["M", 1.25, 1.1, 1.1, "deep", -2.5, 0, 0],
-    ["M", 0.25, 0.77, 0.8, "magenta", -2.5, 0, 0.91],
-    ["M", 0.88, 0.14, 0.95, "lilac", -2.5, 0, -0.59, "2"],
-    ["M", 0.1, 0.5, 0.6, "cyan", -2.45, 0.66, 0.09, "m3"],
-    ["M", 1.7, 0.12, 1, "magenta", -2.6, 1.4, -0.1, "m2"],
-    ["M", 0.5, 0.1, 1.5, "lilac", -3.2, 2.3, -0.05, "m3"],
-    ["M", 1.2, 1.05, 1.1, "purple", -3.65, 0, 0],
-    ["M", 0.25, 0.74, 0.8, "magenta", -3.65, 0, 0.87, "2"],
-    ["M", 0.84, 0.14, 0.95, "lilac", -3.65, 0, -0.57, "2"],
-    ["M", 0.1, 0.47, 0.6, "cyan", -3.6, 0.63, 0.08, "m3"],
-    ["M", 1.15, 1, 1.1, "deep", -4.8, 0, 0],
-    ["M", 0.25, 0.7, 0.8, "magenta", -4.8, 0, 0.83, "2"],
-    ["M", 0.8, 0.14, 0.95, "lilac", -4.8, 0, -0.54, "2"],
-    ["M", 0.1, 0.45, 0.6, "cyan", -4.75, 0.6, 0.08, "m3"],
-    ["M", 1.1, 0.95, 1.1, "purple", -5.95, 0, 0],
-    ["M", 0.25, 0.66, 0.8, "magenta", -5.95, 0, 0.78],
-    ["M", 0.77, 0.14, 0.95, "lilac", -5.95, 0, -0.52, "2"],
-    ["M", 0.1, 0.43, 0.6, "cyan", -5.9, 0.58, 0.08, "m3"],
-    ["M", 1, 0.9, 1.1, "deep", -7.1, 0, 0],
-    ["M", 0.25, 0.63, 0.8, "magenta", -7.1, 0, 0.75, "2"],
-    ["M", 0.7, 0.14, 0.95, "lilac", -7.1, 0, -0.49, "2"],
-    ["M", 1.2, 0.12, 0.8, "magenta", -7.2, 1.05, -0.1, "m2"],
-    ["M", 0.95, 0.85, 1.1, "purple", -8.25, 0, 0],
-    ["M", 0.25, 0.59, 0.8, "magenta", -8.25, 0, 0.7, "2"],
-    ["M", 0.66, 0.14, 0.95, "lilac", -8.25, 0, -0.46, "2"],
-    ["M", 0.1, 0.38, 0.6, "cyan", -8.2, 0.51, 0.07, "m3"],
-    ["M", 0.85, 0.75, 1.1, "deep", -9.4, 0, 0],
-    ["M", 0.24, 0.53, 0.8, "magenta", -9.4, 0, 0.62],
-    ["M", 0.59, 0.14, 0.95, "lilac", -9.4, 0, -0.41, "2"],
-    ["M", 0.75, 0.65, 1.1, "purple", -10.55, 0, 0],
-    ["M", 0.21, 0.46, 0.6, "magenta", -10.55, 0, 0.54, "2"],
-    ["M", 0.52, 0.14, 0.95, "lilac", -10.55, 0, -0.36, "2"],
-    ["M", 0.1, 0.29, 0.6, "cyan", -10.5, 0.41, 0.05, "m3"],
-    ["M", 0.62, 0.55, 1.1, "deep", -11.65, 0, 0],
-    ["M", 0.18, 0.39, 0.6, "magenta", -11.65, 0, 0.46, "2"],
-    ["M", 0.43, 0.14, 0.95, "lilac", -11.65, 0, -0.32, "2"],
-    ["M", 0.5, 0.45, 1.05, "purple", -12.7, 0, 0],
-    ["M", 0.15, 0.31, 0.6, "magenta", -12.7, 0, 0.37, "2"],
-    ["M", 0.38, 0.35, 1, "deep", -13.7, 0, 0],
-    ["M", 0.12, 0.24, 0.6, "magenta", -13.7, 0, 0.29, "2"],
-    ["M", 0.7, 0.14, 0.8, "magenta", -14.4, 0.4, 0, "m"],
-    ["M", 0.14, 0.6, 0.7, "cyan", -14.35, 0, 0.3, "2"],
-    ["M", 0.2, 0.2, 0.6, "lilac", -15, 0, 0, "3"],
+    ["M", 1.3, 1.14, 1.35, "purple", -1.45, 0, 0],
+    ["M", 0.22, 0.22, 0.9, "magenta", -1.45, 0, 0.82, "2", [-1, 0, 0.6]],
+    ["M", 0.9, 0.14, 1, "lilac", -1.45, 0, -0.6, "3"],
+    ["M", 1.25, 1.1, 1.35, "deep", -2.9, 0, 0],
+    ["M", 0.22, 0.22, 0.9, "magenta", -2.9, 0, 0.8, "", [-1, 0, 0.6]],
+    ["M", 0.86, 0.14, 1, "lilac", -2.9, 0, -0.58, "3"],
+    ["M", 1, 0.12, 2.6, "magenta", -3.3, 1.7, 0.3, "m", [-0.5, 1, 0.25]],
+    ["M", 0.5, 0.1, 1.7, "lilac", -4.7, 2.95, 0.55, "m3", [-1, 0.55, 0.1]],
+    ["M", 1.18, 1.04, 1.35, "purple", -4.35, 0, 0],
+    ["M", 0.22, 0.22, 0.85, "magenta", -4.35, 0, 0.76, "2", [-1, 0, 0.6]],
+    ["M", 0.8, 0.14, 1, "lilac", -4.35, 0, -0.55, "3"],
+    ["M", 1.1, 0.97, 1.35, "deep", -5.8, 0, 0],
+    ["M", 0.2, 0.2, 0.8, "magenta", -5.8, 0, 0.72, "", [-1, 0, 0.6]],
+    ["M", 1, 0.88, 1.35, "purple", -7.25, 0, 0],
+    ["M", 0.2, 0.2, 0.75, "magenta", -7.25, 0, 0.66, "2", [-1, 0, 0.6]],
+    ["M", 0.9, 0.79, 1.35, "deep", -8.7, 0, 0],
+    ["M", 0.18, 0.18, 0.7, "magenta", -8.7, 0, 0.6, "", [-1, 0, 0.6]],
+    ["M", 0.6, 0.1, 1.5, "magenta", -9, 1, 0.1, "m2", [-0.6, 1, 0.2]],
+    ["M", 0.78, 0.69, 1.35, "purple", -10.15, 0, 0],
+    ["M", 0.16, 0.16, 0.6, "magenta", -10.15, 0, 0.52, "2", [-1, 0, 0.6]],
+    ["M", 0.65, 0.57, 1.35, "deep", -11.6, 0, 0],
+    ["M", 0.14, 0.14, 0.5, "magenta", -11.6, 0, 0.44, "2", [-1, 0, 0.6]],
+    ["M", 0.5, 0.44, 1.35, "purple", -13.05, 0, 0],
+    ["M", 0.36, 0.32, 1.35, "deep", -14.5, 0, 0],
+    ["M", 0.5, 0.1, 1.4, "magenta", -15.3, 0.5, 0, "m", [-1, 0.7, 0]],
+    ["M", 0.14, 0.14, 1.3, "cyan", -15.7, 0, 0, "3"],
   ],
 
   trail: [
-    ["M", 0.6, 0.3, 1, "lilac", -15.8, 0, 0],
-    ["M", 0.55, 0.28, 1, "purple", -16.8, 0, 0],
-    ["M", 0.5, 0.25, 1, "magenta", -17.8, 0, 0, "2"],
-    ["M", 0.44, 0.22, 1, "purple", -18.8, 0, 0],
-    ["M", 0.38, 0.19, 1, "deep", -19.8, 0, 0, "2"],
-    ["M", 0.32, 0.16, 1, "purple", -20.8, 0, 0],
-    ["M", 0.26, 0.13, 1, "deep", -21.8, 0, 0, "2"],
-    ["M", 0.2, 0.1, 1, "deep", -22.8, 0, 0],
-    ["M", 0.14, 0.08, 1, "night", -23.8, 0, 0, "2"],
-    ["M", 0.09, 0.06, 1, "night", -24.8, 0, 0],
+    ["M", 0.55, 0.26, 1.1, "lilac", -17, 0, 0],
+    ["M", 0.44, 0.22, 1.1, "purple", -18.2, 0, 0],
+    ["M", 0.34, 0.17, 1.1, "magenta", -19.4, 0, 0, "2"],
+    ["M", 0.24, 0.12, 1.1, "deep", -20.6, 0, 0],
+    ["M", 0.14, 0.08, 1.1, "night", -21.8, 0, 0, "2"],
   ],
 
   orb: [
-    ["M", 0.8, 0.8, 0.8, "lilac", 0, 0, 0, "spin"],
-    ["M", 0.75, 0.65, 0.75, "smoke", 0.45, 0.3, 0.25, "lit2"],
-    ["M", 0.65, 0.55, 0.65, "smoke", -0.45, -0.3, 0.3, "lit2"],
-    ["M", 0.5, 0.45, 0.5, "shade", 0, 0.1, -0.5, "lit3"],
+    ["M", 0.9, 0.9, 0.9, "lilac", 0, 0, 0, "spin"],
+    ["M", 0.8, 0.7, 0.8, "smoke", 0.45, 0.3, 0.25, "lit2"],
+    ["M", 0.65, 0.55, 0.65, "smoke", -0.45, -0.3, 0.3, "lit3"],
   ],
 
   flare: [
@@ -227,11 +188,9 @@ var DP_MESH = {
 }
 
 var DP_ORBS = [
-  [-3.5, 2.2, 1],
-  [-7, -2.3, 0.4],
-  [-10.5, 2, -0.5],
-  [-14, -1.9, 0.9],
-  [-17.5, 1.5, 0.2],
+  [-4.5, 2.6, 1.1],
+  [-9.5, -2.4, 0.5],
+  [-14.5, 2, -0.3],
 ]
 
 var DP_DIAG = { a: [1, 1, 1], b: [-1, 1, 1], c: [1, 1, -1], d: [-1, 1, -1] }
@@ -285,30 +244,34 @@ var DP_UP = dpBasis([0, 0, 1])
 var DP_RING = DP_CIRCLE.map((r) => ["M", r[3], r[4], r[2], r[5], 0, 0, 0, r[10] || ""])
 
 var dpCasts = []
+var dpOther = () => (typeof goodra !== "undefined" && goodra && goodra.ids ? goodra.ids.length : 0)
 var dpMeshes = 0
 var dpRowCache = {}
 
 var dpFlag = (row, flag) => (row[8] || "").indexOf(flag) >= 0
 
-function dpRows(name) {
-  var key = name + DP_CFG.detail
+function dpRows(name, d) {
+  var key = name + d
   if (dpRowCache[key]) return dpRowCache[key]
   var out = []
   ;(DP_MESH[name] || []).forEach((r) => {
     var level = dpFlag(r, "3") ? 3 : dpFlag(r, "2") ? 2 : 1
-    if (level > DP_CFG.detail) return
+    if (level > d) return
     if (!dpFlag(r, "m")) return out.push(r)
     var left = r.slice()
     left[6] = -r[6]
+    if (r[9]) left[9] = [r[9][0], -r[9][1], r[9][2]]
     out.push(r, left)
   })
   if (name === "tail") {
-    out = dpRows("trail").slice()
-    DP_ORBS.forEach((o) => dpRows("orb").forEach((r) => out.push(["M", r[1], r[2], r[3], r[4], r[5] + o[0], r[6] + o[1], r[7] + o[2], r[8]])))
+    out = dpRows("trail", d).slice()
+    DP_ORBS.forEach((o) => dpRows("orb", d).forEach((r) => out.push(["M", r[1], r[2], r[3], r[4], r[5] + o[0], r[6] + o[1], r[7] + o[2], r[8]])))
   }
   if (name === "body" || name === "tail") out.sort((a, b) => b[5] - a[5])
   return (dpRowCache[key] = out)
 }
+
+var dpAim = (B, r) => (r[9] ? dpNorm(dpAt([0, 0, 0], B, r[9][0], r[9][1], r[9][2])) : B[0])
 
 function dpBox(row, tint, k) {
   var col = DP_COL[row[4] === "tint" ? tint : row[4]]
@@ -328,7 +291,7 @@ function dpPut(c, key, row, tint, pos, f, k) {
   var id = c.m[key]
   var fresh = !id
   if (fresh) {
-    if (dpMeshes >= DP_CFG.maxMeshes) return
+    if (dpMeshes + dpOther() >= DP_CFG.maxMeshes) return
     id = api.attemptCreateMeshEntity("Box", dpBox(row, tint, k || 1))
     if (!id) return
     c.m[key] = id
@@ -341,15 +304,15 @@ function dpPut(c, key, row, tint, pos, f, k) {
 }
 
 function dpGroup(c, name, tag, tint, pos, B, k, still) {
-  var rows = dpRows(name)
+  var rows = dpRows(name, c.d)
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i]
-    dpPut(c, tag + i, r, tint, dpAt(pos, B, r[5] * k, r[6] * k, r[7] * k), still ? null : B[0], k)
+    dpPut(c, tag + i, r, tint, dpAt(pos, B, r[5] * k, r[6] * k, r[7] * k), still ? null : dpAim(B, r), k)
   }
 }
 
 function dpResize(c, name, tag, tint, k) {
-  dpRows(name).forEach((r, i) => {
+  dpRows(name, c.d).forEach((r, i) => {
     var id = c.m[tag + i]
     if (id) api.updateMeshEntity(id, "Box", dpBox(r, tint, k))
   })
@@ -367,7 +330,7 @@ function dpDrop(c, tag) {
 }
 
 function dpAlong(c, name) {
-  var rows = dpRows(name)
+  var rows = dpRows(name, c.d)
   var P = c.path
   var j = P.length - 1
   var walked = 0
@@ -381,14 +344,14 @@ function dpAlong(c, name) {
       seg = dpLen(dpSub(P[j], P[j - 1]))
     }
     if (walked + seg < back) return
-    var f = dpNorm(dpSub(P[j], P[j - 1]))
-    dpPut(c, name + "_" + i, r, "", dpAt(P[j], dpBasis(f), walked - back, r[6] * c.k, r[7] * c.k), f, c.k)
+    var B = dpBasis(dpNorm(dpSub(P[j], P[j - 1])))
+    dpPut(c, name + "_" + i, r, "", dpAt(P[j], B, walked - back, r[6] * c.k, r[7] * c.k), dpAim(B, r), c.k)
   }
 }
 
 function dpBeam(c, base, k, tall, wide) {
   var w = k * (wide || 1)
-  dpRows("beam").forEach((r, i) => {
+  dpRows("beam", c.d).forEach((r, i) => {
     dpPut(c, "beam_" + i, r, "", dpAt(base, DP_UP, r[5] * w, r[6] * w, tall / 2), null, k)
     var box = dpBox(r, "", w)
     box.height = tall
@@ -404,7 +367,7 @@ function dpBeam(c, base, k, tall, wide) {
 }
 
 function dpBurst(c, name, tag, at, k) {
-  dpRows(name).forEach((r, i) => {
+  dpRows(name, c.d).forEach((r, i) => {
     var d = DP_DIAG[r[8]]
     dpPut(c, tag + i, r, "", at, d ? dpNorm(d) : null, k)
   })
@@ -434,14 +397,20 @@ function dpCircle(c) {
   for (var a = 0; a < DP_CIRCLE.length; a++) {
     var r = DP_CIRCLE[a]
     var age = c.ct - r[8]
-    if (age < 0 || (age > 0 && !r[9])) continue
+    var row = DP_RING[a]
+    if (age < 0 || (dpFlag(row, "3") ? 3 : dpFlag(row, "2") ? 2 : 1) > c.d) continue
+    if (c.ph && !dpFlag(row, "k")) {
+      dpDrop(c, "ring" + a + "_")
+      continue
+    }
+    if (age > 0 && !r[9] && c.m["ring" + a + "_0"]) continue
     if (age === 0) dpSound("ring", c.home, 0.8 + a * 0.07)
-    var radial = dpFlag(DP_RING[a], "r")
+    var radial = dpFlag(row, "r")
     for (var n = 0; n < r[0]; n++) {
       var ang = (r[6] * Math.PI) / 180 + (n * 2 * Math.PI) / r[0] + r[9] * age
       var x = Math.cos(ang)
       var z = Math.sin(ang)
-      dpPut(c, "ring" + a + "_" + n, DP_RING[a], "", [c.home[0] + x * r[1], c.home[1] + r[7], c.home[2] + z * r[1]], radial ? [x, 0, z] : [-z, 0, x])
+      dpPut(c, "ring" + a + "_" + n, row, "", [c.home[0] + x * r[1], c.home[1] + r[7], c.home[2] + z * r[1]], radial ? [x, 0, z] : [-z, 0, x])
     }
   }
 }
@@ -684,7 +653,7 @@ var DP_PHASE = [
 
 function dpCloud(c, name, k, grow, small, tiny, lift) {
   var out = 1 - Math.pow(1 - Math.min(1, (c.t + 1) / grow), 2)
-  var rows = dpRows(name)
+  var rows = dpRows(name, c.d)
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i]
     dpPut(c, name + "_" + i, r, "", dpAt(c.goal, c.B, r[5] * out * k, r[6] * out * k, 0.3 + r[7] * out * k + c.t * lift), null, k)
@@ -775,6 +744,7 @@ function dragonPulse(playerId, eye, dir) {
     t: 0,
     m: {},
     k: 1,
+    d: 0,
     B: dpBasis(flat),
     home: home,
     at: home,
@@ -828,8 +798,18 @@ function dpMerge() {
   }
 }
 
+function dpDetail() {
+  var want = dpCasts.length > 1 || dpOther() ? 1 : DP_CFG.detail
+  dpCasts.forEach((c) => {
+    if (c.d === want) return
+    c.d = want
+    ;["head_", "body_", "tail_", "ring"].forEach((tag) => dpDrop(c, tag))
+  })
+}
+
 function dpTick() {
   if (DP_CFG.merge) dpMerge()
+  dpDetail()
   for (var i = dpCasts.length - 1; i >= 0; i--) {
     var c = dpCasts[i]
     try {
