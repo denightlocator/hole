@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 35,361 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 45,577 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 51,610 |
+| `world_code.js` | World Code | 36,666 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 46,882 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 52,915 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -152,8 +152,9 @@ the table columns mean is written on this page instead.
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | two 4-part star meshes, sparks | 4.7–5.3 |
 | beam | The dragon turns into a beam that shoots 48 blocks straight up from the target | 10 meshes: a white core and four thin beams that grow, a ball on the tip, a disc at the foot, three collars travelling up; rising sparks | 5.35–5.85 |
-| blast | The beam is the explosion: it swells to almost three times as thick, a shock ring widens on the ground, then it thins out and is gone. The target is killed when it swells, others within 10 blocks are hurt and pushed | the same beam, a 10-piece ring, flashes, shock waves | 5.85–6.5 |
-| smoke | A little smoke round a glowing core | 12 smoke meshes, smoke and sparks | 6.5–8.3 |
+| second beam | A second beam rises around the first in a fifth of a second and waits: the two throb and slowly thicken while light is pulled in at the foot and down from the tip | 8 more meshes: four purple bars on the corners and four thin lilac and cyan bars outside the first beam; gathering glints, a glow that turns white | 5.85–6.65 |
+| blast | Both beams are the explosion: they swell to almost three times as thick, a shock ring widens on the ground, then it thins out and is gone. The target is killed when it swells, others within 10 blocks are hurt and pushed | the same beams, a 10-piece ring, flashes, shock waves | 6.65–7.3 |
+| smoke | A little smoke round a glowing core | 12 smoke meshes, smoke and sparks | 7.3–9.1 |
 
 After two dragons touch, the one that is left runs these steps instead:
 
@@ -161,7 +162,7 @@ After two dragons touch, the one that is left runs these steps instead:
 |---|---|---|---|
 | mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 143 meshes, bigger | 1.2 s |
 | beam | A beam three times as thick shoots from the ground up through the dragon and 40 blocks past it | the same 10 meshes, bigger | 0.6 s |
-| nuke | That beam swells to 11 blocks thick, a shock ring widens on the ground out to the kill radius, then it thins out. Everything within 34 blocks dies | the same beam, a 10-piece ring, flashes and waves | 0.65 s |
+| nuke | A second beam joins it and waits about a second, then both swell to 11 blocks thick, a shock ring widens on the ground out to the kill radius, then it thins out. Everything within 34 blocks dies | the same beam, a 10-piece ring, flashes and waves | 0.65 s |
 | cloud | Smoke where the beam stood and a ring of dust rolling out along the ground | 12 smoke meshes, 8 dust meshes, smoke | 2.5 s |
 
 How long the dive takes depends on how far the target is. The clip in
@@ -185,6 +186,7 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | `orb` | 4 | One cloud orb: a turning lilac core and three puffs. Used 5 times, at the places in `DP_ORBS` |
 | `flare` | 6 | The star: a core, three rays and two slanted rays |
 | `beam` | 5 | The beam before each explosion: a core and four thin beams |
+| `beam2` | 8 | The second beam that waits before the explosion: four corner bars and four thin outer bars |
 | `beamTop` | 3 | The ball on the beam's tip, the disc at its foot, and a collar that is used 3 times and travels up the beam |
 | `smoke` | 12 | White and violet-grey puffs round a glowing core |
 | `dust` | 1 | One puff of the dust ring that rolls out along the ground after the big beam, used 8 times |
@@ -307,7 +309,8 @@ list.
 | `kill` | `true`: the target dies, and so does everything the nuke reaches. `false`: they take `damage` or `nukeDamage` |
 | `damage` | Health taken at the centre of the blast from everyone but the target |
 | `boom` | Size of every beam and its smoke. 1 is as drawn here, 2 is twice as big. It does not change who is hit |
-| `beam` | Seconds the beam takes to shoot up before it swells and hurts |
+| `beam` | Seconds the first beam takes to shoot up |
+| `hold` | Seconds the second beam waits before both explode and hurt. The nuke waits a fifth longer |
 | `radius` | Blast radius in blocks |
 | `knockback` | Push away from the blast |
 | `hurtCaster` | `true`: blast and nuke also hit whoever cast the dragons |
