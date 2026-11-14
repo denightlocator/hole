@@ -11,14 +11,14 @@ var DP_CFG = {
   boom: 1,
   beam: 0.5,
   hold: 0.8,
-  radius: 10,
-  knockback: 18,
+  radius: 16,
+  knockback: 24,
   hurtCaster: false,
   merge: true,
   mergeDist: 4,
   megaScale: 2.2,
   megaRise: 22,
-  nukeRadius: 34,
+  nukeRadius: 44,
   nukeDamage: 400,
   nukeKnockback: 30,
   rotate: true,
@@ -39,8 +39,8 @@ var DP_COL = {
   lilac: [212, 172, 255],
   cyan: [70, 230, 255],
   gold: [255, 205, 45],
-  smoke: [236, 232, 250],
-  shade: [128, 112, 180],
+  smoke: [58, 40, 70],
+  shade: [26, 16, 36],
   void: [14, 6, 22],
   wine: [64, 12, 58],
   blood: [132, 8, 24],
@@ -91,142 +91,153 @@ var DP_MESH = {
   pillar: [["M", 1, 14, 1, "crimson", 0, 0, 7, "spin"]],
 
   head: [
-    ["M", 1.4, 1.1, 1.4, "deep", 0, 0, 0],
-    ["M", 1.1, 0.7, 1, "deep", 1.1, 0, 0.05],
-    ["M", 0.85, 0.5, 0.8, "deep", 1.9, 0, -0.02],
-    ["M", 0.95, 0.24, 1.5, "night", 1.25, 0, -0.62],
+    ["M", 1.4, 1.1, 1.4, "night", 0, 0, 0],
+    ["M", 1.1, 0.7, 1, "night", 1.1, 0, 0.05],
+    ["M", 0.85, 0.5, 0.8, "night", 1.9, 0, -0.02],
+    ["M", 0.95, 0.24, 1.5, "void", 1.25, 0, -0.62],
     ["M", 0.26, 0.26, 1.6, "void", -1.2, 0.5, 0.8, "m"],
-    ["M", 0.24, 0.7, 0.6, "magenta", -0.4, 0, 0.9],
+    ["M", 0.24, 0.7, 0.6, "deep", -0.4, 0, 0.9],
     ["M", 0.14, 0.24, 0.42, "crimson", 0.6, 0.76, 0.22, "m"],
-    ["M", 0.16, 0.8, 1, "night", -0.5, 0.8, -0.05, "m"],
-    ["M", 0.7, 0.2, 0.6, "night", 2, 0, -0.72, "2"],
+    ["M", 0.16, 0.8, 1, "void", -0.5, 0.8, -0.05, "m"],
+    ["M", 0.7, 0.2, 0.6, "void", 2, 0, -0.72, "2"],
     ["M", 0.22, 0.22, 1, "void", -2.1, 0.6, 1.1, "m2"],
-    ["M", 0.24, 0.5, 0.6, "magenta", 0.2, 0, 0.8, "2"],
-    ["M", 0.24, 0.5, 0.6, "magenta", -1, 0, 0.8, "2"],
+    ["M", 0.24, 0.5, 0.6, "deep", 0.2, 0, 0.8, "2"],
+    ["M", 0.24, 0.5, 0.6, "deep", -1, 0, 0.8, "2"],
     ["M", 0.12, 0.4, 0.6, "void", 0.55, 0.71, 0.2, "m2"],
     ["M", 0.4, 0.18, 0.9, "void", 0.55, 0.6, 0.52, "m2"],
-    ["M", 0.14, 0.42, 0.14, "white", 2.15, 0.4, -0.42, "m2"],
-    ["M", 0.12, 0.3, 0.12, "white", 2.15, 0.26, -0.42, "m2"],
-    ["M", 0.7, 0.36, 0.5, "magenta", 0.75, 0, -0.3, "2"],
+    ["M", 0.14, 0.42, 0.14, "void", 2.15, 0.4, -0.42, "m2"],
+    ["M", 0.12, 0.3, 0.12, "void", 2.15, 0.26, -0.42, "m2"],
+    ["M", 0.7, 0.36, 0.5, "deep", 0.75, 0, -0.3, "2"],
     ["M", 0.22, 0.3, 0.3, "void", 2.05, 0, 0.33, "2"],
     ["M", 0.26, 0.14, 1.2, "void", 1.3, 0, 0.44, "2"],
     ["M", 0.1, 0.1, 1.5, "crimson", 1.5, 0.75, -0.1, "m2"],
     ["M", 0.34, 0.2, 0.34, "crimson", 0.45, 0, 0.6, "2"],
-    ["M", 1, 0.6, 0.6, "night", -0.95, 0, 0.5, "2"],
-    ["M", 0.2, 0.6, 0.5, "night", 0.25, 0.62, -0.45, "m2"],
-    ["M", 0.16, 0.16, 0.6, "magenta", -2.8, 0.68, 1.35, "m3"],
-    ["M", 0.06, 0.26, 0.12, "white", 0.66, 0.83, 0.22, "m3"],
-    ["M", 0.12, 0.2, 0.7, "magenta", -1.1, 0.86, 0.3, "m3"],
-    ["M", 0.12, 0.2, 0.7, "magenta", -1.1, 0.86, -0.3, "m3"],
-    ["M", 0.1, 0.26, 0.1, "white", 1.6, 0.44, -0.4, "m3"],
-    ["M", 0.06, 0.14, 0.8, "white", 1.1, 0.46, -0.36, "m3"],
-    ["M", 0.36, 0.08, 1, "magenta", 1.3, 0, -0.47, "3"],
-    ["M", 0.16, 0.14, 0.2, "magenta", 2.2, 0.26, 0.24, "m3"],
-    ["M", 0.08, 0.08, 0.9, "volt", 0.5, 1.05, -0.3, "m3"],
-    ["M", 0.7, 0.5, 0.6, "night", -1.45, 0, 0.7, "3"],
-    ["M", 0.3, 0.26, 0.5, "night", 1, 0, -0.84, "3"],
-    ["M", 0.18, 0.5, 0.18, "volt", 0.75, 0, -1, "3"],
+    ["M", 1, 0.6, 0.6, "void", -0.95, 0, 0.5, "2"],
+    ["M", 0.2, 0.6, 0.5, "void", 0.25, 0.62, -0.45, "m2"],
+    ["M", 0.16, 0.16, 0.6, "deep", -2.8, 0.68, 1.35, "m3"],
+    ["M", 0.06, 0.26, 0.12, "void", 0.66, 0.83, 0.22, "m3"],
+    ["M", 0.12, 0.2, 0.7, "deep", -1.1, 0.86, 0.3, "m3"],
+    ["M", 0.12, 0.2, 0.7, "deep", -1.1, 0.86, -0.3, "m3"],
+    ["M", 0.1, 0.26, 0.1, "void", 1.6, 0.44, -0.4, "m3"],
+    ["M", 0.06, 0.14, 0.8, "void", 1.1, 0.46, -0.36, "m3"],
+    ["M", 0.36, 0.08, 1, "deep", 1.3, 0, -0.47, "3"],
+    ["M", 0.16, 0.14, 0.2, "deep", 2.2, 0.26, 0.24, "m3"],
+    ["M", 0.08, 0.08, 0.9, "blood", 0.5, 1.05, -0.3, "m3"],
+    ["M", 0.7, 0.5, 0.6, "void", -1.45, 0, 0.7, "3"],
+    ["M", 0.3, 0.26, 0.5, "void", 1, 0, -0.84, "3"],
+    ["M", 0.18, 0.5, 0.18, "blood", 0.75, 0, -1, "3"],
     ["M", 0.12, 0.3, 0.12, "void", 1.3, 0.36, -0.84, "m3"],
   ],
 
   body: [
-    ["M", 1.3, 1.15, 1.1, "deep", -1.35, 0, 0],
-    ["M", 0.25, 0.81, 0.8, "magenta", -1.35, 0, 0.95, "2"],
-    ["M", 0.91, 0.14, 0.95, "volt", -1.35, 0, -0.61, "2"],
+    ["M", 1.3, 1.15, 1.1, "night", -1.35, 0, 0],
+    ["M", 0.25, 0.81, 0.8, "deep", -1.35, 0, 0.95, "2"],
+    ["M", 0.91, 0.14, 0.95, "blood", -1.35, 0, -0.61, "2"],
     ["M", 0.1, 0.52, 0.6, "crimson", -1.3, 0.68, 0.09, "m3"],
-    ["M", 1.25, 1.1, 1.1, "night", -2.5, 0, 0],
-    ["M", 0.25, 0.77, 0.8, "magenta", -2.5, 0, 0.91],
-    ["M", 0.88, 0.14, 0.95, "volt", -2.5, 0, -0.59, "2"],
+    ["M", 1.25, 1.1, 1.1, "void", -2.5, 0, 0],
+    ["M", 0.25, 0.77, 0.8, "deep", -2.5, 0, 0.91],
+    ["M", 0.88, 0.14, 0.95, "blood", -2.5, 0, -0.59, "2"],
     ["M", 0.1, 0.5, 0.6, "crimson", -2.45, 0.66, 0.09, "m3"],
-    ["M", 1.7, 0.12, 1, "magenta", -2.6, 1.4, -0.1, "m2"],
-    ["M", 0.5, 0.1, 1.5, "volt", -3.2, 2.3, -0.05, "m3"],
-    ["M", 1.2, 1.05, 1.1, "deep", -3.65, 0, 0],
-    ["M", 0.25, 0.74, 0.8, "magenta", -3.65, 0, 0.87, "2"],
-    ["M", 0.84, 0.14, 0.95, "volt", -3.65, 0, -0.57, "2"],
+    ["M", 1.7, 0.12, 1, "deep", -2.6, 1.4, -0.1, "m2"],
+    ["M", 0.5, 0.1, 1.5, "blood", -3.2, 2.3, -0.05, "m3"],
+    ["M", 1.2, 1.05, 1.1, "night", -3.65, 0, 0],
+    ["M", 0.25, 0.74, 0.8, "deep", -3.65, 0, 0.87, "2"],
+    ["M", 0.84, 0.14, 0.95, "blood", -3.65, 0, -0.57, "2"],
     ["M", 0.1, 0.47, 0.6, "crimson", -3.6, 0.63, 0.08, "m3"],
-    ["M", 1.15, 1, 1.1, "night", -4.8, 0, 0],
-    ["M", 0.25, 0.7, 0.8, "magenta", -4.8, 0, 0.83, "2"],
-    ["M", 0.8, 0.14, 0.95, "volt", -4.8, 0, -0.54, "2"],
+    ["M", 1.15, 1, 1.1, "void", -4.8, 0, 0],
+    ["M", 0.25, 0.7, 0.8, "deep", -4.8, 0, 0.83, "2"],
+    ["M", 0.8, 0.14, 0.95, "blood", -4.8, 0, -0.54, "2"],
     ["M", 0.1, 0.45, 0.6, "crimson", -4.75, 0.6, 0.08, "m3"],
-    ["M", 1.1, 0.95, 1.1, "deep", -5.95, 0, 0],
-    ["M", 0.25, 0.66, 0.8, "magenta", -5.95, 0, 0.78],
-    ["M", 0.77, 0.14, 0.95, "volt", -5.95, 0, -0.52, "2"],
+    ["M", 1.1, 0.95, 1.1, "night", -5.95, 0, 0],
+    ["M", 0.25, 0.66, 0.8, "deep", -5.95, 0, 0.78],
+    ["M", 0.77, 0.14, 0.95, "blood", -5.95, 0, -0.52, "2"],
     ["M", 0.1, 0.43, 0.6, "crimson", -5.9, 0.58, 0.08, "m3"],
-    ["M", 1, 0.9, 1.1, "night", -7.1, 0, 0],
-    ["M", 0.25, 0.63, 0.8, "magenta", -7.1, 0, 0.75, "2"],
-    ["M", 0.7, 0.14, 0.95, "volt", -7.1, 0, -0.49, "2"],
-    ["M", 1.2, 0.12, 0.8, "magenta", -7.2, 1.05, -0.1, "m2"],
-    ["M", 0.95, 0.85, 1.1, "deep", -8.25, 0, 0],
-    ["M", 0.25, 0.59, 0.8, "magenta", -8.25, 0, 0.7, "2"],
-    ["M", 0.66, 0.14, 0.95, "volt", -8.25, 0, -0.46, "2"],
+    ["M", 1, 0.9, 1.1, "void", -7.1, 0, 0],
+    ["M", 0.25, 0.63, 0.8, "deep", -7.1, 0, 0.75, "2"],
+    ["M", 0.7, 0.14, 0.95, "blood", -7.1, 0, -0.49, "2"],
+    ["M", 1.2, 0.12, 0.8, "deep", -7.2, 1.05, -0.1, "m2"],
+    ["M", 0.95, 0.85, 1.1, "night", -8.25, 0, 0],
+    ["M", 0.25, 0.59, 0.8, "deep", -8.25, 0, 0.7, "2"],
+    ["M", 0.66, 0.14, 0.95, "blood", -8.25, 0, -0.46, "2"],
     ["M", 0.1, 0.38, 0.6, "crimson", -8.2, 0.51, 0.07, "m3"],
-    ["M", 0.85, 0.75, 1.1, "night", -9.4, 0, 0],
-    ["M", 0.24, 0.53, 0.8, "magenta", -9.4, 0, 0.62],
-    ["M", 0.59, 0.14, 0.95, "volt", -9.4, 0, -0.41, "2"],
-    ["M", 0.75, 0.65, 1.1, "deep", -10.55, 0, 0],
-    ["M", 0.21, 0.46, 0.6, "magenta", -10.55, 0, 0.54, "2"],
-    ["M", 0.52, 0.14, 0.95, "volt", -10.55, 0, -0.36, "2"],
+    ["M", 0.85, 0.75, 1.1, "void", -9.4, 0, 0],
+    ["M", 0.24, 0.53, 0.8, "deep", -9.4, 0, 0.62],
+    ["M", 0.59, 0.14, 0.95, "blood", -9.4, 0, -0.41, "2"],
+    ["M", 0.75, 0.65, 1.1, "night", -10.55, 0, 0],
+    ["M", 0.21, 0.46, 0.6, "deep", -10.55, 0, 0.54, "2"],
+    ["M", 0.52, 0.14, 0.95, "blood", -10.55, 0, -0.36, "2"],
     ["M", 0.1, 0.29, 0.6, "crimson", -10.5, 0.41, 0.05, "m3"],
-    ["M", 0.62, 0.55, 1.1, "night", -11.65, 0, 0],
-    ["M", 0.18, 0.39, 0.6, "magenta", -11.65, 0, 0.46, "2"],
-    ["M", 0.43, 0.14, 0.95, "volt", -11.65, 0, -0.32, "2"],
-    ["M", 0.5, 0.45, 1.05, "deep", -12.7, 0, 0],
-    ["M", 0.15, 0.31, 0.6, "magenta", -12.7, 0, 0.37, "2"],
-    ["M", 0.38, 0.35, 1, "night", -13.7, 0, 0],
-    ["M", 0.12, 0.24, 0.6, "magenta", -13.7, 0, 0.29, "2"],
-    ["M", 0.7, 0.14, 0.8, "magenta", -14.4, 0.4, 0, "m"],
+    ["M", 0.62, 0.55, 1.1, "void", -11.65, 0, 0],
+    ["M", 0.18, 0.39, 0.6, "deep", -11.65, 0, 0.46, "2"],
+    ["M", 0.43, 0.14, 0.95, "blood", -11.65, 0, -0.32, "2"],
+    ["M", 0.5, 0.45, 1.05, "night", -12.7, 0, 0],
+    ["M", 0.15, 0.31, 0.6, "deep", -12.7, 0, 0.37, "2"],
+    ["M", 0.38, 0.35, 1, "void", -13.7, 0, 0],
+    ["M", 0.12, 0.24, 0.6, "deep", -13.7, 0, 0.29, "2"],
+    ["M", 0.7, 0.14, 0.8, "deep", -14.4, 0.4, 0, "m"],
     ["M", 0.14, 0.6, 0.7, "crimson", -14.35, 0, 0.3, "2"],
-    ["M", 0.2, 0.2, 0.6, "volt", -15, 0, 0, "3"],
+    ["M", 0.2, 0.2, 0.6, "blood", -15, 0, 0, "3"],
   ],
 
   trail: [
-    ["M", 0.6, 0.3, 1, "volt", -15.8, 0, 0],
-    ["M", 0.55, 0.28, 1, "deep", -16.8, 0, 0],
-    ["M", 0.5, 0.25, 1, "magenta", -17.8, 0, 0, "2"],
-    ["M", 0.44, 0.22, 1, "deep", -18.8, 0, 0],
-    ["M", 0.38, 0.19, 1, "night", -19.8, 0, 0, "2"],
-    ["M", 0.32, 0.16, 1, "deep", -20.8, 0, 0],
-    ["M", 0.26, 0.13, 1, "night", -21.8, 0, 0, "2"],
-    ["M", 0.2, 0.1, 1, "night", -22.8, 0, 0],
+    ["M", 0.6, 0.3, 1, "blood", -15.8, 0, 0],
+    ["M", 0.55, 0.28, 1, "night", -16.8, 0, 0],
+    ["M", 0.5, 0.25, 1, "deep", -17.8, 0, 0, "2"],
+    ["M", 0.44, 0.22, 1, "night", -18.8, 0, 0],
+    ["M", 0.38, 0.19, 1, "void", -19.8, 0, 0, "2"],
+    ["M", 0.32, 0.16, 1, "night", -20.8, 0, 0],
+    ["M", 0.26, 0.13, 1, "void", -21.8, 0, 0, "2"],
+    ["M", 0.2, 0.1, 1, "void", -22.8, 0, 0],
     ["M", 0.14, 0.08, 1, "void", -23.8, 0, 0, "2"],
     ["M", 0.09, 0.06, 1, "void", -24.8, 0, 0],
   ],
 
   orb: [
-    ["M", 0.8, 0.8, 0.8, "volt", 0, 0, 0, "spin"],
+    ["M", 0.8, 0.8, 0.8, "blood", 0, 0, 0, "spin"],
     ["M", 0.75, 0.65, 0.75, "wine", 0.45, 0.3, 0.25, "lit2"],
     ["M", 0.65, 0.55, 0.65, "wine", -0.45, -0.3, 0.3, "lit2"],
-    ["M", 0.5, 0.45, 0.5, "night", 0, 0.1, -0.5, "lit3"],
+    ["M", 0.5, 0.45, 0.5, "void", 0, 0.1, -0.5, "lit3"],
   ],
 
   flare: [
-    ["M", 1, 1, 1, "white", 0, 0, 0, "spin"],
+    ["M", 1, 1, 1, "void", 0, 0, 0, "spin"],
     ["M", 3.2, 0.36, 0.36, "gold", 0, 0, 0],
     ["M", 0.36, 3.2, 0.36, "gold", 0, 0, 0],
-    ["M", 0.36, 0.36, 3.2, "magenta", 0, 0, 0],
-    ["M", 0.26, 0.26, 2.4, "white", 0, 0, 0, "a"],
-    ["M", 0.26, 0.26, 2.4, "white", 0, 0, 0, "d"],
+    ["M", 0.36, 0.36, 3.2, "crimson", 0, 0, 0],
+    ["M", 0.26, 0.26, 2.4, "void", 0, 0, 0, "a"],
+    ["M", 0.26, 0.26, 2.4, "void", 0, 0, 0, "d"],
   ],
 
   beam: [
-    ["M", 1.3, 1, 1.3, "white", 0, 0, 0, "spin"],
-    ["M", 0.35, 1, 0.35, "magenta", 1.1, 0, 0],
-    ["M", 0.35, 1, 0.35, "magenta", -1.1, 0, 0],
-    ["M", 0.35, 1, 0.35, "cyan", 0, 1.1, 0, "m"],
+    ["M", 1.3, 1, 1.3, "void", 0, 0, 0, "spin"],
+    ["M", 0.35, 1, 0.35, "crimson", 1.1, 0, 0],
+    ["M", 0.35, 1, 0.35, "crimson", -1.1, 0, 0],
+    ["M", 0.35, 1, 0.35, "deep", 0, 1.1, 0, "m"],
   ],
 
   beam2: [
-    ["M", 0.5, 1, 0.5, "purple", 1.55, 1.55, 0, "m"],
-    ["M", 0.5, 1, 0.5, "purple", -1.55, 1.55, 0, "m"],
-    ["M", 0.28, 1, 0.28, "lilac", 2.3, 0, 0],
-    ["M", 0.28, 1, 0.28, "lilac", -2.3, 0, 0],
-    ["M", 0.28, 1, 0.28, "cyan", 0, 2.3, 0, "m"],
+    ["M", 0.5, 1, 0.5, "night", 1.55, 1.55, 0, "m"],
+    ["M", 0.5, 1, 0.5, "night", -1.55, 1.55, 0, "m"],
+    ["M", 0.28, 1, 0.28, "blood", 2.3, 0, 0],
+    ["M", 0.28, 1, 0.28, "blood", -2.3, 0, 0],
+    ["M", 0.28, 1, 0.28, "crimson", 0, 2.3, 0, "m"],
+  ],
+
+  blast: [
+    ["M", 1.2, 1.2, 1.2, "crimson", 0, 0, 0, "spin"],
+    ["M", 3.4, 0.3, 0.3, "blood", 0, 0, 0],
+    ["M", 0.34, 3, 0.34, "night", 0, 0, 0],
+    ["M", 0.3, 0.3, 3.4, "blood", 0, 0, 0],
+    ["M", 0.22, 0.22, 2.8, "crimson", 0, 0, 0, "a"],
+    ["M", 0.22, 0.22, 2.8, "deep", 0, 0, 0, "b"],
+    ["M", 0.22, 0.22, 2.8, "deep", 0, 0, 0, "c"],
+    ["M", 0.22, 0.22, 2.8, "crimson", 0, 0, 0, "d"],
   ],
 
   beamTop: [
-    ["M", 2.2, 2.2, 2.2, "white", 0, 0, 0, "spin"],
-    ["M", 4.4, 0.16, 4.4, "magenta", 0, 0, 0, "spin"],
-    ["M", 2.8, 0.26, 2.8, "lilac", 0, 0, 0, "spin"],
+    ["M", 2.2, 2.2, 2.2, "crimson", 0, 0, 0, "spin"],
+    ["M", 4.4, 0.16, 4.4, "blood", 0, 0, 0, "spin"],
+    ["M", 2.8, 0.26, 2.8, "wine", 0, 0, 0, "spin"],
   ],
 
   smoke: [
@@ -241,7 +252,7 @@ var DP_MESH = {
     ["M", 2.1, 1.8, 2.1, "smoke", -2.4, -2.2, 2.4, "lit"],
     ["M", 1.7, 1.5, 1.7, "shade", 2.9, 2.2, 2.2, "lit"],
     ["M", 1.5, 1.3, 1.5, "smoke", 0.3, 0.4, 5.1, "lit"],
-    ["M", 1.6, 1.6, 1.6, "magenta", 0, 0, 1.4, "spin"],
+    ["M", 1.6, 1.6, 1.6, "crimson", 0, 0, 1.4, "spin"],
   ],
 
   dust: [["M", 2.6, 1.6, 2.6, "smoke", 0, 0, 0, "lit"]],
@@ -276,6 +287,8 @@ var DP_FX = {
   shock: { tex: "square_particle", life: [0.4, 0.6], size: [0.5, 1], speed: [12, 16], col: ["tint", "tint2"], fade: [1, 0], blend: 2, drag: 0.3, hot: 1 },
   glow: { tex: "square_particle", life: [0.25, 0.4], size: [1.4, 2.6], speed: [0, 0.5], col: ["tint", "white"], fade: [0.35, 0], blend: 2 },
 }
+var DP_DARK = { white: "crimson", lilac: "deep", magenta: "blood", cyan: "wine", gold: "crimson", purple: "deep", volt: "deep" }
+var dpTint = (n) => DP_COL[DP_DARK[n] || n]
 var DP_SKIN = [
   ["purple", "magenta"],
   ["deep", "volt"],
@@ -460,19 +473,46 @@ function dpBurst(c, name, tag, at, k) {
   })
 }
 
-function dpBoom(c, base, k, tall, e, ring) {
-  dpBeam(c, base, k, tall, e < 4 ? 1 + e * 0.6 : Math.max(0.12, 2.8 - (e - 3) * 0.3), 1)
-  dpShock(c, "beam_s", dpAdd(base, [0, 1, 0], 0.4), ring * (0.15 + e * 0.08), 0.5 * k, "magenta")
-  dpFx("flash", base, 10, (2 + e * 0.5) * k)
-  dpFx("impact", base, 8, 2 * k)
+function dpBlast(c, base, k, e, ring) {
+  var g = 1 - Math.pow(1 - Math.min(1, (e + 1) / 8), 2)
+  var size = k * (1.5 + 4.5 * g) * (e > 10 ? Math.max(0.15, 1 - (e - 10) / 6) : 1)
+  if (e === 0) dpBurst(c, "blast", "blast_", dpAdd(base, [0, 1, 0], k), size)
+  dpResize(c, "blast", "blast_", "", size)
+  dpShock(c, "blast_s", dpAdd(base, [0, 1, 0], 0.4), ring * (0.1 + g * 0.9), 0.6 * k, "blood")
+  dpShock(c, "blast_t", dpAdd(base, [0, 1, 0], 1.6 * k), ring * g * 0.6, 0.45 * k, "crimson")
+  dpShock(c, "blast_u", dpAdd(base, [0, 1, 0], 3.4 * k), ring * g * 0.32, 0.35 * k, "night")
+  dpFx("flash", base, 12, (2 + e * 0.6) * k)
+  dpFx("impact", base, 8, 2.5 * k)
+  dpFx("debris", base, 10, 2 * k, "", "", [0, 1, 0])
+  dpFx("ember", base, 8, ring * g * 0.5, "crimson", "blood", null, 2)
   if (e % 3 === 0) dpFx("wave", base, 14, 0.5)
-  if (e < 9) dpFx("debris", base, 7, 1.5 * k, "", "", [0, 1, 0])
-  if (e % 2 === 0) dpRingFx("shock", base, ring * (0.15 + e * 0.07), 4, 1, 0.08, e < 4 ? "lilac" : "magenta", "purple", 8, e * 0.4)
+  if (e % 2 === 0) dpRingFx("shock", base, ring * (0.1 + g * 0.8), 4, 1, 0.08, "crimson", "blood", 10, e * 0.4)
   if (e === 0) {
-    dpFx("glow", base, 8, 2 * k, "lilac")
-    dpFx("glow", dpAdd(base, [0, 1, 0], tall), 6, 2 * k, "cyan")
-    dpRingFx("shock", dpAdd(base, [0, 1, 0], tall), 2 * k, 5, 1, 0, "cyan", "lilac", 6)
+    dpFx("glow", base, 10, 3 * k, "crimson")
+    dpRingFx("smoke", base, ring * 0.2, 4, 1, 0.3, "", "", 8)
   }
+}
+
+function dpFinale(c, base, k, tall, ring, slow, burst) {
+  var wait = Math.max(1, Math.round(DP_CFG.beam * 20 * slow))
+  var hold = Math.max(1, Math.round(DP_CFG.hold * 20 * slow))
+  var fall = Math.round(6 * slow)
+  var h = c.t - wait
+  var f = h - hold
+  var e = f - fall
+  if (c.t === 0) dpSound("beam", base, 1 / slow)
+  if (h < 0) return dpBeam(c, base, k, (tall * (c.t + 1)) / wait), 0
+  if (f < 0) return dpHold(c, base, k, tall, h, hold, 1 / slow), 0
+  if (e < 0) {
+    var p = (f + 1) / fall
+    if (f === 0) dpSound("dive", base, 0.6 / slow)
+    dpBeam(c, base, k, tall * (1 - p) + 0.6, 1.35 + p * 1.3, 1)
+    dpFx("streak", dpAdd(base, [0, 1, 0], tall * (1 - p)), 10, 2 * k, "", "", [0, -1, 0])
+    return 0
+  }
+  if (e === 0) dpDrop(c, "beam_")
+  dpBlast(c, base, burst, e, ring)
+  return e === 0 ? 1 : e >= 16 ? 2 : 0
 }
 
 function dpShock(c, tag, at, rad, thick, col) {
@@ -545,11 +585,11 @@ function dpCircle(c) {
 function dpFx(look, pos, n, spread, tint, tint2, dir, tall) {
   var L = DP_FX[look]
   var S = 0.6
-  var a = DP_COL[L.col[0] === "tint" ? tint : L.col[0]]
-  var b = DP_COL[L.col[1] === "tint" ? tint : L.col[1] === "tint2" ? tint2 : L.col[1]]
+  var a = dpTint(L.col[0] === "tint" ? tint : L.col[0])
+  var b = dpTint(L.col[1] === "tint" ? tint : L.col[1] === "tint2" ? tint2 : L.col[1])
   var y = L.flat ? 0.04 : 1
   var w = L.tight ? 0.06 : 0.25
-  var hot = DP_COL.white.concat(L.fade[0])
+  var hot = DP_COL.crimson.concat(L.fade[0])
   var grad = [
     { timeFraction: L.hot ? 0.3 : 0, minColor: a.concat(L.fade[0]), maxColor: b.concat(L.fade[0]) },
     { timeFraction: 1, minColor: a.concat(L.fade[1]), maxColor: b.concat(L.fade[1]) },
@@ -746,26 +786,17 @@ var DP_PHASE = [
   function (c) {
     var goal = dpGoal(c)
     var b = DP_CFG.boom
-    var wait = Math.max(1, Math.round(DP_CFG.beam * 20))
-    var hold = Math.max(1, Math.round(DP_CFG.hold * 20))
-    var e = c.t - wait - hold
-    var base = [goal[0], goal[1] - 1, goal[2]]
-    if (c.t === 0) {
-      dpDrop(c, "")
-      dpSound("beam", goal)
-    }
-    if (c.t < wait) return dpBeam(c, base, b, (48 * b * (c.t + 1)) / wait)
-    if (e < 0) return dpHold(c, base, b, 48 * b, c.t - wait, hold, 1)
-    if (e === 0) {
+    if (c.t === 0) dpDrop(c, "")
+    var st = dpFinale(c, [goal[0], goal[1] - 1, goal[2]], 2 * b, 72 * b, DP_CFG.radius, 1, b)
+    if (st === 1) {
       dpSound("blast", goal)
       dpHurt(c, goal, DP_CFG.radius, DP_CFG.damage, DP_CFG.knockback)
     }
-    dpBoom(c, base, b, 48 * b, e, DP_CFG.radius)
-    if (e >= 12) dpNext(c)
+    if (st === 2) dpNext(c)
   },
 
   function (c) {
-    if (c.t === 0) dpDrop(c, "beam_")
+    if (c.t === 0) dpDrop(c, "blast_")
     var b = 1.2 * DP_CFG.boom
     dpCloud(c, "smoke", b, 14, 24, 30, 0.04)
     if (c.t < 26 && c.t % 2 === 0) dpFx("smoke", dpAt(c.goal, c.B, 0, 0, 1.5 * b), 7, 2.5 * b)
@@ -793,31 +824,24 @@ var DP_PHASE = [
   },
 
   function (c) {
-    var wait = Math.max(1, Math.round(DP_CFG.beam * 24))
-    var k = 3 * DP_CFG.boom
-    var hold = Math.max(1, Math.round(DP_CFG.hold * 24))
-    var e = c.t - wait - hold
+    var b = DP_CFG.boom
     if (c.t === 0) {
       dpDrop(c, "")
       c.ground = dpAdd(c.at, [0, -1, 0], dpFree(c.at, [0, -1, 0], 60) - 1)
-      c.tall = c.at[1] - c.ground[1] + 40
+      c.tall = c.at[1] - c.ground[1] + 50
       c.goal = c.ground
-      dpSound("beam", c.ground, 0.7)
     }
-    if (c.t < wait) return dpBeam(c, c.ground, k, (c.tall * (c.t + 1)) / wait)
-    if (e < 0) return dpHold(c, c.ground, k, c.tall, c.t - wait, hold, 0.7)
-    if (e === 0) {
+    var st = dpFinale(c, c.ground, 4.5 * b, c.tall, DP_CFG.nukeRadius, 1.2, 3 * b)
+    if (st === 1) {
       dpSound("nuke", c.ground)
       dpHurt(c, c.ground, DP_CFG.nukeRadius, DP_CFG.nukeDamage, DP_CFG.nukeKnockback, true)
     }
-    dpBoom(c, c.ground, k, c.tall, e, DP_CFG.nukeRadius)
-    dpFx("wave", c.ground, 16, 0.5)
-    if (e >= 12) dpNext(c)
+    if (st === 2) dpNext(c)
   },
 
   function (c) {
     var b = DP_CFG.boom
-    if (c.t === 0) dpDrop(c, "beam_")
+    if (c.t === 0) dpDrop(c, "blast_")
     if (c.t % 8 === 0 && c.t < 33) dpSound("rumble", c.ground, 1 - c.t * 0.01)
     dpCloud(c, "smoke", 2.4 * b, 20, 34, 42, 0.05)
     var wide = (4 + 16 * (1 - Math.pow(1 - Math.min(1, (c.t + 1) / 26), 2))) * b

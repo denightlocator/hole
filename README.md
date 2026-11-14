@@ -28,7 +28,7 @@ there while it finds a target, then dives onto it and kills it. The target is:
 4. with nothing in range, the spot you were looking at.
 
 **Two dragons that touch merge.** One dragon 2.2 times the size is left. It climbs
-22 blocks and explodes as a giant beam (the nuke) that kills every mob and player within 34
+22 blocks and explodes as a giant beam (the nuke) that kills every mob and player within 44
 blocks, except the players who cast the two dragons. Dragons touch when their
 paths cross, for example when two players cast at each other at about the same
 time, or one player casts twice in a row. `merge: false` turns this off.
@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 39,341 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 49,557 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 55,590 |
+| `world_code.js` | World Code | 40,305 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 50,521 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 56,554 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -151,18 +151,19 @@ the table columns mean is written on this page instead.
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | two 4-part star meshes, sparks | 4.7–5.3 |
-| beam | The dragon turns into a beam that shoots 48 blocks straight up from the target | 10 meshes: a white core and four thin beams that grow, a ball on the tip, a disc at the foot, three collars travelling up; rising sparks | 5.35–5.85 |
-| second beam | A second beam rises around the first in a fifth of a second and waits: the two throb and slowly thicken while light is pulled in at the foot and down from the tip | 8 more meshes: four purple bars on the corners and four thin lilac and cyan bars outside the first beam; gathering glints, a glow that turns white | 5.85–6.65 |
-| blast | Both beams are the explosion: they swell to almost three times as thick, a shock ring widens on the ground, then it thins out and is gone. The target is killed when it swells, others within 10 blocks are hurt and pushed | the same beams, a 10-piece ring, flashes, shock waves | 6.65–7.3 |
-| smoke | A little smoke round a glowing core | 12 smoke meshes, smoke and sparks | 7.3–9.1 |
+| beam | The dragon turns into a massive black beam that shoots 72 blocks straight up from the target | 10 meshes: a black core and four thin red and purple beams that grow, a red ball on the tip, a disc at the foot, three collars travelling up; rising sparks | 5.35–5.85 |
+| second beam | A second beam rises around the first in a fifth of a second and waits: the two throb and slowly thicken (about 9 blocks across) while light is pulled in at the foot and down from the tip | 8 more meshes: four near-black bars on the corners and four thin red bars outside the first beam; gathering glints, a red glow | 5.85–6.65 |
+| collapse | It all comes down: both beams sink from the top into the ground in 0.3 s and get twice as thick while they do | the same 18 meshes; streaks racing down | 6.65–6.95 |
+| blast | It explodes on the ground: a spiked star bursts out to 20 blocks across, three shock rings widen at three heights out to the blast radius, then the star shrinks away. The target is killed at the first moment, others within 16 blocks are hurt and pushed | 38 meshes: an 8-part star (`blast`) and three 10-piece rings; flashes, debris, embers, shock waves | 6.95–7.8 |
+| smoke | A little dark smoke round a glowing red core | 12 smoke meshes, smoke and sparks | 7.8–9.6 |
 
 After two dragons touch, the one that is left runs these steps instead:
 
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
 | mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 143 meshes, bigger | 1.2 s |
-| beam | A beam three times as thick shoots from the ground up through the dragon and 40 blocks past it | the same 10 meshes, bigger | 0.6 s |
-| nuke | A second beam joins it and waits about a second, then both swell to 11 blocks thick, a shock ring widens on the ground out to the kill radius, then it thins out. Everything within 34 blocks dies | the same beam, a 10-piece ring, flashes and waves | 0.65 s |
+| beam | A beam more than twice as thick again shoots from the ground up through the dragon and 50 blocks past it | the same 10 meshes, bigger | 0.6 s |
+| nuke | A second beam joins it and waits about a second, both sink into the ground (up to 21 blocks thick), then it explodes: a star about 60 blocks across and three shock rings out to the kill radius. Everything within 44 blocks dies | the same meshes as the blast, three times the size | 2.2 s |
 | cloud | Smoke where the beam stood and a ring of dust rolling out along the ground | 12 smoke meshes, 8 dust meshes, smoke | 2.5 s |
 
 How long the dive takes depends on how far the target is. The clip in
@@ -187,6 +188,7 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | `flare` | 6 | The star: a core, three rays and two slanted rays |
 | `beam` | 5 | The beam before each explosion: a core and four thin beams |
 | `beam2` | 8 | The second beam that waits before the explosion: four corner bars and four thin outer bars |
+| `blast` | 8 | The explosion on the ground: a turning core, three rays along the axes and four slanted rays |
 | `beamTop` | 3 | The ball on the beam's tip, the disc at its foot, and a collar that is used 3 times and travels up the beam |
 | `smoke` | 12 | White and violet-grey puffs round a glowing core |
 | `dust` | 1 | One puff of the dust ring that rolls out along the ground after the big beam, used 8 times |
@@ -390,11 +392,16 @@ list.
   (dark purple-red) for the outer band, `blood` (dark red) for most rings, and
   `crimson` (bright red) for the star and the core. The circles above take those
   three in turn. Its particles are red too (`DP_RITE`).
-- **The dragon** is dark purple (`deep`) and near-black (`night`) with black
-  horns (`void`), magenta spines, crest and wings, bright violet (`volt`) belly
-  plates, and red (`crimson`) eyes, whiskers and stripes. Its cloud orbs are dark
-  storm clouds. `DP_SKIN` holds the colour pairs it shimmers in.
-- The beams, the stars and the smoke kept their colours.
+- **The dragon** is near-black (`night`) and black (`void`) with dark purple
+  (`deep`) spines, crest and wings, dark red (`blood`) belly plates and wing
+  tips, and red (`crimson`) eyes, whiskers and stripes. Only its fangs are white.
+- **The explosion** is black and red: a black beam core with red and dark purple
+  bars, a red and dark purple star, dark red shock rings, and smoke the colour of
+  ash (`smoke`, `shade`).
+- **Particles** are darkened in one place: `DP_DARK` swaps every bright colour a
+  particle would use for a dark one (white and gold become red, pink becomes dark
+  red, lilac and purple become dark purple). Empty it to get the bright
+  particles back.
 - name: every row is named `M`. The code does not use the name, so tell rows
   apart by their order, which is listed under "The meshes".
 - flag: `spin` turns by itself, `lit` is shaded instead of glowing. `a`, `b`, `c`
