@@ -133,9 +133,9 @@ The meshes sit over your own skin; they do not hide it.
 
 | File | Goes into | Characters | Limit |
 |---|---|---|---|
-| `world_code.js` | World Code | 28,273 | 512,000 |
-| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 38,489 |
-| `skin.js` | World Code | 6,032 | 512,000, all three together: 44,522 |
+| `world_code.js` | World Code | 31,069 | 512,000 |
+| `goodra.js` | World Code, below `world_code.js` | 10,215 | 512,000 together: 41,285 |
+| `skin.js` | World Code | 6,032 | 512,000, all three together: 47,318 |
 | `code_block.js` | Code Block | 18 | 32,000 |
 | `studio/particles_only.code_block.js` | Code Block | 13,414 | 32,000 |
 
@@ -151,18 +151,18 @@ the table columns mean is written on this page instead.
 | seek | It circles at the top, then picks its target; a ring flashes on the target | the same dragon | 3.15–3.75 |
 | dive | It weaves down onto the target | the same dragon, shimmer particles | 3.75–4.7 |
 | coil | It wraps round the target; two stars flash | two 4-part star meshes, sparks | 4.7–5.3 |
-| beam | The dragon turns into a beam that shoots 48 blocks straight up from the target | 5 meshes that grow: a white core and four thin beams round it; rising sparks | 5.35–5.85 |
-| blast | A white fireball with three rays grows to 12 blocks across, the rays to 34. The target is killed, others within 10 blocks are hurt and pushed | 4 meshes that grow, flashes, shock waves | 5.85–6.3 |
-| smoke | Smoke rolls out twice as far as before and shrinks | 8 smoke meshes, smoke and sparks | 6.3–8.1 |
+| beam | The dragon turns into a beam that shoots 48 blocks straight up from the target | 10 meshes: a white core and four thin beams that grow, a ball on the tip, a disc at the foot, three collars travelling up; rising sparks | 5.35–5.85 |
+| blast | A star-shaped fireball grows to 12 blocks across, its rays to 34, inside a shock ring that widens. The target is killed, others within 10 blocks are hurt and pushed | 21 meshes, flashes, shock waves | 5.85–6.3 |
+| smoke | Smoke rolls out round a glowing core and shrinks | 12 smoke meshes, smoke and sparks | 6.3–8.1 |
 
 After two dragons touch, the one that is left runs these steps instead:
 
 | Step | What happens | Built from | Lasts |
 |---|---|---|---|
 | mega | The merged dragon, 2.2 times the size, spirals 22 blocks up | the same 113 meshes, bigger | 1.2 s |
-| beam | A thick beam shoots from the ground up through the dragon and 30 blocks past it | the same 5 meshes, 2.2 times as thick | 0.6 s |
-| nuke | A fireball with three rays grows until it reaches the ground; shock waves in the sky and on the ground. The fireball grows to 32 blocks across, its rays to 104. Everything within 34 blocks dies | 4 meshes that grow, flashes and waves | 0.8 s |
-| cloud | A mushroom cloud: a cap two and a half times the size of the normal smoke on a stem down to the ground | 8 cap meshes, 5 stem meshes, smoke | 2.5 s |
+| beam | A thick beam shoots from the ground up through the dragon and 30 blocks past it | the same 10 meshes, 2.2 times as thick | 0.6 s |
+| nuke | The same fireball 2.6 times the size grows to 37 blocks across, its rays to 104, with one shock ring in the sky and one on the ground. Everything within 34 blocks dies | 31 meshes, flashes and waves | 0.8 s |
+| cloud | A mushroom cloud: a domed cap with a glowing underside on a stem that is thicker at the bottom, and a ring of dust rolling out along the ground | 14 cap meshes, 5 stem meshes, 8 dust meshes, smoke | 2.5 s |
 
 How long the dive takes depends on how far the target is. The clip in
 `beam_blast_frames/` started this move (orbs, beams, a white dragon); the circle,
@@ -181,22 +181,30 @@ Every mesh is one row in `DP_MESH` in `world_code.js`:
 | `pillar` | 1 | The pillar of light when the dragon comes out |
 | `head` | 55 | Purple skull and a snout that narrows to the tip; open lower jaw with its own tip and hinges; dark horns in three pieces with magenta tips; a three-step crest; cyan eyes in dark sockets with slit pupils under heavy brows; a nose horn, snout ridge and forehead gem; big and small fangs, teeth, tongue and a glowing throat; whiskers, nostrils, mane, cheek fins with frill spikes, chin spikes, beard |
 | `body` | 58 | 12 segments from thick neck to thin tail, purple and dark purple in turn; a tall magenta spine on each, lilac belly plates, cyan stripes on both sides, a pair of wings with lilac tips, a pair of fins, tail fins |
-| `flare` | 4 | The star: a core and three rays |
+| `flare` | 6 | The star: a core, three rays and two slanted rays |
 | `beam` | 5 | The beam before each explosion: a core and four thin beams |
-| `blast` | 4 | The fireball of the explosion and its three rays |
-| `smoke` | 8 | White and violet-grey puffs; also the cap of the mushroom cloud |
-| `nuke` | 4 | The fireball and its three rays |
-| `stem` | 1 | One piece of the mushroom cloud's stem, used 5 times |
+| `beamTop` | 3 | The ball on the beam's tip, the disc at its foot, and a collar that is used 3 times and travels up the beam |
+| `blast` | 11 | The fireball: a stepped ball with a turning magenta core, three long rays and four slanted rays. The nuke is the same model 2.6 times the size |
+| `smoke` | 12 | White and violet-grey puffs round a glowing core |
+| `cap` | 14 | The cap of the mushroom cloud: a dome of three rings of puffs with a glowing underside |
+| `stem` | 1 | One piece of the mushroom cloud's stem, used 5 times, thicker at the bottom |
+| `dust` | 1 | One puff of the dust ring that rolls out along the ground under the nuke, used 8 times |
+
+Each explosion also has a shock ring of 10 meshes that widens (the nuke has two:
+one in the sky, one on the ground). Those are made in code by `dpShock`, not from
+a table.
 
 To change a part, change its row. To add one, add a row: the engine picks it up.
 
 Every row in `DP_MESH` is named `M`. What each row is, in order:
 
-- `flare`: core, then the three rays.
+- `flare`: core, the three rays, the two slanted rays.
 - `beam`: core, front, back, then the two side beams.
-- `blast`: fireball, then the three rays.
-- `smoke`: puffs 1 to 8.
-- `nuke`: fireball, then the three rays.
+- `beamTop`: tip, foot, collar.
+- `blast`: turning core, the three slabs of the ball, the three long rays, the
+  four slanted rays.
+- `smoke`: puffs 1 to 11, then the glowing core.
+- `cap`: top, four upper puffs, four middle puffs, four skirt puffs, underside.
 - `body`: for each of the 12 segments from neck to tail tip, the segment itself,
   then its spine, then (where it has them) its belly plate, side stripes, and
   wings or fins. The wing tips follow the wings. The last three rows are the tail
@@ -321,7 +329,8 @@ list.
 - colour: a name from `DP_COL`.
 - name: every row is named `M`. The code does not use the name, so tell rows
   apart by their order, which is listed under "The meshes".
-- flag: `spin` turns by itself, `lit` is shaded instead of glowing. `m` makes the
+- flag: `spin` turns by itself, `lit` is shaded instead of glowing. `a`, `b`, `c`
+  or `d` slants a ray along one of the four diagonals (`DP_DIAG`). `m` makes the
   part twice, mirrored left and right (write it for the right side). `2` or `3`
   makes it only at that detail level or higher.
 
@@ -360,6 +369,8 @@ I could not run Bloxd from here. The code was run against a stand-in for the gam
 That checks sizes, that every call is well formed and that every mesh is deleted.
 It cannot show how the game draws it. Things to look at first in your world:
 
+- **Slanted rays and rings.** The slanted rays of the explosions and the shock
+  rings need mesh turning to work. With `rotate: false` they lie along the axes.
 - **Mesh turning.** Meshes are turned to face the way they fly with
   `api.setEntityRotation`. The documentation does not say which way round the
   angles go. If the circle's lines or the dragon's parts point the wrong way, set
