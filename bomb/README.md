@@ -15,10 +15,14 @@ Paste `code_block.js` (3645 characters) into a code block and click it. The bomb
 Paste `world_code.js` into World Code and type `!target <player name>` in chat. Capitals do not matter and the start of the name is enough. The command is hidden from chat and the code sends no chat messages at all: if the name is wrong, or three bombs are already falling, nothing happens.
 
 1. The bomb appears 45 blocks above that player and falls for 2.5 seconds, faster and faster, with a smoke trail and a red mark on the floor. It follows the player if they run.
-2. When it lands: white-yellow fireball, a shock ring racing outward, then a mushroom column and cap of fire and smoke for 2 seconds.
-3. The target is killed (credited to you). Everyone else within 9 blocks, mobs included, takes 18 to 60 damage depending on distance, and everyone hit is thrown up and away. That includes you if you stand too close.
+2. When it lands:
+   - a white flash and a three-layer fireball (white, yellow, orange) about 10 blocks across, with sparks that fly up and fall back;
+   - a ring of fire that shoots outward along the ground in every direction and fades as it spreads, followed by an orange ring and a smoke ring;
+   - a mushroom column and cap that grow to about 29 blocks tall and 22 wide, with three halo rings going out from the stem;
+   - glowing embers on the ground and ash falling, then smoke that thins out. About 8 seconds from the blast until the last smoke is gone.
+3. The target is killed (credited to you). Everyone else within 12 blocks, mobs included, takes 18 to 60 damage depending on distance, and everyone hit is thrown up and away. That includes you if you stand too close.
 
-Settings are in `NUKE_CFG` at the top: `dropHeight`, `fallTicks`, `follow`, `killTarget`, `blastRadius`, `blastDamage`, `knockback`, `hitCaster`, `hitMobs`, `sounds`, `maxBombs` (3). Anyone can use the command; there is no admin check. From your own code: `nukeTarget(senderId, targetId)`.
+Settings are in `NUKE_CFG` at the top: `dropHeight`, `fallTicks`, `follow`, `killTarget`, `blastRadius` (12), `boomSize` (1 = normal, 2 = twice as big to look at), `blastDamage`, `knockback`, `hitCaster`, `hitMobs`, `sounds`, `maxBombs` (3). Anyone can use the command; there is no admin check. From your own code: `nukeTarget(senderId, targetId)`.
 
 Not sure until tried in Bloxd: how big and bright the explosion particles look, and how the three sounds used (cannon, firecracker, rocket engine) come across.
 

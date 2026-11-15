@@ -53,11 +53,23 @@ s.run.tick(50)
 check(s.meshes.size === 0, 'on landing the bomb meshes are removed')
 check(s.killed.length === 1 && s.killed[0][0] === 'p2' && s.killed[0][1] === 'p1', 'the target is killed, credited to the sender')
 const hit = s.hurt.map((h) => h[0]).sort().join()
-check(hit === 'cow,p3' && s.hurt.every((h) => h[1] <= -18 && h[1] >= -60), `others within 9 blocks are hurt (${s.hurt.map((h) => h[0] + ' ' + h[1]).join(', ')}); far players are not`)
+check(hit === 'cow,p3' && s.hurt.every((h) => h[1] <= -18 && h[1] >= -60), `others within 12 blocks are hurt (${s.hurt.map((h) => h[0] + ' ' + h[1]).join(', ')}); far players are not`)
 check(s.pushed.length === 3 && s.pushed.every((p) => p[2] > 5), 'everyone hit is thrown up and away')
+const firstBoom = s.fx.slice(-29)
+const flat = firstBoom.filter((o) => Math.abs(o.dir1[1]) < 0.01 && o.dir2[1] < 0.1)
+const ways = new Set(flat.map((o) => Math.round((Math.atan2((o.dir1[0] + o.dir2[0]) / 2, (o.dir1[2] + o.dir2[2]) / 2) * 12) / Math.PI)))
+check(flat.length === 24 && ways.size === 24 && flat.every((o) => o.maxEmitPower === 30 && o.colorGradients[2].maxColor[3] === 0), 'at the blast a ring of 24 jets of fire shoots outward in every direction along the ground and fades out as it spreads')
+check(firstBoom.filter((o) => o.manualEmitCount >= 320).length === 3 && Math.max(...firstBoom.map((o) => o.maxSize)) === 6, 'the fireball is three layers (white flash, yellow, orange) of 320 to 420 big particles, plus 160 sparks that fly up and fall back')
 const boomFx = s.fx.length
-for (let n = 0; n < 45; n++) { const c = s.calls; s.run.tick(50); worst = Math.max(worst, s.calls - c) }
-check(s.fx.length - boomFx > 150 && s.run.nukeList.length === 0, 'fireball, shock ring, then a mushroom column and cap for 2 s; then it is finished')
+const rings = []
+for (let n = 1; n <= 104; n++) {
+  const c = s.calls, before = s.fx.length; s.run.tick(50); worst = Math.max(worst, s.calls - c)
+  const added = s.fx.slice(before).filter((o) => Math.abs((o.dir1[0] + o.dir2[0]) / 2) + Math.abs((o.dir1[2] + o.dir2[2]) / 2) > 0.9 && o.dir2[1] < 0.2)
+  if (added.length >= 20) rings.push(n + ':' + added.length)
+}
+check(rings.join() === '3:24,7:24,12:20,22:20,32:20', 'more fading rings follow: orange at 0.15 s, smoke at 0.35 s, then three halo rings up the mushroom stem (' + rings.join(', ') + ')')
+const tall = Math.max(...s.fx.slice(boomFx).map((o) => o.pos2[1])) - 10
+check(tall > 27 && tall < 31 && s.fx.length - boomFx > 200 && s.run.nukeList.length === 0, `the mushroom column and cap grow to about ${Math.round(tall)} blocks tall and 22 wide, with embers on the ground and ash falling; the last smoke is sent out at 5 s and fades over the next 3`)
 check(s.bad.length === 0, 'every api call is well formed ' + [...new Set(s.bad)].join('; '))
 check(worst <= 110 && s.peak === 88, `at most ${worst} api calls in a tick; ${s.peak} meshes`)
 check(SOUNDS.every((n) => s.sounds.includes(n)), 'sounds: launch, falling, explosion')
@@ -68,7 +80,7 @@ check(pre.run.onPlayerChat('p1', '!target bobcat') === false && pre.meshes.size 
 const self = game(); self.run.onPlayerChat('p1', '!target caster'); for (let n = 0; n < 52; n++) self.run.tick(50)
 check(self.killed.length === 1 && self.killed[0][0] === 'p1', 'you can target yourself')
 const gone = game(); gone.run.onPlayerChat('p1', '!target zed'); for (let n = 0; n < 10; n++) gone.run.tick(50)
-gone.api.getPosition = (id) => (id === 'p4' ? null : gone.where[id]); for (let n = 0; n < 90; n++) gone.run.tick(50)
+gone.api.getPosition = (id) => (id === 'p4' ? null : gone.where[id]); for (let n = 0; n < 160; n++) gone.run.tick(50)
 check(gone.meshes.size === 0 && gone.run.nukeList.length === 0, 'if the target leaves, the bomb lands where they last were and cleans up')
 const both = game('globalThis.seen = 0; tick = () => { globalThis.seen++ }; onPlayerChat = (id, m) => (m === "x" ? "old" : undefined);')
 both.run.tick(50)

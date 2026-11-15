@@ -5,7 +5,8 @@ var NUKE_CFG = {
   fallTicks: 50,
   follow: true,
   killTarget: true,
-  blastRadius: 9,
+  blastRadius: 12,
+  boomSize: 1,
   blastDamage: 60,
   knockback: 22,
   hitCaster: true,
@@ -179,35 +180,62 @@ function nukeHarm(bomb, ground) {
   }
 }
 
+function nukeRing(mid, height, start, parts, look) {
+  for (var num = 0; num < parts; num++) {
+    var angle = (num / parts) * Math.PI * 2 + (look.twist || 0)
+    var dirX = Math.sin(angle)
+    var dirZ = Math.cos(angle)
+    var spot = [mid[0] + dirX * start, mid[1] + height, mid[2] + dirZ * start]
+    look.dir1 = [dirX - 0.14, look.low || 0, dirZ - 0.14]
+    look.dir2 = [dirX + 0.14, look.high || 0.05, dirZ + 0.14]
+    nukePuff([spot[0] - 0.4, spot[1] - 0.2, spot[2] - 0.4], [spot[0] + 0.4, spot[1] + 0.2, spot[2] + 0.4], look)
+  }
+}
+
 function nukeBoom(bomb, age) {
   var mid = bomb.ground
   var fire = NUKE_FIRE
+  var big = NUKE_CFG.boomSize
   if (age === 0) {
     nukeSound("cannonFire1", 1, 0.5, mid)
     nukeSound("cannonFire2", 1, 0.7, mid)
     nukeSound("firecracker1", 1, 0.5, mid)
-    nukeBall([mid[0], mid[1] + 2, mid[2]], 2, { count: 260, size: 3.2, life: 0.9, power: 14, first: fire.white, middle: fire.yellow, last: fire.orange })
-    nukeBall([mid[0], mid[1] + 2, mid[2]], 1.5, { count: 200, size: 2.2, life: 1.4, power: 22, first: fire.yellow, middle: fire.orange, last: fire.red })
-    nukePuff([mid[0] - 1, mid[1] + 0.2, mid[2] - 1], [mid[0] + 1, mid[1] + 0.6, mid[2] + 1], { count: 220, size: 1.6, life: 1.3, power: 26, dir1: [-1, 0, -1], dir2: [1, 0.12, 1], first: fire.white, middle: fire.orange, last: fire.smoke })
+    nukeBall([mid[0], mid[1] + 3 * big, mid[2]], 4 * big, { count: 320, size: 6 * big, life: 0.7, power: 6 * big, texture: "glint", first: fire.white, middle: fire.white, last: fire.yellow })
+    nukeBall([mid[0], mid[1] + 3 * big, mid[2]], 3 * big, { count: 420, size: 5 * big, life: 1.3, power: 22 * big, first: fire.white, middle: fire.yellow, last: fire.orange })
+    nukeBall([mid[0], mid[1] + 3 * big, mid[2]], 2.5 * big, { count: 320, size: 3.6 * big, life: 2, power: 34 * big, first: fire.yellow, middle: fire.orange, last: fire.red })
+    nukePuff([mid[0] - 1, mid[1] + 0.5, mid[2] - 1], [mid[0] + 1, mid[1] + 2, mid[2] + 1], { count: 160, size: 0.7 * big, life: 2.6, power: 30 * big, rise: -14, dir1: [-1, 0.6, -1], dir2: [1, 2.2, 1], first: fire.white, middle: fire.yellow, last: fire.red })
+    nukeRing(mid, 0.6, 1, 24, { count: 14, size: 3 * big, life: 1.5, power: 30 * big, first: fire.white, middle: fire.yellow, last: fire.orange })
     nukeHarm(bomb, mid)
   }
-  if (age === 3) nukeSound("cannonFire3", 1, 0.5, mid)
-  if (age >= 2 && age < 40 && age % 2 === 0) {
-    var high = Math.min(16, age * 0.55)
-    nukePuff([mid[0] - 1.3, mid[1], mid[2] - 1.3], [mid[0] + 1.3, mid[1] + high, mid[2] + 1.3], { count: 40, size: 2.6, life: 1.6, power: 1.5, rise: 3, first: fire.orange, middle: fire.red, last: fire.smoke })
-    nukePuff([mid[0] - 1.6, mid[1], mid[2] - 1.6], [mid[0] + 1.6, mid[1] + high, mid[2] + 1.6], { count: 24, size: 3, life: 2.4, power: 1, rise: 2, solid: true, first: fire.smoke, middle: fire.smoke, last: fire.ash })
-    var capWide = Math.min(6.5, 1.5 + age * 0.2)
-    nukePuff([mid[0] - capWide, mid[1] + high, mid[2] - capWide], [mid[0] + capWide, mid[1] + high + 3, mid[2] + capWide], { count: 60, size: 3.4, life: 1.8, power: 2.5, rise: 1, dir1: [-1, -0.2, -1], dir2: [1, 0.5, 1], first: fire.yellow, middle: fire.orange, last: fire.smoke })
-    nukePuff([mid[0] - capWide, mid[1] + high + 0.5, mid[2] - capWide], [mid[0] + capWide, mid[1] + high + 3.5, mid[2] + capWide], { count: 30, size: 3.8, life: 2.8, power: 1.5, rise: 0.6, solid: true, first: fire.smoke, middle: fire.smoke, last: fire.ash })
+  if (age === 3) {
+    nukeSound("cannonFire3", 1, 0.5, mid)
+    nukeRing(mid, 0.8, 2, 24, { twist: 0.13, count: 12, size: 3.6 * big, life: 2, power: 24 * big, first: fire.yellow, middle: fire.orange, last: fire.red })
   }
-  if (age >= 1 && age < 16) {
-    var ring = age * 1.3
-    for (var num = 0; num < 12; num++) {
-      var angle = (num / 12) * Math.PI * 2 + age * 0.4
-      nukeBall([mid[0] + Math.sin(angle) * ring, mid[1] + 0.5, mid[2] + Math.cos(angle) * ring], 0.8, { count: 6, size: 2, life: 0.7, power: 2, rise: 2, first: fire.white, middle: fire.smoke, last: fire.ash })
-    }
+  if (age === 7) nukeRing(mid, 1, 3, 24, { count: 10, size: 4.4 * big, life: 2.8, power: 18 * big, solid: true, first: fire.smoke, middle: fire.smoke, last: fire.ash })
+  if (age === 9) nukeSound("cannonFire1", 1, 0.5, mid)
+  if (age === 12 || age === 22 || age === 32) {
+    var halo = mid[1] + (6 + age * 0.45) * big
+    nukeRing([mid[0], halo, mid[2]], 0, 1.5 * big, 20, { twist: age, count: 8, size: 2.2 * big, life: 1.8, power: 12 * big, low: -0.05, high: 0.12, first: fire.white, middle: fire.orange, last: fire.smoke })
   }
-  return age >= 40
+  if (age === 16) nukeSound("cannonFire2", 0.9, 0.5, mid)
+  if (age >= 2 && age < 70 && age % 2 === 0) {
+    var high = Math.min(24, age * 0.7) * big
+    var fade = age < 44 ? 1 : 0.5
+    nukePuff([mid[0] - 2 * big, mid[1], mid[2] - 2 * big], [mid[0] + 2 * big, mid[1] + high, mid[2] + 2 * big], { count: Math.round(60 * fade), size: 3.6 * big, life: 1.8, power: 2, rise: 4, first: fire.orange, middle: fire.red, last: fire.smoke })
+    nukePuff([mid[0] - 2.4 * big, mid[1], mid[2] - 2.4 * big], [mid[0] + 2.4 * big, mid[1] + high, mid[2] + 2.4 * big], { count: Math.round(36 * fade), size: 4.2 * big, life: 2.8, power: 1.2, rise: 2.5, solid: true, first: fire.smoke, middle: fire.smoke, last: fire.ash })
+    var capWide = Math.min(11, 2 + age * 0.3) * big
+    nukePuff([mid[0] - capWide, mid[1] + high, mid[2] - capWide], [mid[0] + capWide, mid[1] + high + 4 * big, mid[2] + capWide], { count: Math.round(90 * fade), size: 4.6 * big, life: 2, power: 3 * big, rise: 1, dir1: [-1, -0.3, -1], dir2: [1, 0.5, 1], first: fire.yellow, middle: fire.orange, last: fire.smoke })
+    nukePuff([mid[0] - capWide, mid[1] + high + big, mid[2] - capWide], [mid[0] + capWide, mid[1] + high + 5 * big, mid[2] + capWide], { count: Math.round(50 * fade), size: 5.2 * big, life: 3.2, power: 2 * big, rise: 0.6, solid: true, first: fire.smoke, middle: fire.smoke, last: fire.ash })
+  }
+  if (age >= 10 && age < 90 && age % 4 === 0) {
+    var spread = 9 * big
+    nukePuff([mid[0] - spread, mid[1] + 0.2, mid[2] - spread], [mid[0] + spread, mid[1] + 0.6, mid[2] + spread], { count: 30, size: 0.5 * big, life: 1.6, power: 0.6, rise: 1.2, texture: "glint", first: fire.yellow, middle: fire.orange, last: fire.red })
+    nukePuff([mid[0] - spread, mid[1] + 8 * big, mid[2] - spread], [mid[0] + spread, mid[1] + 20 * big, mid[2] + spread], { count: 16, size: 0.4 * big, life: 2.4, power: 0.5, rise: -5, first: fire.orange, middle: fire.red, last: fire.ash })
+  }
+  if (age >= 70 && age < 100 && age % 5 === 0) {
+    nukePuff([mid[0] - 6 * big, mid[1] + 4 * big, mid[2] - 6 * big], [mid[0] + 6 * big, mid[1] + 26 * big, mid[2] + 6 * big], { count: 24, size: 5 * big, life: 3, power: 0.6, rise: 1, solid: true, first: fire.smoke, middle: fire.ash, last: fire.ash })
+  }
+  return age >= 100
 }
 
 function nukeStep(bomb) {
