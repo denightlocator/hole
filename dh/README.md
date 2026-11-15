@@ -1,4 +1,4 @@
-# Spinning circle (particles only)
+# DH (spinning circle, particles only)
 
 A glowing orange-red circle on the floor with a five-pointed star inside
 it, made of particles only. No meshes are used. Rebuilt from your
@@ -12,7 +12,7 @@ screenshot of the game; real particles will look softer.
 ## Use it
 
 - **World Code:** paste `world_code.js` (about 7,600 characters) and type
-  `!circle`. It opens under your feet. `!circle` again closes it. If other
+  `!dh`. It opens under your feet. `!dh` again closes it. If other
   world code is there too, paste this **after** it.
 - **Code Block, no World Code needed:** paste `code_block.js` (7,591 of
   32,000 characters) and click the block. The circle opens on top of the
@@ -25,7 +25,9 @@ the first click is only a half-second flash, and from the second click on
 each click draws the circle as a still picture that lasts 8 seconds. It
 cannot spin without `tick`; use World Code for that.
 
-From other code: `spinCircle(playerId)` or `spinCircle(playerId, [x, y, z])`.
+From other code: `dh(playerId)` or `dh(playerId, [x, y, z])`. In the code
+block version the function is called `spinCircle`, because a two-letter name
+could be caught by the word filter.
 
 ## What it is
 
@@ -51,7 +53,7 @@ more stepped).
 
 | Name | Meaning |
 |---|---|
-| `chat` | Chat command (`!circle`) |
+| `chat` | Chat command (`!dh`) |
 | `size` | Scale (1 = 10 blocks across) |
 | `spin` | Turning speed in radians a second (0.5). 0 = still |
 | `pointsPerTick` | Points re-lit each tick (42) |

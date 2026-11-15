@@ -41,7 +41,7 @@ check(code.length <= 512000 && !code.includes('//'), `world_code.js is ${code.le
 console.log('The circle')
 const s = game()
 const N = s.run.ritePlan.length
-check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!circle') === false && s.run.riteList.length === 1, '!circle opens it and is hidden from chat')
+check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!dh') === false && s.run.riteList.length === 1, '!dh opens it and is hidden from chat')
 play(s, 320)
 check(s.errors.length === 0, 'every particle call is well formed; no mesh is ever created (the test game has no mesh functions) ' + [...new Set(s.errors)].join('; '))
 const floor = s.fx.filter((q) => q.tex === 'square_particle' && q.power === 0)
@@ -79,7 +79,7 @@ check(s.sounds.includes('ominousBellHit'), 'a sound plays when it opens')
 
 console.log('Closing')
 const before = s.fx.length
-check(s.g.spinCircle('p1') === false, '!circle again closes it')
+check(s.g.dh === s.g.spinCircle && s.g.dh('p1') === false, '!dh again closes it (dh(playerId) is the same function)')
 play(s, 30)
 check(s.fx.length === before && s.run.riteList.length === 0, 'no more particles are emitted; the last ones fade within half a second')
 const timed = game()
@@ -92,7 +92,7 @@ both.run.tick(50)
 check(both.run.onPlayerChat('p1', 'x') === 'old' && both.g.seen === 1, 'earlier tick and onPlayerChat still run')
 
 console.log('Code block')
-const noChat = code.slice(0, code.indexOf('var riteOldChat')).trimEnd()
+const noChat = code.slice(0, code.indexOf('globalThis.dh =')).trimEnd()
 const blockCode = 'if (typeof spinCircleStill !== "function") {\n  (function () {\n' + noChat + '\n  })()\n  globalThis.riteSeen = -1\n}\n' +
   'var riteHere = [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5]\n' +
   'if (globalThis.riteSeen === spinCircleBeat()) spinCircleStill(myId, riteHere)\n' +

@@ -1,5 +1,7 @@
+if (typeof spinCircleStill !== "function") {
+  (function () {
 var RITE_CFG = {
-  chat: "!circle",
+  chat: "!dh",
   size: 1,
   spin: 0.5,
   pointsPerTick: 42,
@@ -199,9 +201,10 @@ tick = (msec) => {
   if (riteOldTick) riteOldTick(msec)
   riteTick()
 }
-
-var riteOldChat = typeof onPlayerChat === "function" ? onPlayerChat : null
-onPlayerChat = (playerId, message) => {
-  if (RITE_CFG.chat && message.trim().toLowerCase() === RITE_CFG.chat) return spinCircle(playerId), false
-  if (riteOldChat) return riteOldChat(playerId, message)
+  })()
+  globalThis.riteSeen = -1
 }
+var riteHere = [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5]
+if (globalThis.riteSeen === spinCircleBeat()) spinCircleStill(myId, riteHere)
+else spinCircle(myId, riteHere, true)
+globalThis.riteSeen = spinCircleBeat()

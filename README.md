@@ -4,7 +4,7 @@
 > [Dragon Claw](dragon_claw/README.md) (folder `dragon_claw/`),
 > [Astral Circle](astral_circle/README.md) (folder `astral_circle/`),
 > [Hologram](hologram/README.md) (folder `hologram/`) and
-> [Spinning circle](spin_circle/README.md) (folder `spin_circle/`). Each move has
+> [DH](dh/README.md) (folder `dh/`). Each move has
 > its own folder with its own paste file, checks and pictures.
 
 The move from `beam_blast_frames/`, rebuilt for [bloxd.io](https://bloxd.io) with
