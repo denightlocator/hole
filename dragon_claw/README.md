@@ -14,6 +14,10 @@ Paste `world_code.js` into World Code. If Dragon Pulse or other world code is
 there too, paste this **after** it: it keeps the earlier `tick`, chat and
 right-click handlers working. Then type `!claw`.
 
+Or place a Code Block and paste [`code_block.js`](code_block.js) into it
+(one line, `dragonClaw(myId)`): whoever clicks the block does the move. The
+world code above must be in World Code for this to work.
+
 From other code: `dragonClaw(playerId)`.
 
 ## What happens (3.05 s)
