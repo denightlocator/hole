@@ -14,15 +14,19 @@
 Also: the two `//` comment lines are removed, and the facing direction is read from `dirXyz` or `dir`, whichever the game gives.
 Nothing else is changed: same sword, stone, timing and particles.
 
-## It still needs one line in World Code
+## Easiest way: World Code only
 
-The code block only builds the meshes and stores a function. Something must call it 20 times a second:
+Paste `world_code.js` into World Code and type `!excalibur` in chat. It is the same code wrapped in a function, with the tick and the chat command included, and World Code is not put through the code-block word filter. `excalibur(playerId)` also works from your own code.
+
+## Code block way
+
+`code_block.js` builds the meshes 40 blocks under the floor and stores a function that moves them. Something in World Code must call that function 20 times a second, or nothing ever appears:
 
 ```
 tick = () => { if (globalThis.runTimer14) globalThis.runTimer14() }
 ```
 
-If your World Code already has a `tick`, add the inside part to it instead.
+If `world_code.js` is pasted, that is already taken care of.
 
 ## Test
 
