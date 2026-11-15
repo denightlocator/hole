@@ -54,6 +54,7 @@ At most 167 meshes exist at once.
 | `shrink` | true | the player shrinks while going down and grows back coming out (uses `setLifeformScale`) |
 | `hidePlayer`, `holdPlayer` | true | invisible / held in place and safe for the moment inside the portal |
 | `animate`, `nodeMeshes`, `groundArrow`, `sounds` | true | switch a part off |
+| `slashWay` | -1 | which way round the green slash band sweeps; set to 1 if it turns against the player's body |
 | `flip` | 1 | set to -1 if the player bends backwards instead of forwards |
 
 ## Not sure until it is tried in Bloxd

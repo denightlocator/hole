@@ -11,6 +11,7 @@ var GATE_CFG = {
   nodeMeshes: true,
   hidePlayer: true,
   shrink: true,
+  slashWay: -1,
   holdPlayer: true,
   clickFires: true,
   groundArrow: true,
@@ -323,14 +324,15 @@ function gateSlash(cast, age) {
   for (var num = 0; num < count; num++) {
     var born = Math.floor(num / 3)
     if (age === born) {
-      var angle = start + (num / count) * Math.PI * 2
+      var way = GATE_CFG.slashWay < 0 ? -1 : 1
+      var angle = start + way * (num / count) * Math.PI * 2
       var tall = cast.out[1] + 0.95 * scale
       var outer = gateBox(cast, long / scale, 0.06, 0.55, "jade")
       var inner = gateBox(cast, (long * 0.9) / scale, 0.09, 0.16, "mint")
       if (outer) gatePut(outer, cast.out[0] + Math.sin(angle) * reach, tall, cast.out[2] + Math.cos(angle) * reach, angle, true)
       if (inner) gatePut(inner, cast.out[0] + Math.sin(angle) * (reach + 0.3 * scale), tall, cast.out[2] + Math.cos(angle) * (reach + 0.3 * scale), angle, true)
       cast.slash.push({ gone: age + 4, ids: [outer, inner].filter((made) => made) })
-      if (num % 3 === 0) gateCloud([cast.out[0] + Math.sin(angle) * reach, tall, cast.out[2] + Math.cos(angle) * reach], 0.3, 0.1, { life: 0.3, size: 0.14, count: 8, power: 4, dir1: [Math.cos(angle) - 0.3, -0.1, -Math.sin(angle) - 0.3], dir2: [Math.cos(angle) + 0.3, 0.3, -Math.sin(angle) + 0.3], first: "white", last: "jade" })
+      if (num % 3 === 0) gateCloud([cast.out[0] + Math.sin(angle) * reach, tall, cast.out[2] + Math.cos(angle) * reach], 0.3, 0.1, { life: 0.3, size: 0.14, count: 8, power: 4, dir1: [way * Math.cos(angle) - 0.3, -0.1, -way * Math.sin(angle) - 0.3], dir2: [way * Math.cos(angle) + 0.3, 0.3, -way * Math.sin(angle) + 0.3], first: "white", last: "jade" })
     }
   }
   for (var idx = cast.slash.length - 1; idx >= 0; idx--) {
