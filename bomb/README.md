@@ -8,11 +8,11 @@ The picture is my own render, not a Bloxd screenshot. **Not run inside Bloxd yet
 
 ## How to use it
 
-Paste `code_block.js` (3,855 characters) into a code block and click it. The bomb appears above the block, standing nose down. Click again to remove it. It works by itself; no World Code is needed.
+Paste `code_block.js` (3645 characters) into a code block and click it. The bomb appears above the block, standing nose down. Click again to remove it. It works by itself; no World Code is needed. It sends no chat messages.
 
 ## Drop it on someone: `!target <name>` (World Code)
 
-Paste `world_code.js` into World Code and type `!target <player name>` in chat. Capitals do not matter and the start of the name is enough.
+Paste `world_code.js` into World Code and type `!target <player name>` in chat. Capitals do not matter and the start of the name is enough. The command is hidden from chat and the code sends no chat messages at all: if the name is wrong, or three bombs are already falling, nothing happens.
 
 1. The bomb appears 45 blocks above that player and falls for 2.5 seconds, faster and faster, with a smoke trail and a red mark on the floor. It follows the player if they run.
 2. When it lands: white-yellow fireball, a shock ring racing outward, then a mushroom column and cap of fire and smoke for 2 seconds.

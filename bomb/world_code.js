@@ -254,11 +254,7 @@ function nukeTick() {
     try {
       ended = nukeStep(bomb)
       bomb.moment++
-    } catch (err) {
-      try {
-        api.sendMessage(bomb.owner, "Bomb stopped at tick " + bomb.moment + ": " + err, { color: "orange" })
-      } catch (other) {}
-    }
+    } catch (err) {}
     if (ended) {
       nukeDrop(bomb)
       nukeList.splice(idx, 1)
@@ -267,17 +263,11 @@ function nukeTick() {
 }
 
 function nukeTarget(ownerId, targetId) {
-  if (nukeList.length >= NUKE_CFG.maxBombs) {
-    api.sendMessage(ownerId, "Too many bombs are falling. Wait a moment.", { color: "orange" })
-    return false
-  }
+  if (nukeList.length >= NUKE_CFG.maxBombs) return false
   var where = api.getPosition(targetId)
   var aim = [where[0], where[1], where[2]]
   var pieces = nukeBuild([aim[0], aim[1] + NUKE_CFG.dropHeight, aim[2]])
-  if (!pieces.length) {
-    api.sendMessage(ownerId, "The game refused to make the bomb meshes (mesh limit reached?).", { color: "orange" })
-    return false
-  }
+  if (!pieces.length) return false
   nukeList.push({ owner: ownerId, target: targetId, aim: aim, pieces: pieces, moment: 0, boomAt: -1, ground: null })
   nukeSound("cannonFire1", 0.8, 1.4, ownerId)
   return true
@@ -298,15 +288,9 @@ onPlayerChat = (playerId, message) => {
   if (text.toLowerCase() === word || text.toLowerCase().indexOf(word + " ") === 0) {
     var wanted = text.slice(word.length).trim()
     try {
-      if (!wanted) api.sendMessage(playerId, "Use: " + word + " <player name>", { color: "orange" })
-      else {
-        var found = nukeFind(wanted)
-        if (!found) api.sendMessage(playerId, "No player called \"" + wanted + "\" is here.", { color: "orange" })
-        else if (nukeTarget(playerId, found)) api.sendMessage(playerId, "Bomb sent to " + api.getEntityName(found) + ".", { color: "lime" })
-      }
-    } catch (err) {
-      api.sendMessage(playerId, "Bomb error: " + err, { color: "orange" })
-    }
+      var found = wanted ? nukeFind(wanted) : null
+      if (found) nukeTarget(playerId, found)
+    } catch (err) {}
     return false
   }
   if (nukeOldChat) return nukeOldChat(playerId, message)

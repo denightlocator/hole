@@ -88,8 +88,4 @@ bombBuild = function (place) {
   }
   return made
 }
-if (bombRemove() > 0) api.sendMessage(myId, "Bomb removed.", { color: "orange" })
-else {
-  globalThis.bombMeshIds = bombBuild([thisPos[0] + 0.5, thisPos[1] + 1 + bombSettings.lift, thisPos[2] + 0.5])
-  api.sendMessage(myId, "Bomb built from " + globalThis.bombMeshIds.length + " meshes. Another click removes this.", { color: "lime" })
-}
+if (!bombRemove()) globalThis.bombMeshIds = bombBuild([thisPos[0] + 0.5, thisPos[1] + 1 + bombSettings.lift, thisPos[2] + 0.5])
