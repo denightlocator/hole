@@ -4,14 +4,18 @@ var AC_CFG = {
   chat: "!astral",
   range: 15,
   size: 1,
+  beamDamage: 20,
   damage: 60,
-  radius: 5,
-  knockback: 10,
+  radius: 12,
+  knockback: 12,
   hitPlayers: true,
   spawnPerTick: 5,
   hold: 24,
-  beamWidth: 4.5,
-  beamTicks: 30,
+  beamWidth: 3,
+  beamMax: 18,
+  growTicks: 30,
+  blast: 13,
+  blastTicks: 18,
   sounds: true,
   hideDist: 220,
   maxCasts: 1,
@@ -29,7 +33,9 @@ var AC_SND = {
   cast: [["ominousBellHit", 1, 1.3], ["magicAccent2", 0.9, 1.1]],
   ring: [["harp_pling", 0.6, 1]],
   hold: [["suspenseRiser", 1, 1.3]],
-  beam: [["futureStrangePulse", 1, 1.5], ["zapAccent1", 1, 1.2], ["cannonFire2", 1, 0.7]],
+  beam: [["futureStrangePulse", 1, 1.5], ["zapAccent1", 1, 1.2]],
+  grow: [["futureStrangePulse", 0.8, 1]],
+  blast: [["cannonFire2", 1, 0.6], ["cannonFire1", 1, 0.45], ["hauntedHorrorImpact", 1, 0.7]],
   hit: [["zapAccent2", 0.7, 1.4]],
   end: [["magicAccent2", 0.7, 0.7]],
 }
@@ -98,13 +104,15 @@ var AC_ORB = {
 }
 
 var AC_BEAM = {
-  height: 44,
+  height: 130,
   core: [0, 60, 120],
-  streaks: 4,
+  streaks: 6,
   flare: [
-    [3.5, 0.12, "white"],
-    [6, 0.24, "ice"],
+    [0.75, 0.24, "white"],
+    [0.95, 0.12, "ice"],
   ],
+  slices: 9,
+  ballUp: 5,
 }
 
 var acCasts = []
@@ -116,7 +124,7 @@ var acPlan = (function () {
   var seg = (x1, z1, x2, z2, y, thick, col, orb) => {
     var dx = x2 - x1
     var dz = z2 - z1
-    out.push({ w: thick, h: thick, d: Math.hypot(dx, dz) * 1.04, col: col, at: [(x1 + x2) / 2, y, (z1 + z2) / 2], yaw: Math.atan2(dx, dz), orb: orb, y: y + (orb >= 0 ? AC_ORB.height : 0) })
+    out.push({ w: thick, h: thick, d: Math.hypot(dx, dz) * 1.04, col: col, at: [(x1 + x2) / 2, y, (z1 + z2) / 2], yaw: Math.atan2(dx, dz), orb: orb, y: y + (orb >= 0 ? AC_ORB.height : 0), far: Math.max(Math.hypot(x1, z1), Math.hypot(x2, z2)) + (orb >= 0 ? AC_ORB.radius : 0) })
   }
   var poly = (r, y, n, skip, thick, col, turn, orb) => {
     for (var i = 0; i < n; i++) {
@@ -149,18 +157,27 @@ var acPlan = (function () {
     AC_ORB.globe.forEach((g) => poly(AC_ORB.size * Math.cos(Math.asin(g[0])), AC_ORB.size * g[0], g[1], 1, g[2], g[3], 0, o))
     out.push({ w: AC_ORB.pole[0], h: AC_ORB.size * 2.3, d: AC_ORB.pole[0], col: AC_ORB.pole[1], at: [0, 0, 0], yaw: 0, orb: o, y: AC_ORB.height })
   }
-  out.forEach((p, n) => (p.n = n))
+  out.forEach((p, n) => {
+    p.n = n
+    if (p.far === undefined) p.far = p.rune !== undefined ? AC_BELT.radius + 0.3 : (p.orb >= 0 ? AC_ORB.radius : 0) + Math.hypot(p.at[0], p.at[2]) + 0.1
+  })
   out.sort((a, b) => a.y - b.y || a.n - b.n)
   return out
 })()
 
 var acBeamPlan = (function () {
   var out = []
-  AC_BEAM.core.forEach((deg) => out.push({ kind: "core", yaw: (deg * Math.PI) / 180, col: "white" }))
+  var yaws = AC_BEAM.core.map((deg) => (deg * Math.PI) / 180)
+  yaws.forEach((yaw) => out.push({ kind: "core", yaw: yaw, col: "white" }))
   for (var i = 0; i < AC_BEAM.streaks; i++) out.push({ kind: "streak", n: i, col: i % 2 ? "blue" : "ice" })
-  AC_BEAM.flare.forEach((f, k) => AC_BEAM.core.forEach((deg) => out.push({ kind: "flare", k: k, yaw: (deg * Math.PI) / 180, col: f[2] })))
+  AC_BEAM.flare.forEach((f, k) => yaws.forEach((yaw) => out.push({ kind: "flare", k: k, yaw: yaw, col: f[2] })))
+  for (var n = 0; n < AC_BEAM.slices; n++) {
+    var u = ((n + 0.5) / AC_BEAM.slices) * 2 - 1
+    yaws.forEach((yaw) => out.push({ kind: "ball", u: u, yaw: yaw, col: "white" }))
+  }
   return out
 })()
+var acBeamFirst = acBeamPlan.filter((q) => q.kind !== "ball").length
 
 var acBuildTicks = () => Math.ceil(acPlan.length / Math.max(1, AC_CFG.spawnPerTick))
 
@@ -271,55 +288,98 @@ function acBuild(c) {
   if (c.t % 12 === 0) acSound("ring", c.mid, 0.8 + (c.next / acPlan.length) * 0.8)
 }
 
-function acBeamSize(c, f) {
+function acBeamSize(f) {
   var k = AC_CFG.size
-  var life = AC_CFG.beamTicks
-  var w = 0.06
-  if (f >= 0) w = Math.min(1, (f + 1) / 5)
-  if (f > life - 8) w = Math.max(0, (life - f) / 8)
-  if (f >= 5 && f <= life - 8) w = 1 + Math.sin(f * 2.4) * 0.06
-  return Math.max(0.06, w * AC_CFG.beamWidth * k)
+  var G = AC_CFG.growTicks
+  var w = 0.02
+  if (f >= 0) w = (AC_CFG.beamWidth * Math.min(1, (f + 1) / 5))
+  if (f >= 5) {
+    var p = Math.min(1, (f - 5) / Math.max(1, G - 1))
+    w = AC_CFG.beamWidth + (AC_CFG.beamMax - AC_CFG.beamWidth) * p * p
+  }
+  var e = f - 5 - G
+  if (e >= 0) w = AC_CFG.beamMax * Math.max(0, 1 - e / 4)
+  return Math.max(0.06, w * k)
+}
+
+function acBall(e) {
+  if (e < 0) return 0
+  var T = AC_CFG.blastTicks
+  if (e < 6) return 1 - Math.pow(1 - (e + 1) / 6, 2)
+  if (e < T - 8) return 1
+  return Math.max(0, (T - e) / 8)
 }
 
 function acBeam(c, f) {
   var k = AC_CFG.size
   var H = AC_BEAM.height * k
-  var w = acBeamSize(c, f)
-  var grow = Math.max(0, Math.min(1, (f + 1) / 8))
-  if (f > AC_CFG.beamTicks - 8) grow = Math.max(0.02, (AC_CFG.beamTicks - f) / 8)
-  for (var n = 0; n < 3 && c.beamNext < acBeamPlan.length; n++) {
+  var w = acBeamSize(f)
+  var e = f - 5 - AC_CFG.growTicks
+  var limit = f < 8 ? acBeamFirst : acBeamPlan.length
+  for (var n = 0; n < 3 && c.beamNext < limit; n++) {
     var q = acBeamPlan[c.beamNext]
-    var id = acMake(c, 0.06, q.kind === "flare" ? 0.05 : H, 0.06, q.col)
+    var id = acMake(c, 0.06, q.kind === "core" || q.kind === "streak" ? H : 0.05, 0.06, q.col)
     if (!id) break
     c.beam.push({ id: id, q: q })
     api.setEntityRotation(id, 0, q.yaw || 0, 0)
-    api.setPosition(id, c.mid[0], c.mid[1] + (q.kind === "flare" ? 0.2 : H / 2 - 3), c.mid[2])
+    api.setPosition(id, c.mid[0], c.mid[1] + (q.kind === "core" || q.kind === "streak" ? H / 2 - 3 : q.kind === "ball" ? AC_BEAM.ballUp * k : 0.2), c.mid[2])
     c.beamNext++
   }
   if (f < 0) return
-  for (var i = 0; i < c.beam.length; i++) {
+  var ball = acBall(e)
+  var R = AC_CFG.blast * k
+  var tone = e < 8 ? "white" : e < AC_CFG.blastTicks - 4 ? "ice" : "blue"
+  for (var i = c.beam.length - 1; i >= 0; i--) {
     var b = c.beam[i]
-    if (b.q.kind === "core") api.updateMeshEntity(b.id, "Box", acBox(w, H, w / Math.sqrt(3), b.q.col))
-    else if (b.q.kind === "streak") {
-      var a = (b.q.n / AC_BEAM.streaks) * Math.PI * 2 + f * 0.35
-      var r = w * 0.62
-      api.updateMeshEntity(b.id, "Box", acBox(Math.max(0.05, w * 0.07), H, Math.max(0.05, w * 0.07), b.q.col))
+    if (b.q.kind === "core") {
+      if (e >= 5) {
+        acKill(c, b.id)
+        c.beam.splice(i, 1)
+      } else api.updateMeshEntity(b.id, "Box", acBox(w, H, w / Math.sqrt(3), b.q.col))
+    } else if (b.q.kind === "streak") {
+      if (e >= 5) {
+        acKill(c, b.id)
+        c.beam.splice(i, 1)
+        continue
+      }
+      var a = (b.q.n / AC_BEAM.streaks) * Math.PI * 2 + f * 0.3
+      var r = w * 0.6
+      var thin = Math.max(0.05, w * 0.06)
+      api.updateMeshEntity(b.id, "Box", acBox(thin, H, thin, b.q.col))
       api.setPosition(b.id, c.mid[0] + Math.cos(a) * r, c.mid[1] + H / 2 - 3, c.mid[2] + Math.sin(a) * r)
-    } else {
+    } else if (b.q.kind === "flare") {
       var fl = AC_BEAM.flare[b.q.k]
-      var d = Math.max(0.1, fl[0] * 2 * k * grow)
+      var d = e < 0 ? w * fl[0] * 1.6 : Math.max(0.1, R * 2 * fl[0] * 1.3 * ball)
+      d = Math.max(0.1, d)
       api.updateMeshEntity(b.id, "Box", acBox(d, 0.12 * k, d / Math.sqrt(3), b.q.col))
       api.setPosition(b.id, c.mid[0], c.mid[1] + fl[1] * k, c.mid[2])
+    } else if (e >= 0) {
+      var rr = Math.max(0.05, R * ball * Math.sqrt(1 - b.q.u * b.q.u))
+      var th = Math.max(0.05, ((R * ball * 2) / AC_BEAM.slices) * 1.02)
+      api.updateMeshEntity(b.id, "Box", acBox(rr * 2, th, (rr * 2) / Math.sqrt(3), tone))
+      api.setPosition(b.id, c.mid[0], c.mid[1] + AC_BEAM.ballUp * k + R * ball * b.q.u, c.mid[2])
     }
   }
 }
 
-function acHit(c) {
-  var reach = AC_CFG.radius * AC_CFG.size
+function acCover(c, f) {
+  var k = AC_CFG.size
+  var edge = acBeamSize(f) / 2 - 0.2
+  var gone = 0
+  for (var i = c.parts.length - 1; i >= 0 && gone < 40; i--) {
+    if (c.parts[i].p.far * k > edge) continue
+    acKill(c, c.parts[i].id)
+    c.parts.splice(i, 1)
+    gone++
+  }
+  if (gone) c.moving = c.moving.filter((x) => c.ids.indexOf(x.id) >= 0)
+}
+
+function acHit(c, reach, damage, push, tag) {
   var ids = api.getMobIds().concat(AC_CFG.hitPlayers ? api.getPlayerIds() : [])
   var hits = 0
   for (var i = 0; i < ids.length; i++) {
-    if (ids[i] === c.id) continue
+    if (ids[i] === c.id || c.hit[tag + ids[i]]) continue
     try {
       var p = api.getPosition(ids[i])
       var dx = p[0] - c.mid[0]
@@ -327,8 +387,9 @@ function acHit(c) {
       var far = Math.hypot(dx, dz)
       if (far > reach || p[1] < c.mid[1] - 6) continue
       var n = far || 1
-      api.applyHealthChange(ids[i], -Math.round(AC_CFG.damage), c.id)
-      api.applyImpulse(ids[i], (dx / n) * AC_CFG.knockback, AC_CFG.knockback * 0.6, (dz / n) * AC_CFG.knockback)
+      c.hit[tag + ids[i]] = 1
+      api.applyHealthChange(ids[i], -Math.round(damage), c.id)
+      if (push) api.applyImpulse(ids[i], (dx / n) * push, push * 0.6, (dz / n) * push)
       hits++
     } catch (e) {}
   }
@@ -337,25 +398,36 @@ function acHit(c) {
 
 function acSparks(c, f) {
   var k = AC_CFG.size
-  var w = acBeamSize(c, f)
-  for (var i = 0; i < 4; i++) {
-    var a = f * 1.3 + (i * Math.PI) / 2
-    var y = ((f * 7 + i * 13) % 26) * k
-    acFx([c.mid[0] + Math.cos(a) * w * 0.7, c.mid[1] + y, c.mid[2] + Math.sin(a) * w * 0.7], [0, 6, 0], "white", "ice", 0.5 * k, 0.6, "glint", 2, 0.3)
-  }
-  if (f < 6) {
-    for (var j = 0; j < 8; j++) {
-      var b = (j / 8) * Math.PI * 2 + f * 0.4
-      acFx([c.mid[0] + Math.cos(b) * 1.5 * k, c.mid[1] + 0.4, c.mid[2] + Math.sin(b) * 1.5 * k], [Math.cos(b) * 6, 0.5, Math.sin(b) * 6], "white", "blue", 0.6 * k, 0.7, j % 2 ? "glint" : "critical_hit", 2, 0.2, 1.6)
+  var w = acBeamSize(f)
+  var e = f - 5 - AC_CFG.growTicks
+  if (e < 0) {
+    for (var i = 0; i < 4; i++) {
+      var a = f * 1.3 + (i * Math.PI) / 2
+      var y = ((f * 7 + i * 13) % 30) * k
+      acFx([c.mid[0] + Math.cos(a) * w * 0.6, c.mid[1] + y, c.mid[2] + Math.sin(a) * w * 0.6], [0, 7, 0], "white", "ice", 0.5 * k, 0.6, "glint", 2, 0.3)
     }
+    if (f % 3 === 0) {
+      var b = f * 0.7
+      acFx([c.mid[0] + Math.cos(b) * w * 0.55, c.mid[1] + 0.4, c.mid[2] + Math.sin(b) * w * 0.55], [Math.cos(b) * 6, 0.5, Math.sin(b) * 6], "white", "blue", 0.6 * k, 0.7, "critical_hit", 3, 0.3, 1.4)
+    }
+    return
   }
+  if (e < 5) {
+    var R = AC_CFG.blast * k * acBall(e)
+    for (var j = 0; j < 12; j++) {
+      var d = (j / 12) * Math.PI * 2 + e * 0.5
+      var up = ((j * 5 + e * 3) % 7) / 7 - 0.3
+      acFx([c.mid[0] + Math.cos(d) * R, c.mid[1] + AC_BEAM.ballUp * k + up * R, c.mid[2] + Math.sin(d) * R], [Math.cos(d) * 10, up * 6, Math.sin(d) * 10], "white", j % 2 ? "blue" : "ice", 0.8 * k, 0.9, j % 3 ? "glint" : "critical_hit", 3, 0.4, 1.8)
+    }
+  } else if (e % 2 === 0) acFx([c.mid[0], c.mid[1] + AC_BEAM.ballUp * k, c.mid[2]], null, "ice", "deep", 0.7 * k, 1, "glint", 10, AC_CFG.blast * k * 0.8)
 }
 
 function acStep(c) {
   if (c.B === undefined && (c.next >= acPlan.length || c.t > acBuildTicks() * 2 + 40)) c.B = c.t
   var B = c.B === undefined ? Infinity : c.B
   var F = B + AC_CFG.hold
-  var E = F + AC_CFG.beamTicks
+  var X = F + 5 + AC_CFG.growTicks
+  var E = X + AC_CFG.blastTicks
   var t = c.t
   var k = AC_CFG.size
   var rush = t < B ? 1 : 1 + Math.min(1, (t - B) / Math.max(1, AC_CFG.hold)) * 4
@@ -373,20 +445,22 @@ function acStep(c) {
     var r = (1 - (t - B) / Math.max(1, AC_CFG.hold)) * 7 * k
     var y = c.mid[1] + (1 + ((t * 3) % 9)) * k
     acFx([c.mid[0] + Math.cos(a) * r, y, c.mid[2] + Math.sin(a) * r], [-Math.cos(a) * 5, 0, -Math.sin(a) * 5], "white", "blue", 0.4 * k, 0.6, "glint", 3, 0.3)
-    if (t >= F - Math.ceil(acBeamPlan.length / 3) - 2) acBeam(c, t - F)
+    if (t >= F - Math.ceil(acBeamFirst / 3) - 2) acBeam(c, t - F)
   }
   if (t >= F && t < E) {
     acBeam(c, t - F)
     acSparks(c, t - F)
     if (t === F) acSound("beam", c.mid)
-    if (t === F + 2) acHit(c)
-    if (t < F + 10) {
-      var inner = c.parts.filter((x) => x.p.orb < 0 && x.p.rune === undefined && Math.hypot(x.p.at[0], x.p.at[2]) < AC_CFG.beamWidth / 2 + 0.4).slice(0, 12)
-      inner.forEach((x) => {
-        acKill(c, x.id)
-        c.parts.splice(c.parts.indexOf(x), 1)
-      })
+    if (t < X) {
+      acCover(c, t - F)
+      acHit(c, acBeamSize(t - F) / 2, AC_CFG.beamDamage, 0, "b")
+      if ((t - F) % 10 === 9) acSound("grow", c.mid, 0.8 + (t - F) / 40)
     }
+    if (t === X) {
+      acSound("blast", c.mid)
+      acCover(c, 5 + AC_CFG.growTicks - 1)
+    }
+    if (t === X + 1) acHit(c, AC_CFG.radius * k, AC_CFG.damage, AC_CFG.knockback, "x")
   }
   if (t === E) acSound("end", c.mid)
   if (t >= E) {
@@ -398,7 +472,7 @@ function acStep(c) {
       } catch (e) {}
     })
     c.moving = c.moving.filter((x) => c.ids.indexOf(x.id) >= 0)
-    acFx([c.mid[0], c.mid[1] + 6 * k, c.mid[2]], null, "white", "blue", 0.4 * k, 0.9, "glint", 8, 5 * k)
+    c.beam = c.beam.filter((x) => c.ids.indexOf(x.id) >= 0)
   }
   return t >= E && c.ids.length === 0
 }
@@ -443,7 +517,7 @@ function astralCircle(playerId, at) {
     var far = Math.min(15, Math.max(0, AC_CFG.range))
     mid = [p[0] + (f[0] / n) * far, p[1], p[2] + (f[2] / n) * far]
   }
-  acCasts.push({ id: playerId, t: 0, mid: [mid[0], mid[1], mid[2]], ids: [], parts: [], moving: [], beam: [], next: 0, beamNext: 0, spin: 0, belt: 0 })
+  acCasts.push({ id: playerId, t: 0, mid: [mid[0], mid[1], mid[2]], ids: [], parts: [], moving: [], beam: [], hit: {}, next: 0, beamNext: 0, spin: 0, belt: 0 })
   return true
 }
 globalThis.astralCircle = astralCircle

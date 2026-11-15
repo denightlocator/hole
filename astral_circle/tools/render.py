@@ -52,10 +52,12 @@ def draw(tick, eye, look, title):
     d.text((8, 6), title, fill=(230, 235, 245))
     return img
 
+X = data['X']
 far = (MID[0] + 7, MID[1] + 9.5, MID[2] - 21)
 look = (MID[0], MID[1] + 5.2, MID[2])
-shots = [(B // 3, far, look, 'the circles are drawn'), (B + 4, far, look, 'complete'), (B + 4, (MID[0] + 2.5, MID[1] + 13.5, MID[2] - 7.5), (MID[0], MID[1] + 8.6, MID[2]), 'top ring with the four globes'),
-         (B + 4, (MID[0] + 1, MID[1] + 6, MID[2] - 9), (MID[0], MID[1] + 1.5, MID[2]), 'bottom ring with the star'), (F + 8, far, look, 'the white beam'), (F + 8, (MID[0] + 16, MID[1] + 4, MID[2] - 36), (MID[0], MID[1] + 16, MID[2]), 'the beam from far away')]
+wide = (MID[0] + 16, MID[1] + 10, MID[2] - 46)
+shots = [(B + 4, far, look, 'the circles, complete'), (F + 6, wide, (MID[0], MID[1] + 12, MID[2]), 'the beam opens'), (F + 24, wide, (MID[0], MID[1] + 12, MID[2]), 'it grows and swallows the circles'),
+         (F + 33, wide, (MID[0], MID[1] + 12, MID[2]), 'at its widest, everything covered'), (X + 6, wide, (MID[0], MID[1] + 12, MID[2]), 'it explodes'), (X + 14, wide, (MID[0], MID[1] + 12, MID[2]), 'the ball shrinks away')]
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, (tick, eye, at, title) in enumerate(shots):
     sheet.paste(draw(tick, eye, at, '%.2f s  %s' % (tick / 20, title)), ((i % 3) * W, (i // 3) * H))

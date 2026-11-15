@@ -1,7 +1,8 @@
 # Astral Circle
 
-A stack of white magic circles draws itself in the air, charges, and ends in
-a giant white beam. Rebuilt from one screenshot of a Minecraft magic mod
+A stack of white magic circles draws itself in the air and charges. A white
+beam then opens down the middle, grows until it has swallowed every circle,
+and explodes. Rebuilt from one screenshot of a Minecraft magic mod
 short. Sim-tested only; it has not been run in Bloxd.
 
 ![six moments of the move](preview/moments.png)
@@ -13,10 +14,10 @@ particles. It is not a screenshot of the game.
 
 Either:
 
-- **World Code:** paste `world_code.js` (about 15,000 characters), then type
+- **World Code:** paste `world_code.js` (about 17,800 characters), then type
   `!astral`. The circles form 15 blocks in front of you. If other world code
   is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (15,411 of
+- **Code Block, no World Code needed:** paste `code_block.js` (18,190 of
   32,000 characters) into a Code Block and click it. The circles form above
   the block. This relies on the game calling a `tick` that a code block
   assigned, which is not documented; if it does not, the second click says so
@@ -24,17 +25,19 @@ Either:
 
 From other code: `astralCircle(playerId)` or `astralCircle(playerId, [x, y, z])`.
 
-## What happens (6.75 s)
+## What happens (7.7 s)
 
 | Seconds | What |
 |---|---|
 | 0.0–3.8 | The circles are drawn piece by piece, from the bottom ring up: 5 meshes every tick |
 | 3.8–5.0 | Charge: the globes and the rune belt turn up to five times faster, sparks are pulled to the middle, and a hair-thin white line appears down the centre |
-| 5.0–5.25 | The line opens into a white beam 4.5 blocks wide and 44 tall; a flare spreads over the floor to 6 blocks out |
-| 5.1 | Everyone within 5 blocks of the centre takes 60 damage and is thrown outward. The caster is never hit |
-| 5.0–6.5 | The beam holds and flickers, with four streaks turning round it; the small rings inside it are removed |
-| 6.1–6.5 | The beam thins out |
-| 6.5–6.75 | Everything is deleted, 60 meshes a tick |
+| 5.0–5.25 | The line opens into a white beam 3 blocks wide, from below the floor to 127 blocks up |
+| 5.25–6.75 | The beam grows bigger and bigger, slowly at first and then fast, to 18 blocks wide. Each circle mesh is deleted once the beam has covered it; by the end none are left. Anyone the beam reaches takes 20 damage, once |
+| 6.75 | It explodes: the beam collapses and a white ball bursts out to 13 blocks in 6 ticks, with a flare over the floor to 16 blocks out. Everyone within 12 blocks takes 60 damage and is thrown outward |
+| 7.0–7.65 | The ball turns pale, then blue, and shrinks away |
+| 7.65–7.7 | Everything left is deleted |
+
+The caster is never hit.
 
 ## The model
 
@@ -49,12 +52,14 @@ more parts per ring.
 | Pins | 8 | Short upright posts round the bottom ring (`AC_PIN`) |
 | Rune belt | 28 | Small upright plates of 8 shapes standing on the widest ring, turning slowly (`AC_BELT`, `AC_RUNE`) |
 | 4 globes | 96 | On the top ring: each a small circle (6) with a wire globe inside (hoops of 5, 6 and 5, and a pole). They travel round the ring (`AC_ORB`) |
-| Beam | 13 | White column of 3 crossed boxes, 4 streaks, 2 floor flares of 3 boxes each (`AC_BEAM`) |
-| **Total** | **392** | Under the 400 limit; `maxMeshes` is 399 |
+| Beam | 15 | White column of 3 crossed boxes, 6 streaks turning round it, 2 floor flares of 3 boxes each (`AC_BEAM`) |
+| Explosion | 27 | A ball of 9 round slices, 3 crossed boxes each. Created inside the beam while circles are being deleted, so it never adds to the peak |
+| **Peak** | **394** | Circles plus beam, just before the beam opens. Under the 400 limit; `maxMeshes` is 399 |
 
 Spawning: 5 meshes a tick, which is 100 a second, under the 120 a second you
-mentioned. The beam's 13 boxes are created 3 a tick during the charge, as the
-thin line, so nothing is created in a burst. If the real cap is lower, lower
+mentioned. The beam's 15 boxes are created 3 a tick during the charge, as the
+thin line, and the explosion's 27 are created 3 a tick while the beam grows,
+so nothing is created in a burst. If the real cap is lower, lower
 `spawnPerTick`; the build just takes longer.
 
 Every box is level (only turned left or right), so the look does not depend
@@ -67,11 +72,13 @@ on which way the game tilts meshes.
 | `chat` | Chat command (`!astral`) |
 | `range` | Blocks in front of the caster where it forms (15 at most) |
 | `size` | Scale of the whole thing (1) |
-| `damage`, `radius`, `knockback` | The hit: 60 damage within 5 blocks of the centre |
+| `beamDamage` | Damage to anyone the growing beam reaches (20, once each) |
+| `damage`, `radius`, `knockback` | The explosion: 60 damage within 12 blocks of the centre |
 | `hitPlayers` | false = mobs only |
 | `spawnPerTick` | Meshes created per tick while drawing (5) |
 | `hold` | Ticks of charge between the last piece and the beam (24) |
-| `beamWidth`, `beamTicks` | Beam width in blocks (4.5) and how long it lasts (30 ticks) |
+| `beamWidth`, `beamMax`, `growTicks` | The beam opens 3 blocks wide and grows to 18 over 30 ticks. `beamMax` must stay above 17 to cover the widest ring |
+| `blast`, `blastTicks` | Radius of the explosion ball (13) and how long it lasts (18 ticks) |
 | `sounds`, `hideDist`, `maxCasts`, `maxMeshes` | Sounds on, draw distance 220, one cast at a time, 399 meshes |
 
 Colours are in `AC_COL`, sounds in `AC_SND`.

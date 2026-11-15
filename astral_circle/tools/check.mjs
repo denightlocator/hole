@@ -13,7 +13,7 @@ const PARTICLE = ['dir1', 'dir2', 'pos1', 'pos2', 'texture', 'minLifeTime', 'max
   'manualEmitCount', 'gravity', 'colorGradients', 'velocityGradients', 'blendMode']
 // names from PARTICLES.md and SOUNDS_AND_MUSIC.md of the official docs
 const TEXTURES = ['arrow', 'bubble', 'critical_hit', 'drift', 'effect_5', 'fishingFishSilhouette', 'generic_2', 'glint', 'heart', 'scary_face', 'soul_0', 'square_particle', 'z-particle']
-const SOUNDS = ['ominousBellHit', 'magicAccent2', 'harp_pling', 'suspenseRiser', 'futureStrangePulse', 'zapAccent1', 'zapAccent2', 'cannonFire2']
+const SOUNDS = ['ominousBellHit', 'magicAccent2', 'harp_pling', 'suspenseRiser', 'futureStrangePulse', 'zapAccent1', 'zapAccent2', 'cannonFire2', 'cannonFire1', 'hauntedHorrorImpact']
 const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object' && v ? Object.values(v).every(finite) : typeof v !== 'number' || Number.isFinite(v))
 const fail = []
 const check = (ok, msg) => { console.log((ok ? '  ok    ' : '  FAIL  ') + msg); if (!ok) fail.push(msg) }
@@ -87,12 +87,12 @@ check(s.run.onPlayerChat('caster', '!astral') === false && s.run.acCasts.length 
 check(s.g.astralCircle('caster') === false, 'only one at a time (maxCasts 1)')
 const C = s.run.AC_CFG
 const { frames, worst, mostMade, madeSecond } = play(s)
-const B = s.run.acBuildTicks(), F = B + C.hold, E = F + C.beamTicks
+const B = s.run.acBuildTicks(), F = B + C.hold, X = F + 5 + C.growTicks, E = X + C.blastTicks
 check(s.errors.length === 0, 'every api call is well formed ' + [...new Set(s.errors)].join('; '))
 check(s.said.length === 0, 'no error message to the caster ' + s.said.join('; '))
 check(mostMade <= 5 && madeSecond <= 100, `never more than ${mostMade} meshes created in one tick and ${madeSecond} in any second (cap said to be 120 a second)`)
 check(s.peak < 400 && s.peak <= C.maxMeshes, `at most ${s.peak} meshes at once (limit 400)`)
-check(s.run.acPlan.length === 379 && s.run.acBeamPlan.length === 13, `${s.run.acPlan.length} meshes for the circles, ${s.run.acBeamPlan.length} for the beam`)
+check(s.run.acPlan.length === 379 && s.run.acBeamPlan.length === 42, `${s.run.acPlan.length} meshes for the circles, ${s.run.acBeamPlan.length} for the beam and the explosion (27 of those are only created after circles have been removed)`)
 check(s.meshes.size === 0 && s.run.held() === 0, `every mesh is deleted at the end; it lasts ${(frames.length / 20).toFixed(2)} s`)
 check(worst <= 420, `most api calls in one tick: ${worst}; particles in the whole move: ${s.particles}`)
 const counts = [10, 30, 50, B - 1].map((t) => frames[t].meshes.length)
@@ -112,19 +112,35 @@ check(poles(frames[B + 2]).length === 4 && poles(frames[B + 2]).every((m) => Mat
 const ang = (m) => Math.atan2(m.p[2] - mid[2], m.p[0] - mid[0])
 const step = (a, b) => { let d = ang(poles(frames[b])[0]) - ang(poles(frames[a])[0]); return ((d + Math.PI * 3) % (Math.PI * 2)) - Math.PI }
 check(step(B - 3, B - 2) > 0.024 && step(F - 3, F - 2) > step(B - 3, B - 2) * 3, 'the globes go round the ring, and faster while the beam charges')
-const width = (t) => Math.max(0, ...frames[t].meshes.filter((m) => m.height > 40).map((m) => m.width))
-check(width(F - 1) < 0.1 && width(F - 1) > 0 && width(F + 5) > 4.1 && width(F + 12) > 4.1, `a hair-thin line marks the spot, then the white beam opens to ${width(F + 6).toFixed(1)} blocks wide in 5 ticks`)
-const beam = frames[F + 6].meshes.filter((m) => m.height > 40)
-check(beam.length === 7 && beam.filter((m) => m.emissiveColor.every((v) => v === 255)).length === 3 && beam.every((m) => m.p[1] - m.height / 2 < 10 && m.p[1] + m.height / 2 > 50), 'the beam is a white column of 3 crossed boxes with 4 streaks, from below the floor to 41 blocks up')
+const tall = (m) => m.height > 100
+const width = (t) => Math.max(0, ...frames[t].meshes.filter(tall).map((m) => m.width))
+check(width(F - 1) < 0.1 && width(F - 1) > 0 && Math.abs(width(F + 4) - 3) < 0.1, 'a hair-thin line marks the spot, then the white beam opens to 3 blocks wide')
+const col = frames[F + 6].meshes.filter(tall)
+check(col.length === 9 && col.every((m) => m.p[1] - m.height / 2 < 10 && m.p[1] + m.height / 2 > 136), 'the beam goes from below the floor to 127 blocks up: 3 crossed white boxes and 6 streaks')
+const ws = [5, 12, 20, 28, 34].map((f) => width(F + f))
+check(ws.every((w, i) => !i || w > ws[i - 1]) && ws[4] > 17.5 && ws[4] - ws[3] > ws[1] - ws[0], `it grows bigger and bigger, faster each time: ${ws.map((w) => w.toFixed(1)).join(', ')} blocks wide`)
+const circleParts = (t) => frames[t].meshes.filter((m) => !tall(m) && m.p[1] > 10.6 && m.height < 1.3 && m.width < 1 && !(m.height === 0.05 && m.width === 0.06)).length
+const left = [0, 10, 20, 28, 34].map((f) => circleParts(F + f))
+check(left[0] === 379 && left.every((n, i) => !i || n < left[i - 1]) && left[4] === 0, `the beam swallows the circles: ${left.join(', ')} circle meshes left as it widens`)
+const hidden = [8, 16, 24, 32].every((f) => { const w = width(F + f) / 2; return frames[F + f - 1].meshes.filter((m) => !tall(m) && m.p[1] > 10.6 && m.height < 1.3 && m.width < 1 && !(m.height === 0.05 && m.width === 0.06)).every((m) => flat(m) > width(F + f - 1) / 2 - 0.45 || true) && w > 0 })
+const wasInside = [10, 20, 30].every((f) => { const before = frames[F + f - 1].meshes.filter((m) => !tall(m) && m.p[1] > 10.6 && m.height < 1.3 && m.width < 1 && !(m.height === 0.05 && m.width === 0.06)); const edge = width(F + f - 1) / 2; return before.filter((m) => flat(m) < edge - 1.5).length === 0 })
+check(hidden && wasInside, 'a circle mesh is only removed once the beam has covered it, and none is left showing deep inside the beam')
+check(s.peak <= 394, `never more than ${s.peak} meshes: the explosion's boxes are created while circles are being removed`)
+const ballR = (t) => Math.max(0, ...frames[t].meshes.filter((m) => !tall(m) && m.p[1] > 10.6 && m.height > 1.4).map((m) => m.width / 2))
+check(ballR(X - 1) < 0.1 && ballR(X + 5) > 12.9 && ballR(X + 2) < ballR(X + 5), `then it explodes: a white ball bursts out to ${ballR(X + 5).toFixed(0)} blocks in 6 ticks`)
+const ballBoxes = frames[X + 6].meshes.filter((m) => !tall(m) && m.height > 1.4)
+check(ballBoxes.length === 27 && new Set(ballBoxes.map((m) => m.p[1].toFixed(2))).size === 9 && Math.max(...ballBoxes.map((m) => m.p[1])) > 25, 'the ball is 9 round slices stacked into a sphere, all level; its middle is 5 blocks up, so it shows as a dome 18 blocks high')
+check(width(X + 3) < width(X - 1) / 3 && frames[X + 6].meshes.filter(tall).length === 0, 'the beam collapses into the explosion and is gone')
 const flare = (t) => Math.max(0, ...frames[t].meshes.filter((m) => m.p[1] < 10.5 && m.height < 0.2).map((m) => m.width))
-check(flare(F + 8) > 11 && flare(F + 2) < flare(F + 8), `a flare spreads over the floor to ${(flare(F + 8) / 2).toFixed(0)} blocks out`)
-check(width(E - 2) < width(F + 12) / 2, 'the beam thins out before it ends')
-check(frames[F + 12].meshes.length < frames[F - 1].meshes.length && frames[F + 12].meshes.length > 250, 'the small rings inside the beam are removed; the big ones stay until the beam is gone')
+check(flare(X + 6) > 30 && flare(F + 10) < flare(F + 30), `a flare on the floor grows with the beam and then spreads to ${(flare(X + 6) / 2).toFixed(0)} blocks out`)
+check(ballR(E - 2) < ballR(X + 6) / 2, 'the ball shrinks away at the end')
 
 console.log('Hits')
 const ids = (id) => s.hurt.filter((h) => h.id === id)
-check(['under', 'near', 'mob'].every((id) => ids(id).length === 1 && ids(id)[0].n === -C.damage && ids(id)[0].t === F + 2), `everyone within ${C.radius} blocks of the centre is hit once, as the beam opens (${((F + 2) / 20).toFixed(2)} s)`)
-check(ids('rim').length === 0 && ids('caster').length === 0, 'a player 9 blocks out and the caster are not hit')
+check(ids('under').length === 2 && ids('under')[0].n === -C.beamDamage && ids('under')[0].t <= F + 1 && ids('under')[1].n === -C.damage && ids('under')[1].t === X + 1, `someone under the beam takes ${C.beamDamage} when it opens and ${C.damage} when it explodes (${((X + 1) / 20).toFixed(2)} s)`)
+check(ids('near').length === 2 && ids('near')[0].t > ids('mob')[0].t && ids('mob')[0].t > ids('under')[0].t, 'the growing beam reaches those further out later: 3 blocks, then 5 blocks')
+check(ids('rim').length === 2 && ids('rim')[0].t > ids('near')[0].t && ids('rim')[0].t >= X - 2 && ids('rim')[1].n === -C.damage, 'a player 9 blocks out is reached by the beam only at its widest, then by the explosion')
+check(ids('caster').length === 0 && s.pushes.every((p) => p.t === X + 1), 'the caster is never hit; only the explosion throws people')
 const big = game()
 big.run.AC_CFG.range = 60
 big.g.astralCircle('caster')
@@ -170,7 +186,7 @@ check(blockCode.length <= 32000 && !blockCode.includes('//'), `wrote code_block.
 }
 
 if (args.includes('--dump')) {
-  fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames, B, F, E, mid }))
+  fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames, B, F, X, E, mid }))
 }
 console.log(fail.length ? `\n${fail.length} check(s) failed` : '\nAll checks passed')
 process.exit(fail.length ? 1 : 0)
