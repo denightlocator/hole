@@ -92,7 +92,8 @@ both.run.tick(50)
 check(both.run.onPlayerChat('p1', 'x') === 'old' && both.g.seen === 1, 'earlier tick and onPlayerChat still run')
 
 console.log('Code block')
-const noChat = code.slice(0, code.indexOf('globalThis.dh =')).trimEnd()
+const noChat = code.slice(0, code.indexOf('globalThis.dh =')).trimEnd().replace('  chat: "!dh",\n', '')
+check(!noChat.includes('!dh'), 'the code block has no chat command name in it')
 const blockCode = 'if (typeof spinCircleStill !== "function") {\n  (function () {\n' + noChat + '\n  })()\n  globalThis.riteSeen = -1\n}\n' +
   'var riteHere = [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5]\n' +
   'if (globalThis.riteSeen === spinCircleBeat()) spinCircleStill(myId, riteHere)\n' +

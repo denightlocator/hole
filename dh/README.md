@@ -14,7 +14,7 @@ screenshot of the game; real particles will look softer.
 - **World Code:** paste `world_code.js` (about 7,600 characters) and type
   `!dh`. It opens under your feet. `!dh` again closes it. If other
   world code is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (7,591 of
+- **Code Block, no World Code needed:** paste `code_block.js` (7,572 of
   32,000 characters) and click the block. The circle opens on top of the
   block, centred on it. Click again to close.
 

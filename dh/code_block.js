@@ -1,7 +1,6 @@
 if (typeof spinCircleStill !== "function") {
   (function () {
 var RITE_CFG = {
-  chat: "!dh",
   size: 1,
   spin: 0.5,
   pointsPerTick: 42,
