@@ -1,7 +1,7 @@
 var GATE_CFG = {
   chat: "!portal",
   travel: 6,
-  stay: 3,
+  aimTime: 3,
   slashRadius: 3,
   damage: 25,
   knockback: 8,
@@ -11,7 +11,7 @@ var GATE_CFG = {
   nodeMeshes: true,
   hidePlayer: true,
   holdPlayer: true,
-  clickLeaves: true,
+  clickFires: true,
   groundArrow: true,
   sounds: true,
   size: 1,
@@ -252,7 +252,7 @@ function gateArrow(cast, moment) {
   }
   if (GATE_CFG.groundArrow && moment % 4 === 0) {
     try {
-      api.setClientOptions(cast.owner, { groundArrowPath: { target: [cast.centre[0] + cast.aim[0] * GATE_CFG.travel, cast.centre[1], cast.centre[2] + cast.aim[1] * GATE_CFG.travel], colour: "#46eba5" } })
+      api.setClientOptions(cast.owner, { groundArrowPath: { target: [cast.out[0], cast.out[1], cast.out[2]], colour: "#46eba5" } })
     } catch (err) {
       GATE_CFG.groundArrow = false
     }
@@ -337,26 +337,36 @@ function gateRun(cast, gate, moment) {
 function gateStep(cast) {
   var moment = cast.moment
   var scale = GATE_CFG.size
-  var mid = cast.centre
-  if (moment === 0) {
-    gateSound("open", mid)
+  if (cast.phase === "aim") {
+    var here = api.getPosition(cast.owner)
+    cast.centre = [here[0], here[1], here[2]]
+    cast.aim = gateFacing(cast.owner, cast.aim)
+    cast.out = gateReach(cast.centre, cast.aim, Math.min(15, GATE_CFG.travel))
+    gateArrow(cast, moment)
+    if (moment % 3 === 0) gateCloud([cast.out[0], cast.out[1] + 0.15, cast.out[2]], 0.7 * scale, 0.05, { life: 0.3, size: 0.12, count: 6, power: 0.3, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.5, 0.2], first: "mint", last: "jade" })
+    if (moment < Math.round(GATE_CFG.aimTime * 20) && !cast.wantOut) return false
+    cast.phase = "sink"
+    cast.fired = moment
+    cast.gates.push({ mid: cast.centre, parts: [], next: 0, each: Math.ceil(gatePlan.length / GATE_STEP.open), shut: false })
+    gateSound("open", cast.centre)
     gateWear(cast, true)
     gateAnimate(cast, GATE_POSE.rest, GATE_POSE.brace, 3)
   }
-  if (moment === 3) gateAnimate(cast, GATE_POSE.brace, GATE_POSE.drop, 3)
+  var mid = cast.centre
+  var since = moment - cast.fired
+  if (since === 3) gateAnimate(cast, GATE_POSE.brace, GATE_POSE.drop, 3)
   cast.gates.forEach((gate) => gateRun(cast, gate, moment))
   if (cast.phase === "sink") {
-    var high = 1.8 * (1 - (moment + 1) / GATE_STEP.sink)
+    var high = 1.8 * (1 - (since + 1) / GATE_STEP.sink)
     gateCloud([mid[0], mid[1] + high * 0.5 + 0.1, mid[2]], 0.3, high * 0.5 + 0.1, { life: 0.35, size: 0.14, count: 8, power: 1.2, dir1: [-0.3, -1.5, -0.3], dir2: [0.3, -0.8, 0.3], first: "mint", last: "gold" })
     if (GATE_CFG.holdPlayer) api.setPosition(cast.owner, mid[0], mid[1], mid[2])
-    if (GATE_CFG.hidePlayer && moment === GATE_STEP.sink - 3) {
+    if (GATE_CFG.hidePlayer && since === GATE_STEP.sink - 3) {
       try {
         api.setPlayerOpacity(cast.owner, 0.5)
       } catch (err) {}
     }
-    if (moment >= GATE_STEP.sink - 1) {
+    if (since >= GATE_STEP.sink - 1) {
       cast.phase = "inside"
-      cast.enter = moment + 1
       gateWear(cast, false)
       gateAnimate(cast, null)
       gateHold(cast, true)
@@ -365,24 +375,8 @@ function gateStep(cast) {
     return false
   }
   if (cast.phase === "inside") {
-    var waited = moment - cast.enter
-    cast.aim = gateFacing(cast.owner, cast.aim)
-    var where = api.getPosition(cast.owner)
-    if (GATE_CFG.holdPlayer && Math.hypot(where[0] - mid[0], where[2] - mid[2]) > 0.25) api.setPosition(cast.owner, mid[0], mid[1], mid[2])
-    var total = Math.round(GATE_CFG.stay * 20)
-    if (waited < total && !cast.wantOut) {
-      gateArrow(cast, moment)
-      var spent = Math.min(16, Math.floor((waited / total) * 16))
-      while (cast.rimGone < spent) {
-        var slot = cast.gates[0].parts.filter((part) => part.piece.rim === cast.rimGone)[0]
-        if (slot) api.updateMeshEntity(slot.ident, "Box", { width: slot.piece.wide * scale, height: slot.piece.tall * scale, depth: slot.piece.deep * scale, diffuseColor: [0, 0, 0], emissiveColor: GATE_COL.dark, hideDist: GATE_CFG.hideDist })
-        cast.rimGone++
-      }
-      return false
-    }
     cast.phase = "leave"
     cast.left = moment
-    cast.out = gateReach(mid, cast.aim, Math.min(15, GATE_CFG.travel))
     gateDrop(cast, cast.arrow.filter((made) => made))
     cast.arrow.length = 0
     gateHold(cast, false)
@@ -425,6 +419,11 @@ function gateEnd(cast) {
       api.setPlayerOpacity(cast.owner, 1)
     } catch (err) {}
   }
+  if (cast.phase === "aim" && GATE_CFG.groundArrow) {
+    try {
+      api.setClientOptions(cast.owner, { groundArrowPath: null })
+    } catch (err) {}
+  }
   gateWear(cast, false)
   gateAnimate(cast, null)
   gateDrop(cast, cast.made.slice())
@@ -452,7 +451,7 @@ function gateTick() {
 function gearPortal(playerId) {
   var mine = gateList.filter((cast) => cast.owner === playerId)[0]
   if (mine) {
-    if (mine.phase === "inside") mine.wantOut = true
+    if (mine.phase === "aim") mine.wantOut = true
     return false
   }
   if (gateList.length >= GATE_CFG.maxCasts) {
@@ -462,7 +461,7 @@ function gearPortal(playerId) {
   var where = api.getPosition(playerId)
   var face = gateFacing(playerId, [0, 1])
   var from = [where[0], where[1], where[2]]
-  gateList.push({ owner: playerId, moment: 0, phase: "sink", aim: face, centre: from, gates: [{ mid: from, parts: [], next: 0, each: Math.ceil(gatePlan.length / GATE_STEP.open), shut: false }], made: [], arrow: [], slash: [], hurt: {}, rimGone: 0, held: false, worn: false, wantOut: false })
+  gateList.push({ owner: playerId, moment: 0, phase: "aim", aim: face, centre: from, out: from, fired: 0, gates: [], made: [], arrow: [], slash: [], hurt: {}, held: false, worn: false, wantOut: false })
   return true
 }
 
@@ -482,8 +481,8 @@ onPlayerChat = (playerId, message) => {
 
 var gateOldClick = typeof onPlayerClick === "function" ? onPlayerClick : null
 onPlayerClick = (playerId, wasAlt, spotX, spotY, spotZ, block, target) => {
-  if (GATE_CFG.clickLeaves) {
-    var mine = gateList.filter((cast) => cast.owner === playerId && cast.phase === "inside")[0]
+  if (GATE_CFG.clickFires) {
+    var mine = gateList.filter((cast) => cast.owner === playerId && cast.phase === "aim")[0]
     if (mine) mine.wantOut = true
   }
   if (gateOldClick) return gateOldClick(playerId, wasAlt, spotX, spotY, spotZ, block, target)

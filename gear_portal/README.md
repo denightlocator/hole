@@ -1,6 +1,6 @@
 # Gear Portal (Move 1)
 
-A steampunk gear portal opens under the player and they drop in. They stay hidden for up to 3 seconds while picking a direction, are teleported forward, come out of a second portal and do a 360 slash at once.
+Use the move and an arrow appears at once, showing where you will land. Use it again (or click) and it goes off: a steampunk gear portal opens under you, you drop in, come out of a second portal where the arrow pointed, and do a 360 slash straight away.
 
 ![preview](preview/portal.png)
 
@@ -9,19 +9,20 @@ The picture is my own render of the test run, not a Bloxd screenshot. **The move
 ## How to use it
 
 1. Paste `world_code.js` (20k characters) into World Code.
-2. Type `!portal` in chat, or call `gearPortal(playerId)` from your own code.
+2. Type `!portal` in chat: the arrow appears. Turn to aim. Then click, or type `!portal` again, to do the move. (`gearPortal(playerId)` from your own code does the same: first call aims, second call goes.)
 3. Optional: paste `code_block.js` into a code block. Clicking the block casts the move for the player who clicked. It needs the World Code, because a code block runs only once per click and this move has to run for several seconds.
 
 ## What happens
 
-| Time | What you see |
+| Step | What you see |
 |---|---|
+| Aim (up to 3 s) | Three arrow heads on the floor in front of the player, there from the first tick, following where the player looks. Sparks mark the landing spot 6 blocks away. The caster also sees the game's own arrow strip. The player is visible and can walk; the arrow goes with them. |
+| Go | On a click, a second `!portal`, or by itself after 3 seconds. The landing spot is fixed at this moment. |
 | 0 – 0.3 s | The first portal opens under the player's feet. The player braces, throws the arms up, and fades as they drop in. |
-| 0.3 – 3.3 s | The player is invisible and held in the middle of the portal, and cannot be hurt. Arrow heads on the floor point where the player is looking. The gold rim goes dark piece by piece as a timer. |
-| leaving | After 3 seconds, or earlier on a click or a second `!portal`, the player is teleported 6 blocks in the direction they are looking. A second portal opens there and the first one folds away. |
-| + 0.4 s | Straight away the body turns a full 360 with arms out while a green band sweeps once round. Everything within 3 blocks takes 25 damage and is knocked away. Then the second portal folds away. |
+| 0.3 s | The player lands where the arrow pointed. The second portal opens there and the first one folds away. |
+| 0.35 – 0.75 s | The body turns a full 360 with arms out while a green band sweeps once round. Everything within 3 blocks takes 25 damage and is knocked away. Then the second portal folds away. |
 
-Set `stay` to 0 for no waiting at all: drop in, come out 6 blocks ahead, slash (about 1.2 seconds in total).
+Set `aimTime` to 0 for no aiming step: one use, and the move goes off straight ahead.
 
 A wall in the way shortens the teleport.
 
@@ -41,12 +42,12 @@ At most 99 meshes exist at once.
 | Name | Default | Meaning |
 |---|---|---|
 | `travel` | 6 | blocks teleported from the first portal to the second (15 at most) |
-| `stay` | 3 | seconds the player may stay inside; 0 = teleport at once |
+| `aimTime` | 3 | seconds the arrow is shown before the move goes off by itself; 0 = no aiming |
 | `slashRadius` | 3 | reach of the slash |
 | `damage`, `knockback` | 25, 8 | what the slash does |
 | `hitPlayers` | true | false = only mobs are hit |
-| `clickLeaves` | true | a click while inside leaves early |
-| `hidePlayer`, `holdPlayer` | true | invisible / cannot walk, jump or be hurt while inside |
+| `clickFires` | true | a click while aiming does the move |
+| `hidePlayer`, `holdPlayer` | true | invisible / held in place and safe for the moment inside the portal |
 | `animate`, `nodeMeshes`, `groundArrow`, `sounds` | true | switch a part off |
 | `flip` | 1 | set to -1 if the player bends backwards instead of forwards |
 
