@@ -388,7 +388,7 @@ function hologram(playerId, at, facing) {
 }
 
 function hologramInstant(playerId, at, facing) {
-  var old = holoList.filter((h) => h.owner === playerId)
+  var old = holoList.slice()
   if (old.length) {
     old.forEach((h) => {
       holoDrop(h, 1e9)

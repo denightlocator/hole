@@ -132,36 +132,39 @@ both.run.tick(50)
 check(both.run.onPlayerChat('p1', 'x') === 'old' && both.g.seen === 1, 'earlier tick and onPlayerChat still run')
 
 console.log('Code block')
-const blockCode = 'if (typeof hologram !== "function") {\n  ;(function () {\n' + code.trimEnd() + '\n  })()\n}\n' +
-  'var holoAt = [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5]\n' +
-  'if (globalThis.holoSeen === hologramBeat()) hologramInstant(myId, holoAt)\n' +
-  'else hologram(myId, holoAt)\n' +
-  'globalThis.holoSeen = hologramBeat()\n'
+const noChat = code.slice(0, code.indexOf('var holoOldChat')).trimEnd()
+check(noChat.length < code.length - 100 && !noChat.includes('onPlayerChat'), 'the code block version has no chat command in it')
+const blockCode = 'if (typeof hologramInstant !== "function") {\n  ;(function () {\n' + noChat + '\n  })()\n}\n' +
+  'hologramInstant(myId, [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5])\n'
 fs.writeFileSync(path.join(dir, 'code_block.js'), blockCode)
 check(blockCode.length <= 32000 && !blockCode.includes('//'), `wrote code_block.js: ${blockCode.length} of 32,000 characters, no comments`)
 {
-  const g1 = game('', true)
-  const click = (g) => new Function('api', 'globalThis', 'myId', 'thisPos', 'with (globalThis) {' + blockCode + '}')(g.api, g.bare, 'p1', [0, 10, 4])
-  click(g1)
-  const run = play(g1, 100, (ms) => g1.bare.tick(ms))
-  const m = run.frames[99].meshes
-  const low = Math.min(...m.map((q) => q.p[1] - q.height / 2))
-  const xs = [Math.min(...m.map((q) => q.p[0])), Math.max(...m.map((q) => q.p[0]))]
-  check(g1.errors.length === 0 && m.length === N && low > 10.99 && low < 11.1 && Math.abs((xs[0] + xs[1]) / 2 - 0.5) < 0.05 && run.mostMade <= 5, 'one click with no world code: it boots through tick, standing on top of the block')
-  const mainZ = m.filter((q) => Math.abs(q.depth - 0.02) < 1e-9 && Math.abs(q.width - 0.02) > 1e-9 && Math.abs(Math.cos(q.r[1]) + 1) < 1e-6)
-  check(mainZ.length > 20 && mainZ.every((q) => q.p[2] > 4.5), 'it faces the player who clicked (the main screen is on the far side of the block)')
-  g1.bare.tick(50)
-  click(g1)
-  play(g1, 20, (ms) => g1.bare.tick(ms))
-  check(g1.meshes.size === 0, 'clicking again closes it')
+  const click = (g, who) => new Function('api', 'globalThis', 'myId', 'thisPos', 'with (globalThis) {' + blockCode + '}')(g.api, g.bare, who || 'p1', [0, 10, 4])
   const g2 = game('', true)
   click(g2)
-  check(g2.meshes.size === 0, 'if the game never runs tick, the first click shows nothing')
+  const m = [...g2.meshes.values()].map((q) => ({ ...q.o, p: q.p, r: q.r }))
+  const low = Math.min(...m.map((q) => q.p[1] - q.height / 2))
+  const xs = [Math.min(...m.map((q) => q.p[0])), Math.max(...m.map((q) => q.p[0]))]
+  check(g2.errors.length === 0 && m.length === N && m.every((q) => q.p), `one click, no world code, tick never run: all ${N} meshes are there straight away`)
+  check(low > 10.99 && low < 11.1 && Math.abs((xs[0] + xs[1]) / 2 - 0.5) < 0.05, 'it stands on top of the block')
+  const mainZ = m.filter((q) => Math.abs(q.depth - 0.02) < 1e-9 && Math.abs(q.width - 0.02) > 1e-9 && Math.abs(Math.cos(q.r[1]) + 1) < 1e-6)
+  check(mainZ.length > 20 && mainZ.every((q) => q.p[2] > 4.5), 'it faces the player who clicked (the main screen is on the far side of the block)')
   click(g2)
-  const frozen = [...g2.meshes.values()]
-  check(frozen.length === N && frozen.every((q) => q.p) && g2.errors.length === 0, `the second click then builds all ${N} meshes at once, as a still picture`)
+  check(g2.meshes.size === 0, 'the second click removes it, also without tick')
   click(g2)
-  check(g2.meshes.size === 0, 'and the third click removes it')
+  check(g2.meshes.size === N, 'the third click shows it again')
+  click(g2, 'p2')
+  check(g2.meshes.size === 0, 'another player clicking closes it too (never two at once)')
+  const g1 = game('', true)
+  click(g1)
+  const snap = () => JSON.stringify([...g1.meshes.values()].map((q) => [q.p, q.o.width, q.o.height, q.o.emissiveColor]))
+  const before = snap()
+  const made = g1.made
+  play(g1, 30, (ms) => g1.bare.tick(ms))
+  check(g1.meshes.size === N && snap() !== before && g1.errors.length === 0, 'if the game does run tick from a code block, the same hologram also moves')
+  click(g1)
+  play(g1, 5, (ms) => g1.bare.tick(ms))
+  check(g1.meshes.size === 0, 'and one click still closes it')
 }
 
 if (args.includes('--dump')) fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames: [boot.frames[12], boot.frames[100], boot.frames[110]], player: [0.5, 10, 0.5] }))

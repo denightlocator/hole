@@ -1,4 +1,4 @@
-if (typeof hologram !== "function") {
+if (typeof hologramInstant !== "function") {
   ;(function () {
 var HOLO_CFG = {
   chat: "!holo",
@@ -390,7 +390,7 @@ function hologram(playerId, at, facing) {
 }
 
 function hologramInstant(playerId, at, facing) {
-  var old = holoList.filter((h) => h.owner === playerId)
+  var old = holoList.slice()
   if (old.length) {
     old.forEach((h) => {
       holoDrop(h, 1e9)
@@ -416,15 +416,6 @@ tick = (ms) => {
   if (holoOldTick) holoOldTick(ms)
   holoTick()
 }
-
-var holoOldChat = typeof onPlayerChat === "function" ? onPlayerChat : null
-onPlayerChat = (playerId, message) => {
-  if (HOLO_CFG.chat && message.trim().toLowerCase() === HOLO_CFG.chat) return hologram(playerId), false
-  if (holoOldChat) return holoOldChat(playerId, message)
-}
   })()
 }
-var holoAt = [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5]
-if (globalThis.holoSeen === hologramBeat()) hologramInstant(myId, holoAt)
-else hologram(myId, holoAt)
-globalThis.holoSeen = hologramBeat()
+hologramInstant(myId, [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5])

@@ -17,17 +17,20 @@ Either way works on its own.
 - **World Code:** paste `world_code.js` (about 14,600 characters) and type
   `!holo`. It opens 2 blocks in front of you, facing you. `!holo` again
   closes it. If other world code is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (14,848 of
-  32,000 characters) into a Code Block and click it. It opens on top of the
-  block, facing whoever clicked. Click again to close it.
+- **Code Block, no World Code needed:** paste `code_block.js` (14,419 of
+  32,000 characters) into a Code Block and click it. The whole hologram
+  appears at once on top of the block, facing whoever clicked. Click again
+  to remove it. There is no chat command in this version.
 
-About the code block: the moving parts need the game to call a `tick` that a
-code block assigned, which is not documented. If the game does not do that,
-the first click shows nothing, and the **second click builds the whole
-hologram at once as a still picture** (a third click removes it). That still
-build creates all 214 meshes in one go, so if the game caps how many can be
-created per second, parts may be missing; World Code does not have that
-problem.
+About the code block: a click creates all 214 meshes in the same instant, so
+it does not depend on anything else running. Two things follow from that:
+
+- If the game caps how many meshes can be created per second (you mentioned
+  about 120), the top part may be missing. Then use the World Code version,
+  which builds 5 a tick.
+- The moving parts need the game to call a `tick` that a code block
+  assigned, which is not documented. If it does, the hologram moves; if not,
+  it is a still picture.
 
 From other code: `hologram(playerId)`, `hologram(playerId, [x, y, z])`, or
 `hologram(playerId, [x, y, z], [fx, fz])` to choose the direction it faces.
