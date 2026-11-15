@@ -12,7 +12,7 @@ player-sized figure for scale. It is not a screenshot of the game.
 
 ## Use it
 
-- **World Code (the full move):** paste `world_code.js` (about 15,600
+- **World Code (the full move):** paste `world_code.js` (about 15,500
   characters) and type `!rings`. It lands 8 blocks in front of you. If other
   world code is there too, paste this **after** it.
 - **Code Block, no World Code needed:** paste `code_block.js` (15,213 of
