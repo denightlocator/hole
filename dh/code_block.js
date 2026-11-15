@@ -3,10 +3,11 @@ if (typeof spinCircleStill !== "function") {
 var RITE_CFG = {
   size: 1,
   spin: 0.5,
-  pointsPerTick: 42,
+  pointsPerTick: 55,
+  perPoint: 2,
+  thick: 0.09,
   sparks: true,
   glyphs: true,
-  sounds: true,
   growTicks: 24,
   duration: 0,
   stillLife: 8,
@@ -23,16 +24,11 @@ var RITE_COL = {
 }
 
 var RITE_RINGS = [
-  [5, 58, -1],
-  [4.5, 52, -1],
-  [3.9, 46, 1],
+  [5, 84, -1],
+  [4.5, 76, -1],
+  [3.9, 66, 1],
 ]
-var RITE_STAR = { radius: 3.9, tips: 5, perEdge: 13, turn: 1 }
-var RITE_SND = {
-  start: [["ominousBellHit", 0.8, 0.7], ["suspenseRiser", 0.6, 1.2]],
-  stop: [["magicAccent2", 0.6, 0.7]],
-}
-
+var RITE_STAR = { radius: 3.9, tips: 5, perEdge: 20, turn: 1 }
 var riteList = []
 var riteBeat = 0
 
@@ -87,16 +83,6 @@ function riteEmit(low, high, look) {
   })
 }
 
-function riteSound(name, where) {
-  if (!RITE_CFG.sounds) return
-  var list = RITE_SND[name] || []
-  list.forEach((entry) => {
-    try {
-      api.broadcastSound(entry[0], entry[1], entry[2], { playerIdOrPos: where })
-    } catch (err) {}
-  })
-}
-
 function ritePoint(circle, point, moment, grown, life) {
   var scale = RITE_CFG.size
   var angle = point.angle + point.turn * moment * (RITE_CFG.spin / 20)
@@ -104,7 +90,8 @@ function ritePoint(circle, point, moment, grown, life) {
   var spotX = circle.place[0] + Math.sin(angle) * radius
   var spotZ = circle.place[2] + Math.cos(angle) * radius
   var spotY = circle.place[1] + 0.12
-  riteEmit([spotX, spotY, spotZ], [spotX, spotY, spotZ], { texture: "square_particle", life: life, size: 0.27 * scale, first: RITE_COL.hot, mid: RITE_COL.fire, last: RITE_COL.ember })
+  var thick = RITE_CFG.thick * scale * grown
+  riteEmit([spotX - thick, spotY, spotZ - thick], [spotX + thick, spotY, spotZ + thick], { texture: "square_particle", count: RITE_CFG.perPoint, life: life, size: 0.27 * scale, first: RITE_COL.hot, mid: RITE_COL.fire, last: RITE_COL.ember })
 }
 
 function riteExtras(circle, moment) {
@@ -129,7 +116,6 @@ function riteExtras(circle, moment) {
 function riteStep(circle) {
   var moment = circle.moment
   if (circle.done) return true
-  if (moment === 0) riteSound("start", circle.place)
   var grown = Math.min(1, (moment + 1) / Math.max(1, RITE_CFG.growTicks))
   grown = 1 - (1 - grown) * (1 - grown)
   var each = Math.max(1, Math.min(ritePlan.length, RITE_CFG.pointsPerTick))
@@ -167,7 +153,6 @@ function spinCircle(playerId, place, quick) {
   var mine = riteList.filter((circle) => circle.owner === playerId)[0]
   if (mine) {
     mine.done = true
-    riteSound("stop", mine.place)
     return false
   }
   if (riteList.length >= RITE_CFG.maxCircles) {
@@ -178,7 +163,6 @@ function spinCircle(playerId, place, quick) {
   if (quick) {
     circle.moment = RITE_CFG.growTicks
     ritePlan.forEach((point) => ritePoint(circle, point, circle.moment, 1, 0.4))
-    riteSound("start", circle.place)
   }
   riteList.push(circle)
   return true
@@ -187,7 +171,6 @@ function spinCircle(playerId, place, quick) {
 function spinCircleStill(playerId, place) {
   var circle = { owner: playerId, moment: 0, place: riteSpot(playerId, place), done: false }
   ritePlan.forEach((point) => ritePoint(circle, point, 0, 1, RITE_CFG.stillLife))
-  riteSound("start", circle.place)
   return true
 }
 

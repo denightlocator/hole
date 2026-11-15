@@ -10,7 +10,7 @@ const args = process.argv.slice(2)
 const PARTICLE = ['dir1', 'dir2', 'pos1', 'pos2', 'texture', 'minLifeTime', 'maxLifeTime', 'minEmitPower', 'maxEmitPower', 'minSize', 'maxSize',
   'manualEmitCount', 'gravity', 'colorGradients', 'velocityGradients', 'blendMode']
 const TEXTURES = ['square_particle', 'glint']
-const SOUNDS = ['ominousBellHit', 'suspenseRiser', 'magicAccent2']
+const SOUNDS = []
 const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object' && v ? Object.values(v).every(finite) : typeof v !== 'number' || Number.isFinite(v))
 const fail = []
 const check = (ok, msg) => { console.log((ok ? '  ok    ' : '  FAIL  ') + msg); if (!ok) fail.push(msg) }
@@ -42,19 +42,19 @@ console.log('The circle')
 const s = game()
 const N = s.run.ritePlan.length
 check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!dh') === false && s.run.riteList.length === 1, '!dh opens it and is hidden from chat')
-play(s, 320)
+play(s, 420)
 check(s.errors.length === 0, 'every particle call is well formed; no mesh is ever created (the test game has no mesh functions) ' + [...new Set(s.errors)].join('; '))
 const floor = s.fx.filter((q) => q.tex === 'square_particle' && q.power === 0)
 const rOf = (q) => Math.hypot(q.p[0] - 0.5, q.p[2] - 0.5)
 const aOf = (q) => Math.atan2(q.p[0] - 0.5, q.p[2] - 0.5)
 const live = (n) => floor.filter((q) => q.n <= n && q.n + q.life * 20 > n)
 const at150 = live(150)
-check(N > 180 && N < 260, `the pattern is ${N} points: three rings and a five-pointed star`)
+check(N === 326, `the pattern is ${N} points (84 + 76 + 66 on the rings, 20 on each line of the star), 2 particles on each`)
 check(at150.length >= N && at150.length <= N * 1.8, `${at150.length} floor particles are alive at any moment, so every point of the pattern stays lit`)
 const radii = (lo, hi) => at150.filter((q) => rOf(q) > lo && rOf(q) < hi).length
-check(radii(4.95, 5.05) >= 58 && radii(4.45, 4.55) >= 52 && radii(3.85, 3.95) >= 46, 'three rings at 5, 4.5 and 3.9 blocks from the centre')
+check(radii(4.95, 5.05) >= 84 && radii(4.45, 4.55) >= 76 && radii(3.85, 3.95) >= 66, 'three rings at 5, 4.5 and 3.9 blocks from the centre')
 const inner = at150.filter((q) => rOf(q) < 3.8)
-check(inner.length >= 50 && Math.min(...inner.map(rOf)) > 1.1 && Math.min(...inner.map(rOf)) < 1.3, `${inner.length} points inside the rings draw the star (its lines pass 1.2 blocks from the centre)`)
+check(inner.length >= 85 && Math.min(...inner.map(rOf)) > 1.1 && Math.min(...inner.map(rOf)) < 1.3, `${inner.length} points inside the rings draw the star (its lines pass 1.2 blocks from the centre)`)
 check(floor.every((q) => Math.abs(q.p[1] - 10.12) < 1e-9 && rOf(q) < 5.01), 'it lies flat on the floor and is 10 blocks across')
 check(floor.every((q) => q.col[0] > 200 && q.col[1] < 120 && q.col[2] < 60), 'floor particles are orange-red')
 const each = s.run.RITE_CFG.pointsPerTick
@@ -70,12 +70,13 @@ check(turns.filter((q) => q.r > 4.4).every((q) => Math.sign(q.d) !== Math.sign(t
 const early = floor.filter((q) => q.n === 0), later = floor.filter((q) => q.n === 30)
 check(Math.max(...early.map(rOf)) < 1 && Math.max(...later.map(rOf)) > 4.9, 'it opens by growing out from the centre in 1.2 seconds')
 const sparks = s.fx.filter((q) => q.tex === 'glint')
-check(sparks.length === 320 && sparks.every((q) => rOf(q) < 0.01 && q.dir[1] > 0 && q.col.every((v) => v === 255)), 'white sparks rise from the centre every tick')
+check(sparks.length === 420 && sparks.every((q) => rOf(q) < 0.01 && q.dir[1] > 0 && q.col.every((v) => v === 255)), 'white sparks rise from the centre every tick')
 const glyphs = s.fx.filter((q) => q.tex === 'square_particle' && q.power > 0)
 check(glyphs.length >= 100 && glyphs.every((q) => rOf(q) > 5.5 && rOf(q) < 9.2 && q.p[1] > 13 && q.p[1] < 19.5 && q.dir[1] < 0) && glyphs.some((q) => q.col[1] < 200), `${glyphs.length} short falling strings of white and pink squares appear in the air around it`)
-const perTick = Math.max(...Array.from({ length: 320 }, (_, n) => s.fx.filter((q) => q.n === n).length))
+const perTick = Math.max(...Array.from({ length: 420 }, (_, n) => s.fx.filter((q) => q.n === n).length))
 check(perTick <= each + 3, `at most ${perTick} particle calls in a tick`)
-check(s.sounds.includes('ominousBellHit'), 'a sound plays when it opens')
+check(s.sounds.length === 0 && !/sound/i.test(code), 'it makes no sound: there is no sound code left')
+check(floor.every((q) => q.count === 2 && q.b[0] - q.a[0] <= 0.18 + 1e-9), 'each point is 2 particles within 0.09 blocks, so the lines are thicker and denser')
 
 console.log('Closing')
 const before = s.fx.length
@@ -107,7 +108,7 @@ check(blockCode.length <= 32000 && !blockCode.includes('//') && !blockCode.inclu
   click(g1)
   play(g1, 100, (ms) => g1.bare.tick(ms))
   const f = g1.fx.filter((q) => q.tex === 'square_particle' && q.power === 0 && q.n > 40)
-  check(g1.errors.length === 0 && f.length > 2000 && f.every((q) => Math.abs(q.p[1] - 11.12) < 1e-9 && rOf(q) < 5.01), 'one click with no world code: the circle spins on top of the block, centred on it')
+  check(g1.errors.length === 0 && f.length > 3000 && f.every((q) => Math.abs(q.p[1] - 11.12) < 1e-9 && rOf(q) < 5.01), 'one click with no world code: the circle spins on top of the block, centred on it')
   click(g1)
   const n = g1.fx.length
   play(g1, 20, (ms) => g1.bare.tick(ms))
