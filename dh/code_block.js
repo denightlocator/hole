@@ -1,4 +1,4 @@
-if (typeof spinCircleStill !== "function") {
+if (typeof spinCircleOnce !== "function") {
   (function () {
 var RITE_CFG = {
   size: 1,
@@ -10,7 +10,8 @@ var RITE_CFG = {
   glyphs: true,
   growTicks: 24,
   duration: 0,
-  stillLife: 8,
+  onceTime: 6,
+  onceTurn: 1,
   hideDist: 120,
   maxCircles: 2,
 }
@@ -63,7 +64,7 @@ function riteEmit(low, high, look) {
     minLifeTime: look.life,
     maxLifeTime: look.life * (look.lifeSpread || 1.15),
     minEmitPower: look.power || 0,
-    maxEmitPower: (look.power || 0) * 2,
+    maxEmitPower: (look.power || 0) * (look.exact ? 1 : 2),
     minSize: look.size,
     maxSize: look.size * 1.25,
     manualEmitCount: look.count || 1,
@@ -75,7 +76,7 @@ function riteEmit(low, high, look) {
     ],
     velocityGradients: [
       { timeFraction: 0, factor: 1, factor2: 1 },
-      { timeFraction: 1, factor: 0.5, factor2: 0.5 },
+      { timeFraction: 1, factor: look.exact ? 1 : 0.5, factor2: look.exact ? 1 : 0.5 },
     ],
     blendMode: 1,
     hideDist: RITE_CFG.hideDist,
@@ -148,7 +149,7 @@ function riteSpot(playerId, place) {
   return [where[0], where[1], where[2]]
 }
 
-function spinCircle(playerId, place, quick) {
+function spinCircle(playerId, place) {
   var mine = riteList.filter((circle) => circle.owner === playerId)[0]
   if (mine) {
     mine.done = true
@@ -159,33 +160,36 @@ function spinCircle(playerId, place, quick) {
     return false
   }
   var circle = { owner: playerId, moment: 0, place: riteSpot(playerId, place), done: false }
-  if (quick) {
-    circle.moment = RITE_CFG.growTicks
-    ritePlan.forEach((point) => ritePoint(circle, point, circle.moment, 1, 0.4))
-  }
   riteList.push(circle)
   return true
 }
 
-function spinCircleStill(playerId, place) {
-  var circle = { owner: playerId, moment: 0, place: riteSpot(playerId, place), done: false }
-  ritePlan.forEach((point) => ritePoint(circle, point, 0, 1, RITE_CFG.stillLife))
+function spinCircleOnce(playerId, place) {
+  var where = riteSpot(playerId, place)
+  var scale = RITE_CFG.size
+  var rate = RITE_CFG.onceTurn / RITE_CFG.onceTime
+  var thick = RITE_CFG.thick * scale
+  ritePlan.forEach((point) => {
+    var sinv = Math.sin(point.angle)
+    var cosv = Math.cos(point.angle)
+    var radius = point.radius * scale
+    var spotX = where[0] + sinv * radius
+    var spotZ = where[2] + cosv * radius
+    var spotY = where[1] + 0.12
+    var along = [cosv * point.turn, 0, -sinv * point.turn]
+    var pull = rate * rate * radius
+    riteEmit([spotX - thick, spotY, spotZ - thick], [spotX + thick, spotY, spotZ + thick], { texture: "square_particle", count: RITE_CFG.perPoint, life: RITE_CFG.onceTime, lifeSpread: 1, size: 0.27 * scale, power: rate * radius, exact: true, dir1: along, dir2: along, gravity: [-sinv * pull, 0, -cosv * pull], solid: true, first: RITE_COL.red, mid: RITE_COL.red, last: RITE_COL.red })
+  })
+  if (RITE_CFG.sparks) {
+    var wide = 0.7 * scale
+    riteEmit([where[0] - wide, where[1] + 0.2, where[2] - wide], [where[0] + wide, where[1] + 0.6, where[2] + wide], { texture: "glint", life: 1, lifeSpread: RITE_CFG.onceTime, size: 0.11 * scale, count: 50, power: 0.5 * scale, dir1: [-0.3, 1, -0.3], dir2: [0.3, 1.6, 0.3], first: RITE_COL.white, mid: RITE_COL.white, last: RITE_COL.hot })
+  }
   return true
 }
 
 globalThis.spinCircle = spinCircle
-globalThis.spinCircleStill = spinCircleStill
+globalThis.spinCircleOnce = spinCircleOnce
 globalThis.spinCircleBeat = () => riteBeat
-
-var riteOldTick = typeof tick === "function" ? tick : null
-tick = (msec) => {
-  if (riteOldTick) riteOldTick(msec)
-  riteTick()
-}
   })()
-  globalThis.riteSeen = -1
 }
-var riteHere = [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5]
-if (globalThis.riteSeen === spinCircleBeat()) spinCircleStill(myId, riteHere)
-else spinCircle(myId, riteHere, true)
-globalThis.riteSeen = spinCircleBeat()
+spinCircleOnce(myId, [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5])

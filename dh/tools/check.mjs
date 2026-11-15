@@ -93,34 +93,43 @@ both.run.tick(50)
 check(both.run.onPlayerChat('p1', 'x') === 'old' && both.g.seen === 1, 'earlier tick and onPlayerChat still run')
 
 console.log('Code block')
-const noChat = code.slice(0, code.indexOf('globalThis.dh =')).trimEnd().replace('  chat: "!dh",\n', '')
-check(!noChat.includes('!dh'), 'the code block has no chat command name in it')
-const blockCode = 'if (typeof spinCircleStill !== "function") {\n  (function () {\n' + noChat + '\n  })()\n  globalThis.riteSeen = -1\n}\n' +
-  'var riteHere = [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5]\n' +
-  'if (globalThis.riteSeen === spinCircleBeat()) spinCircleStill(myId, riteHere)\n' +
-  'else spinCircle(myId, riteHere, true)\n' +
-  'globalThis.riteSeen = spinCircleBeat()\n'
+const noChat = code.slice(0, code.indexOf('var riteOldTick')).trimEnd().replace('  chat: "!dh",\n', '')
+check(!noChat.includes('!dh') && !noChat.includes('tick ='), 'the code block has no chat command and does not rely on tick (the game does not run tick for code blocks)')
+const blockCode = 'if (typeof spinCircleOnce !== "function") {\n  (function () {\n' + noChat + '\n  })()\n}\n' +
+  'spinCircleOnce(myId, [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5])\n'
 fs.writeFileSync(path.join(dir, 'code_block.js'), blockCode)
 check(blockCode.length <= 32000 && !blockCode.includes('//') && !blockCode.includes('onPlayerChat'), `wrote code_block.js: ${blockCode.length} of 32,000 characters, no comments, no chat command`)
+let onceShots = null
 {
   const click = (g) => new Function('api', 'globalThis', 'myId', 'thisPos', 'with (globalThis) {' + blockCode + '}')(g.api, g.bare, 'p1', [0, 10, 0])
   const g1 = game('', true)
+  g1.api.playParticleEffect = ((old) => (o) => { old(o); Object.assign(g1.fx[g1.fx.length - 1], { grav: o.gravity, vel: o.dir1.map((v) => v * o.minEmitPower), minPower: o.minEmitPower, minLife: o.minLifeTime, vg: o.velocityGradients }) })(g1.api.playParticleEffect)
   click(g1)
-  play(g1, 100, (ms) => g1.bare.tick(ms))
-  const f = g1.fx.filter((q) => q.tex === 'square_particle' && q.power === 0 && q.n > 40)
-  check(g1.errors.length === 0 && f.length > 2500 && f.every((q) => Math.abs(q.p[1] - 11.12) < 1e-9 && rOf(q) < 5.01), 'one click with no world code: the circle spins on top of the block, centred on it')
+  const ring = g1.fx.filter((q) => q.tex === 'square_particle')
+  check(g1.errors.length === 0 && ring.length === N && g1.fx.length === N + 1, `one click, nothing else needed: all ${N} points are emitted at once, plus one burst of sparks`)
+  check(ring.every((q) => q.minLife === 6 && q.life === 6 && q.minPower === q.power && q.vg.every((v) => v.factor === 1) && q.grads.every((v) => v.maxColor.join() === '255,62,18,1')), 'every particle lives 6 seconds, solid red, with an exact speed')
+  // where a particle is after t seconds: start + speed * t + half the pull * t squared
+  const whereAt = (q, t) => q.p.map((v, i) => v + q.vel[i] * t + 0.5 * q.grav[i] * t * t)
+  const worst = (t) => {
+    const th = t / 6
+    const turn = Math.atan2(th, 1 - th * th / 2), grow = Math.sqrt(1 + th ** 4 / 4)
+    let bad = 0
+    for (const q of ring) {
+      const r0 = Math.hypot(q.p[0] - 0.5, q.p[2] - 0.5), a0 = Math.atan2(q.p[0] - 0.5, q.p[2] - 0.5)
+      const dirn = Math.abs(r0 - 5) < 0.01 || Math.abs(r0 - 4.5) < 0.01 ? -1 : 1
+      const w = whereAt(q, t)
+      const ex = [0.5 + Math.sin(a0 + dirn * turn) * r0 * grow, 0.5 + Math.cos(a0 + dirn * turn) * r0 * grow]
+      bad = Math.max(bad, Math.hypot(w[0] - ex[0], w[2] - ex[1]), Math.abs(w[1] - 11.12))
+    }
+    return { bad, turn: (turn * 180) / Math.PI, grow }
+  }
+  const half = worst(3), end = worst(6)
+  check([1, 2, 3, 4, 5, 6].every((t) => worst(t).bad < 1e-9), 'the particles themselves carry the turn: each one is thrown sideways and pulled toward the centre, so the whole pattern turns as one piece without any more code running')
+  check(Math.abs(end.turn - 63.4) < 0.1 && Math.abs(half.turn - 29.7) < 0.1, `it turns ${half.turn.toFixed(0)} degrees in the first 3 seconds and ${end.turn.toFixed(0)} degrees in all; the two outer rings go the other way, so they slide ${(2 * end.turn).toFixed(0)} degrees past the star`)
+  check(end.grow < 1.12 && half.grow < 1.01, `side effect: it also grows a little while turning, ${((half.grow - 1) * 100).toFixed(1)}% after 3 seconds and ${((end.grow - 1) * 100).toFixed(0)}% at the end`)
   click(g1)
-  const n = g1.fx.length
-  play(g1, 20, (ms) => g1.bare.tick(ms))
-  check(g1.fx.length === n, 'clicking again closes it')
-  const g2 = game('', true)
-  click(g2)
-  check(g2.fx.length === N && g2.fx.every((q) => q.life < 0.5 && rOf(q) > 1.1), 'the click itself draws the whole circle at full size straight away; tick then keeps it lit and spinning')
-  click(g2)
-  const still = g2.fx.slice(N)
-  check(still.length === N && still.every((q) => q.life >= 8) && g2.errors.length === 0, `if the game never runs tick, that first circle is only a half-second flash; the second click then draws a still circle that lasts 8 seconds`)
-  click(g2)
-  check(g2.fx.length === 3 * N, 'and every further click draws it again')
+  check(g1.fx.length === 2 * (N + 1), 'every click starts it again')
+  onceShots = [0, 3, 6].map((t) => ring.map((q) => ({ ...q, a: whereAt(q, t), b: whereAt(q, t), p: whereAt(q, t), power: 0, age: 0 })))
 }
 
 console.log('Word filter (the game stars out words in code blocks, which breaks the code)')
@@ -142,7 +151,7 @@ console.log('Word filter (the game stars out words in code blocks, which breaks 
 
 if (args.includes('--dump')) {
   const shot = (n) => s.fx.filter((q) => q.n <= n && q.n + q.life * 20 > n).map((q) => ({ ...q, age: (n - q.n) / (q.life * 20) }))
-  fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames: [shot(8), shot(150), shot(170)], mid: [0.5, 10, 0.5] }))
+  fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames: [shot(8), shot(150), shot(170)], once: onceShots, mid: [0.5, 10, 0.5] }))
 }
 console.log(fail.length ? `\n${fail.length} check(s) failed` : '\nAll checks passed')
 process.exit(fail.length ? 1 : 0)

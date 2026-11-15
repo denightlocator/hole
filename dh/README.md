@@ -14,19 +14,32 @@ screenshot of the game; real particles will look softer.
 - **World Code:** paste `world_code.js` (about 7,200 characters) and type
   `!dh`. It opens under your feet. `!dh` again closes it. If other
   world code is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (7,170 of
-  32,000 characters) and click the block. The circle opens on top of the
-  block, centred on it. Click again to close.
+- **Code Block, no World Code needed:** paste `code_block.js` (7,901 of
+  32,000 characters) and click the block. The circle appears on top of the
+  block, centred on it, turns for 6 seconds and is gone. Click again to
+  start it again.
 
-About the code block: the click draws the whole circle at once, and `tick`
-then keeps it lit and spinning. That needs the game to call a `tick` that a
-code block assigned, which is not documented. If the game does not do that,
-the first click is only a half-second flash, and from the second click on
-each click draws the circle as a still picture that lasts 8 seconds. It
-cannot spin without `tick`; use World Code for that.
+Why the two versions differ: in the game, a `tick` set from a code block is
+not run (tested by you: the circle stood still). So a code block gets to run
+only at the moment of the click and cannot keep re-drawing the circle.
+Instead, the click throws every particle sideways and gives it a pull toward
+the centre, so the particles carry the turn themselves:
+
+- the star and inner ring turn about 63 degrees in the 6 seconds, the two
+  outer rings the same amount the other way;
+- as a side effect the whole circle grows about 12% by the end (under 1% in
+  the first 3 seconds);
+- no falling strings, and the sparks are one burst.
+
+**For a circle that spins without end, use World Code.** That is the only
+place the game runs code every tick.
+
+Not confirmed from here: that the game applies the sideways speed and the
+pull exactly as the particle options say. If the block's circle drifts apart
+instead of turning, tell me what it does.
 
 From other code: `dh(playerId)` or `dh(playerId, [x, y, z])`. In the code
-block version the function is called `spinCircle`, because a two-letter name
+block version the function is called `spinCircleOnce`, because a two-letter name
 could be caught by the word filter.
 
 ## What it is
@@ -66,7 +79,8 @@ more stepped).
 | `sparks`, `glyphs` | The rising sparks and the falling strings; false = off |
 | `growTicks` | Ticks to grow to full size (24) |
 | `duration` | Seconds until it closes by itself; 0 = stays until toggled off |
-| `stillLife` | Seconds a still picture lasts when `tick` does not run (8) |
+| `onceTime` | Code block: seconds one click lasts (6) |
+| `onceTurn` | Code block: how far it turns in that time (1 = about 63 degrees, with 12% growth; 0.7 = about 39 degrees, 3% growth) |
 | `hideDist` | Visible up to 120 blocks |
 | `maxCircles` | How many can be open at once (2) |
 
