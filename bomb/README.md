@@ -10,7 +10,21 @@ The picture is my own render, not a Bloxd screenshot. **Not run inside Bloxd yet
 
 Paste `code_block.js` (3,855 characters) into a code block and click it. The bomb appears above the block, standing nose down. Click again to remove it. It works by itself; no World Code is needed.
 
-## Settings (`bombSettings`, first line)
+## Drop it on someone: `!target <name>` (World Code)
+
+Paste `world_code.js` into World Code and type `!target <player name>` in chat. Capitals do not matter and the start of the name is enough.
+
+1. The bomb appears 45 blocks above that player and falls for 2.5 seconds, faster and faster, with a smoke trail and a red mark on the floor. It follows the player if they run.
+2. When it lands: white-yellow fireball, a shock ring racing outward, then a mushroom column and cap of fire and smoke for 2 seconds.
+3. The target is killed (credited to you). Everyone else within 9 blocks, mobs included, takes 18 to 60 damage depending on distance, and everyone hit is thrown up and away. That includes you if you stand too close.
+
+Settings are in `NUKE_CFG` at the top: `dropHeight`, `fallTicks`, `follow`, `killTarget`, `blastRadius`, `blastDamage`, `knockback`, `hitCaster`, `hitMobs`, `sounds`, `maxBombs` (3). Anyone can use the command; there is no admin check. From your own code: `nukeTarget(senderId, targetId)`.
+
+Not sure until tried in Bloxd: how big and bright the explosion particles look, and how the three sounds used (cannon, firecracker, rocket engine) come across.
+
+Test: `node tools/drop_check.mjs`
+
+## Settings of the code block (`bombSettings`, first line)
 
 | Name | Default | Meaning |
 |---|---|---|
