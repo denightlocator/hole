@@ -68,10 +68,10 @@ var holoPlan = (function () {
   }
   var frame = (P) => {
     var a = 0.16
-    for (var sx = -1; sx <= 1; sx += 2) {
-      for (var sy = -1; sy <= 1; sy += 2) {
-        on(P, sx * (P.w / 2 - a / 2), (sy * P.h) / 2, a, 0.025, "bright")
-        on(P, (sx * P.w) / 2, sy * (P.h / 2 - a / 2), 0.025, a, "bright")
+    for (var ix = -1; ix <= 1; ix += 2) {
+      for (var iy = -1; iy <= 1; iy += 2) {
+        on(P, ix * (P.w / 2 - a / 2), (iy * P.h) / 2, a, 0.025, "bright")
+        on(P, (ix * P.w) / 2, iy * (P.h / 2 - a / 2), 0.025, a, "bright")
       }
     }
     on(P, 0, P.h / 2, P.w - 2 * a - 0.08, 0.012, "blue")
@@ -128,9 +128,9 @@ var holoPlan = (function () {
   holoL1.forEach((q) => on(L, q[0], gy + q[1], q[2], q[3], "cyan", 1))
   var spots = []
   var dial = [[0.145, 0.235], [0.195, 0.195], [0.235, 0.145]]
-  for (var sx = -1; sx <= 1; sx += 2) {
-    for (var sy = -1; sy <= 1; sy += 2) {
-      for (var qi = 0; qi < 3; qi++) on(L, sx * dial[qi][0], gy + sy * dial[qi][1], 0.05, 0.05, "cyan", 1)
+  for (var ix = -1; ix <= 1; ix += 2) {
+    for (var iy = -1; iy <= 1; iy += 2) {
+      for (var qi = 0; qi < 3; qi++) on(L, ix * dial[qi][0], gy + iy * dial[qi][1], 0.05, 0.05, "cyan", 1)
     }
   }
   for (var k = 0; k < 16; k++) {
