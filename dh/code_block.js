@@ -16,9 +16,8 @@ var RITE_CFG = {
 }
 
 var RITE_COL = {
+  red: [255, 62, 18],
   hot: [255, 205, 120],
-  fire: [255, 72, 24],
-  ember: [200, 25, 10],
   white: [255, 255, 255],
   pink: [255, 150, 185],
 }
@@ -71,8 +70,8 @@ function riteEmit(low, high, look) {
     gravity: look.gravity || [0, 0, 0],
     colorGradients: [
       { timeFraction: 0, minColor: look.first.concat(1), maxColor: look.first.concat(1) },
-      { timeFraction: 0.5, minColor: look.mid.concat(0.9), maxColor: look.mid.concat(0.9) },
-      { timeFraction: 1, minColor: look.last.concat(0), maxColor: look.last.concat(0) },
+      { timeFraction: 0.5, minColor: look.mid.concat(1), maxColor: look.mid.concat(1) },
+      { timeFraction: 1, minColor: look.last.concat(look.solid ? 1 : 0), maxColor: look.last.concat(look.solid ? 1 : 0) },
     ],
     velocityGradients: [
       { timeFraction: 0, factor: 1, factor2: 1 },
@@ -91,7 +90,7 @@ function ritePoint(circle, point, moment, grown, life) {
   var spotZ = circle.place[2] + Math.cos(angle) * radius
   var spotY = circle.place[1] + 0.12
   var thick = RITE_CFG.thick * scale * grown
-  riteEmit([spotX - thick, spotY, spotZ - thick], [spotX + thick, spotY, spotZ + thick], { texture: "square_particle", count: RITE_CFG.perPoint, life: life, size: 0.27 * scale, first: RITE_COL.hot, mid: RITE_COL.fire, last: RITE_COL.ember })
+  riteEmit([spotX - thick, spotY, spotZ - thick], [spotX + thick, spotY, spotZ + thick], { texture: "square_particle", count: RITE_CFG.perPoint, life: life, size: 0.27 * scale, solid: true, first: RITE_COL.red, mid: RITE_COL.red, last: RITE_COL.red })
 }
 
 function riteExtras(circle, moment) {

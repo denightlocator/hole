@@ -17,7 +17,7 @@ Either way works on its own.
 - **World Code:** paste `world_code.js` (about 19,300 characters) and type
   `!holo`. It opens 2 blocks in front of you, facing you. `!holo` again
   closes it. If other world code is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (19,124 of
+- **Code Block, no World Code needed:** paste `code_block.js` (19,328 of
   32,000 characters) into a Code Block and click it. The whole hologram
   appears at once on top of the block, facing whoever clicked. Click again
   to remove it. There is no chat command in this version.

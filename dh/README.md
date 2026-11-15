@@ -1,6 +1,6 @@
 # DH (spinning circle, particles only)
 
-A glowing orange-red circle on the floor with a five-pointed star inside
+A red circle on the floor with a five-pointed star inside
 it, made of particles only. No meshes are used. Rebuilt from your
 screenshot. Sim-tested only; it has not been run in Bloxd.
 
@@ -14,7 +14,7 @@ screenshot of the game; real particles will look softer.
 - **World Code:** paste `world_code.js` (about 7,200 characters) and type
   `!dh`. It opens under your feet. `!dh` again closes it. If other
   world code is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (7,155 of
+- **Code Block, no World Code needed:** paste `code_block.js` (7,170 of
   32,000 characters) and click the block. The circle opens on top of the
   block, centred on it. Click again to close.
 
@@ -41,7 +41,9 @@ could be caught by the word filter.
 
 The pattern is 270 points with 2 particles on each, set within 0.09 blocks
 of the point so the lines look thick and solid. It is 10 blocks across and
-lies flat on the floor. It makes no sound. It
+lies flat on the floor. It makes no sound. Every floor
+particle is one solid red (`RITE_COL.red`, 255, 62, 18) for its whole life:
+no lighter start, no darker end and no fading. It
 grows out from the centre in 1.2 seconds, then turns at 0.5 radians a second
 (a full turn every 12.6 seconds).
 

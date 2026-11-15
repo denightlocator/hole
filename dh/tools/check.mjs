@@ -25,7 +25,7 @@ function game(before = '', bare = false) {
     broadcastSound: (name, vol, rate, o) => { need(SOUNDS.includes(name) && finite([vol, rate, o.playerIdOrPos]), 'sound ' + name); s.sounds.push(name) },
     playParticleEffect: (o) => {
       need(PARTICLE.every((k) => k in o) && finite(o) && TEXTURES.includes(o.texture) && o.colorGradients.every((g) => g.minColor.length === 4 && g.maxColor.length === 4) && o.minLifeTime > 0 && o.minSize > 0, 'bad particle')
-      s.fx.push({ n: s.now, a: o.pos1, b: o.pos2, p: o.pos1.map((v, i) => (v + o.pos2[i]) / 2), col: o.colorGradients[1].maxColor.slice(0, 3), life: o.maxLifeTime, power: o.maxEmitPower, size: o.maxSize, count: o.manualEmitCount, dir: o.dir2, tex: o.texture })
+      s.fx.push({ n: s.now, a: o.pos1, b: o.pos2, p: o.pos1.map((v, i) => (v + o.pos2[i]) / 2), col: o.colorGradients[1].maxColor.slice(0, 3), grads: o.colorGradients, life: o.maxLifeTime, power: o.maxEmitPower, size: o.maxSize, count: o.manualEmitCount, dir: o.dir2, tex: o.texture })
     },
   }
   s.g = {}
@@ -56,7 +56,7 @@ check(radii(4.95, 5.05) >= 70 && radii(4.45, 4.55) >= 64 && radii(3.85, 3.95) >=
 const inner = at150.filter((q) => rOf(q) < 3.8)
 check(inner.length >= 70 && Math.min(...inner.map(rOf)) > 1.1 && Math.min(...inner.map(rOf)) < 1.3, `${inner.length} points inside the rings draw the star (its lines pass 1.2 blocks from the centre)`)
 check(floor.every((q) => Math.abs(q.p[1] - 10.12) < 1e-9 && rOf(q) < 5.01), 'it lies flat on the floor and is 10 blocks across')
-check(floor.every((q) => q.col[0] > 200 && q.col[1] < 120 && q.col[2] < 60), 'floor particles are orange-red')
+check(floor.every((q) => q.grads.every((g) => [g.minColor, g.maxColor].every((v) => v.join() === '255,62,18,1'))), 'floor particles are the same solid red (255, 62, 18) from the moment they appear until they are gone: no yellow start, no dark end, no fading')
 const each = s.run.RITE_CFG.pointsPerTick
 const idxOf = (n, k) => floor.filter((q) => q.n === n)[k]
 const rounds = Math.ceil(N / each)

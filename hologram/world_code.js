@@ -458,7 +458,16 @@ function hologramInstant(playerId, place, facing) {
   return true
 }
 
+function hologramClear() {
+  var count = 0
+  holoList.forEach((unit) => (count += holoDrop(unit, 99999)))
+  holoList.length = 0
+  holoMeshes = 0
+  return count
+}
+
 globalThis.hologram = hologram
+globalThis.hologramClear = hologramClear
 globalThis.hologramInstant = hologramInstant
 globalThis.hologramBeat = () => holoBeat
 
