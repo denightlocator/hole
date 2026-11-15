@@ -134,7 +134,7 @@ check(both.run.onPlayerChat('p1', 'x') === 'old' && both.g.seen === 1, 'earlier 
 console.log('Code block')
 const noChat = code.slice(0, code.indexOf('var holoOldChat')).trimEnd()
 check(noChat.length < code.length - 100 && !noChat.includes('onPlayerChat'), 'the code block version has no chat command in it')
-const blockCode = 'if (typeof hologramInstant !== "function") {\n  ;(function () {\n' + noChat + '\n  })()\n}\n' +
+const blockCode = 'if (typeof hologramInstant !== "function") {\n  (function () {\n' + noChat + '\n  })()\n}\n' +
   'hologramInstant(myId, [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5])\n'
 fs.writeFileSync(path.join(dir, 'code_block.js'), blockCode)
 check(blockCode.length <= 32000 && !blockCode.includes('//'), `wrote code_block.js: ${blockCode.length} of 32,000 characters, no comments`)

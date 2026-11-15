@@ -1,5 +1,5 @@
 if (typeof hologramInstant !== "function") {
-  ;(function () {
+  (function () {
 var HOLO_CFG = {
   chat: "!holo",
   distance: 2,
@@ -68,12 +68,12 @@ var holoPlan = (function () {
   }
   var frame = (P) => {
     var a = 0.16
-    ;[-1, 1].forEach((sx) =>
-      [-1, 1].forEach((sy) => {
+    for (var sx = -1; sx <= 1; sx += 2) {
+      for (var sy = -1; sy <= 1; sy += 2) {
         on(P, sx * (P.w / 2 - a / 2), (sy * P.h) / 2, a, 0.025, "bright")
         on(P, (sx * P.w) / 2, sy * (P.h / 2 - a / 2), 0.025, a, "bright")
-      })
-    )
+      }
+    }
     on(P, 0, P.h / 2, P.w - 2 * a - 0.08, 0.012, "blue")
     on(P, 0, -P.h / 2, P.w - 2 * a - 0.08, 0.012, "blue")
   }
@@ -124,23 +124,27 @@ var holoPlan = (function () {
   frame(L)
   var G = 0.26
   var gy = 0.12
-  ;[[0, G, 0.2, 0.022], [0, -G, 0.2, 0.022], [G, 0, 0.022, 0.2], [-G, 0, 0.022, 0.2]].forEach((q) => on(L, q[0], gy + q[1], q[2], q[3], "cyan", 1))
+  var holoL1 = [[0, G, 0.2, 0.022], [0, -G, 0.2, 0.022], [G, 0, 0.022, 0.2], [-G, 0, 0.022, 0.2]]
+  holoL1.forEach((q) => on(L, q[0], gy + q[1], q[2], q[3], "cyan", 1))
   var spots = []
-  ;[-1, 1].forEach((sx) =>
-    [-1, 1].forEach((sy) => {
-      ;[[0.145, 0.235], [0.195, 0.195], [0.235, 0.145]].forEach((q) => on(L, sx * q[0], gy + sy * q[1], 0.05, 0.05, "cyan", 1))
-    })
-  )
+  var dial = [[0.145, 0.235], [0.195, 0.195], [0.235, 0.145]]
+  for (var sx = -1; sx <= 1; sx += 2) {
+    for (var sy = -1; sy <= 1; sy += 2) {
+      for (var qi = 0; qi < 3; qi++) on(L, sx * dial[qi][0], gy + sy * dial[qi][1], 0.05, 0.05, "cyan", 1)
+    }
+  }
   for (var k = 0; k < 16; k++) {
     var ka = (k / 16) * Math.PI * 2
     spots.push([Math.sin(ka) * 0.17, gy + Math.cos(ka) * 0.17])
   }
-  ;[0.02, 0.09].forEach((r, i) => on(L, 0, gy, r * 2, r * 2 > 0.1 ? 0.012 : 0.04, i ? "blue" : "bright", 1))
+  var holoL2 = [0.02, 0.09]
+  holoL2.forEach((r, i) => on(L, 0, gy, r * 2, r * 2 > 0.1 ? 0.012 : 0.04, i ? "blue" : "bright", 1))
   on(L, 0, gy, 0.012, 0.18, "blue", 1)
   var needle = on(L, spots[0][0], spots[0][1], 0.045, 0.045, "warn", 2)
   needle.anim = "needle"
   needle.spots = spots
-  ;[0.5, 0.34, 0.44].forEach((len, i) => {
+  var holoL3 = [0.5, 0.34, 0.44]
+  holoL3.forEach((len, i) => {
     var p = on(L, -0.32, -0.26 - i * 0.07, len, 0.024, i ? "cyan" : "bright", 1)
     p.anim = "text"
     p.n = 6 + i
@@ -156,7 +160,8 @@ var holoPlan = (function () {
     dot.anim = "plot"
     dot.n = d
   }
-  ;[0.52, 0.3].forEach((len, i) => {
+  var holoL4 = [0.52, 0.3]
+  holoL4.forEach((len, i) => {
     var p = on(R, -0.32, -0.3 - i * 0.07, len, 0.024, i ? "cyan" : "bright", 1)
     p.anim = "text"
     p.n = 9 + i
@@ -189,7 +194,8 @@ var holoPlan = (function () {
 
 function holoSound(name, pos) {
   if (!HOLO_CFG.sounds) return
-  ;(HOLO_SND[name] || []).forEach((s) => {
+  var holoL5 = (HOLO_SND[name] || [])
+  holoL5.forEach((s) => {
     try {
       api.broadcastSound(s[0], s[1], s[2], { playerIdOrPos: pos })
     } catch (e) {}
