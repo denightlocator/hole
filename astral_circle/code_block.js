@@ -5,12 +5,12 @@ var AC_CFG = {
   range: 15,
   size: 1,
   damage: 60,
-  radius: 8,
+  radius: 5,
   knockback: 10,
   hitPlayers: true,
   spawnPerTick: 5,
   hold: 24,
-  beamWidth: 7,
+  beamWidth: 4.5,
   beamTicks: 30,
   sounds: true,
   hideDist: 220,
@@ -35,56 +35,75 @@ var AC_SND = {
 }
 
 var AC_RING = [
-  [6, 2, 20, 0.12, "white"],
-  [5.4, 2, 18, 0.07, "ice"],
-  [2.6, 2, 10, 0.09, "white"],
-  [1.5, 3.2, 8, 0.07, "ice"],
-  [1.2, 6, 8, 0.08, "white"],
-  [2.2, 7.2, 10, 0.08, "ice"],
-  [3.4, 8.6, 12, 0.1, "white"],
-  [15, 11, 32, 0.14, "white"],
-  [11, 13.5, 26, 0.1, "ice"],
-  [9, 14.5, 22, 0.12, "white"],
-  [7.5, 15.5, 18, 0.08, "blue"],
-  [6, 19, 20, 0.14, "white"],
-  [5.2, 19, 16, 0.08, "ice"],
+  [3, 1, 14, 0.07, "white"],
+  [2.7, 1, 12, 0.04, "ice"],
+  [1.2, 1, 8, 0.05, "white"],
+  [0.8, 1.7, 6, 0.04, "ice"],
+  [0.6, 3, 6, 0.04, "white"],
+  [1.1, 3.6, 8, 0.045, "ice"],
+  [1.7, 4.3, 10, 0.05, "white"],
+  [7.5, 5.5, 28, 0.08, "white"],
+  [7.1, 5.5, 26, 0.04, "ice"],
+  [5.5, 6.8, 22, 0.05, "ice"],
+  [4.5, 7.3, 18, 0.07, "white"],
+  [3.7, 7.8, 16, 0.045, "blue"],
+  [3, 9.5, 14, 0.08, "white"],
+  [2.6, 9.5, 12, 0.04, "ice"],
+  [0.8, 9.5, 6, 0.05, "white"],
 ]
 
-var AC_BELT = { radius: 15, height: 11, count: 32, spin: -0.008 }
+var AC_STAR = [
+  [2.7, 1, 6, 2, 0.04, "blue", 0],
+  [4.5, 7.3, 8, 2, 0.04, "ice", 0],
+  [2.6, 9.5, 4, 1, 0.035, "blue", 45],
+]
+
+var AC_SPOKE = [
+  [7.6, 8.1, 5.5, 12, 0.05, "ice", 0],
+  [0.8, 2.6, 9.5, 4, 0.04, "ice", 0],
+  [1.2, 2.7, 1, 6, 0.035, "ice", 30],
+  [0.6, 1.7, 4.3, 5, 0.035, "blue", 0],
+]
+
+var AC_PIN = [
+  [3, 1, 8, 0.07, 0.5, "blue"],
+]
+
+var AC_BELT = { radius: 7.5, height: 5.5, count: 28, spin: -0.012 }
 
 var AC_RUNE = [
-  [0.5, 0.9, "white"],
-  [0.22, 0.6, "ice"],
-  [0.7, 0.7, "white"],
-  [0.2, 1.1, "ice"],
-  [0.45, 0.45, "blue"],
-  [0.3, 0.95, "white"],
-  [0.6, 0.35, "ice"],
-  [0.25, 0.75, "white"],
+  [0.3, 0.55, "white"],
+  [0.14, 0.38, "ice"],
+  [0.42, 0.42, "white"],
+  [0.12, 0.66, "ice"],
+  [0.28, 0.28, "blue"],
+  [0.18, 0.58, "white"],
+  [0.38, 0.2, "ice"],
+  [0.15, 0.46, "white"],
 ]
 
 var AC_ORB = {
   count: 4,
-  radius: 5.6,
-  height: 19,
-  spin: 0.02,
-  circle: [1.35, 8, 0.09, "white"],
+  radius: 3,
+  height: 9.5,
+  spin: 0.025,
+  circle: [0.72, 6, 0.05, "white"],
   globe: [
-    [-0.7, 6, 0.05, "ice"],
-    [0, 6, 0.07, "white"],
-    [0.7, 6, 0.05, "ice"],
+    [-0.68, 5, 0.03, "ice"],
+    [0, 6, 0.04, "white"],
+    [0.68, 5, 0.03, "ice"],
   ],
-  size: 0.95,
-  pole: [0.06, "blue"],
+  size: 0.5,
+  pole: [0.035, "blue"],
 }
 
 var AC_BEAM = {
-  height: 70,
+  height: 44,
   core: [0, 60, 120],
-  streaks: 6,
+  streaks: 4,
   flare: [
-    [6, 0.15, "white"],
-    [10, 0.3, "ice"],
+    [3.5, 0.12, "white"],
+    [6, 0.24, "ice"],
   ],
 }
 
@@ -94,30 +113,44 @@ var acBeat = 0
 
 var acPlan = (function () {
   var out = []
-  var ring = (r, y, n, thick, col, orb) => {
+  var seg = (x1, z1, x2, z2, y, thick, col, orb) => {
+    var dx = x2 - x1
+    var dz = z2 - z1
+    out.push({ w: thick, h: thick, d: Math.hypot(dx, dz) * 1.04, col: col, at: [(x1 + x2) / 2, y, (z1 + z2) / 2], yaw: Math.atan2(dx, dz), orb: orb, y: y + (orb >= 0 ? AC_ORB.height : 0) })
+  }
+  var poly = (r, y, n, skip, thick, col, turn, orb) => {
     for (var i = 0; i < n; i++) {
-      var a = (i / n) * Math.PI * 2
-      out.push({ w: thick, h: thick, d: 2 * r * Math.sin(Math.PI / n) * 1.04, col: col, at: [Math.cos(a) * r, y, Math.sin(a) * r], yaw: -a, orb: orb })
+      var a = turn + (i / n) * Math.PI * 2
+      var b = turn + ((i + skip) / n) * Math.PI * 2
+      seg(Math.cos(a) * r, Math.sin(a) * r, Math.cos(b) * r, Math.sin(b) * r, y, thick, col, orb)
     }
   }
-  AC_RING.forEach((row, k) => {
-    ring(row[0], row[1], row[2], row[3], row[4], -1)
-    if (row[0] === AC_BELT.radius && row[1] === AC_BELT.height) {
-      for (var i = 0; i < AC_BELT.count; i++) {
-        var rune = AC_RUNE[(i * 3 + (i >> 2)) % AC_RUNE.length]
-        out.push({ w: rune[0], h: rune[1], d: 0.06, col: rune[2], rune: i, orb: -1 })
-      }
+  var rad = (deg) => ((deg || 0) * Math.PI) / 180
+  AC_RING.forEach((q) => poly(q[0], q[1], q[2], 1, q[3], q[4], 0, -1))
+  AC_STAR.forEach((q) => poly(q[0], q[1], q[2], q[3], q[4], q[5], rad(q[6]), -1))
+  AC_SPOKE.forEach((q) => {
+    for (var i = 0; i < q[3]; i++) {
+      var a = rad(q[6]) + (i / q[3]) * Math.PI * 2
+      seg(Math.cos(a) * q[0], Math.sin(a) * q[0], Math.cos(a) * q[1], Math.sin(a) * q[1], q[2], q[4], q[5], -1)
     }
   })
-  for (var o = 0; o < AC_ORB.count; o++) {
-    var from = out.length
-    ring(AC_ORB.circle[0], 0, AC_ORB.circle[1], AC_ORB.circle[2], AC_ORB.circle[3], o)
-    AC_ORB.globe.forEach((g) => {
-      var lat = Math.asin(g[0])
-      ring(AC_ORB.size * Math.cos(lat), AC_ORB.size * g[0], g[1], g[2], g[3], o)
-    })
-    out.push({ w: AC_ORB.pole[0], h: AC_ORB.size * 2.3, d: AC_ORB.pole[0], col: AC_ORB.pole[1], at: [0, 0, 0], yaw: 0, orb: o })
+  AC_PIN.forEach((q) => {
+    for (var i = 0; i < q[2]; i++) {
+      var a = ((i + 0.5) / q[2]) * Math.PI * 2
+      out.push({ w: q[3], h: q[4], d: q[3], col: q[5], at: [Math.cos(a) * q[0], q[1] + q[4] / 2, Math.sin(a) * q[0]], yaw: -a, orb: -1, y: q[1] })
+    }
+  })
+  for (var i = 0; i < AC_BELT.count; i++) {
+    var rune = AC_RUNE[(i * 3 + (i >> 2)) % AC_RUNE.length]
+    out.push({ w: rune[0], h: rune[1], d: 0.04, col: rune[2], rune: i, orb: -1, y: AC_BELT.height })
   }
+  for (var o = 0; o < AC_ORB.count; o++) {
+    poly(AC_ORB.circle[0], 0, AC_ORB.circle[1], 1, AC_ORB.circle[2], AC_ORB.circle[3], 0, o)
+    AC_ORB.globe.forEach((g) => poly(AC_ORB.size * Math.cos(Math.asin(g[0])), AC_ORB.size * g[0], g[1], 1, g[2], g[3], 0, o))
+    out.push({ w: AC_ORB.pole[0], h: AC_ORB.size * 2.3, d: AC_ORB.pole[0], col: AC_ORB.pole[1], at: [0, 0, 0], yaw: 0, orb: o, y: AC_ORB.height })
+  }
+  out.forEach((p, n) => (p.n = n))
+  out.sort((a, b) => a.y - b.y || a.n - b.n)
   return out
 })()
 
@@ -213,7 +246,7 @@ function acPlace(c, part, first) {
   var p = part.p
   if (p.rune !== undefined) {
     var r = acRuneAt(c, p.rune)
-    api.setPosition(part.id, r.at[0], c.mid[1] + (AC_BELT.height + 0.12) * k + (p.h * k) / 2, r.at[2])
+    api.setPosition(part.id, r.at[0], c.mid[1] + (AC_BELT.height + 0.08) * k + (p.h * k) / 2, r.at[2])
     if (first || (c.t + p.rune) % 4 === 0) api.setEntityRotation(part.id, 0, Math.PI / 2 - r.a, 0)
     return
   }
@@ -260,7 +293,7 @@ function acBeam(c, f) {
     if (!id) break
     c.beam.push({ id: id, q: q })
     api.setEntityRotation(id, 0, q.yaw || 0, 0)
-    api.setPosition(id, c.mid[0], c.mid[1] + (q.kind === "flare" ? 0.2 : H / 2 - 4), c.mid[2])
+    api.setPosition(id, c.mid[0], c.mid[1] + (q.kind === "flare" ? 0.2 : H / 2 - 3), c.mid[2])
     c.beamNext++
   }
   if (f < 0) return
@@ -271,7 +304,7 @@ function acBeam(c, f) {
       var a = (b.q.n / AC_BEAM.streaks) * Math.PI * 2 + f * 0.35
       var r = w * 0.62
       api.updateMeshEntity(b.id, "Box", acBox(Math.max(0.05, w * 0.07), H, Math.max(0.05, w * 0.07), b.q.col))
-      api.setPosition(b.id, c.mid[0] + Math.cos(a) * r, c.mid[1] + H / 2 - 4, c.mid[2] + Math.sin(a) * r)
+      api.setPosition(b.id, c.mid[0] + Math.cos(a) * r, c.mid[1] + H / 2 - 3, c.mid[2] + Math.sin(a) * r)
     } else {
       var fl = AC_BEAM.flare[b.q.k]
       var d = Math.max(0.1, fl[0] * 2 * k * grow)
@@ -307,13 +340,13 @@ function acSparks(c, f) {
   var w = acBeamSize(c, f)
   for (var i = 0; i < 4; i++) {
     var a = f * 1.3 + (i * Math.PI) / 2
-    var y = ((f * 7 + i * 13) % 40) * k
+    var y = ((f * 7 + i * 13) % 26) * k
     acFx([c.mid[0] + Math.cos(a) * w * 0.7, c.mid[1] + y, c.mid[2] + Math.sin(a) * w * 0.7], [0, 6, 0], "white", "ice", 0.5 * k, 0.6, "glint", 2, 0.3)
   }
   if (f < 6) {
     for (var j = 0; j < 8; j++) {
       var b = (j / 8) * Math.PI * 2 + f * 0.4
-      acFx([c.mid[0] + Math.cos(b) * 2 * k, c.mid[1] + 0.4, c.mid[2] + Math.sin(b) * 2 * k], [Math.cos(b) * 9, 0.6, Math.sin(b) * 9], "white", "blue", 0.6 * k, 0.7, j % 2 ? "glint" : "critical_hit", 2, 0.2, 1.6)
+      acFx([c.mid[0] + Math.cos(b) * 1.5 * k, c.mid[1] + 0.4, c.mid[2] + Math.sin(b) * 1.5 * k], [Math.cos(b) * 6, 0.5, Math.sin(b) * 6], "white", "blue", 0.6 * k, 0.7, j % 2 ? "glint" : "critical_hit", 2, 0.2, 1.6)
     }
   }
 }
@@ -330,15 +363,15 @@ function acStep(c) {
   c.belt += AC_BELT.spin * rush
   if (t === 0) {
     acSound("cast", c.mid)
-    acFx([c.mid[0], c.mid[1] + 2 * k, c.mid[2]], null, "white", "blue", 0.5, 0.8, "glint", 12, 3 * k)
+    acFx([c.mid[0], c.mid[1] + 1 * k, c.mid[2]], null, "white", "blue", 0.4, 0.8, "glint", 12, 2 * k)
   }
   if (t < B) acBuild(c)
   for (var i = 0; i < c.moving.length; i++) acPlace(c, c.moving[i], false)
   if (t === B) acSound("hold", c.mid)
   if (t >= B && t < F) {
     var a = t * 0.9
-    var r = (1 - (t - B) / Math.max(1, AC_CFG.hold)) * 12 * k
-    var y = c.mid[1] + (2 + ((t * 5) % 17)) * k
+    var r = (1 - (t - B) / Math.max(1, AC_CFG.hold)) * 7 * k
+    var y = c.mid[1] + (1 + ((t * 3) % 9)) * k
     acFx([c.mid[0] + Math.cos(a) * r, y, c.mid[2] + Math.sin(a) * r], [-Math.cos(a) * 5, 0, -Math.sin(a) * 5], "white", "blue", 0.4 * k, 0.6, "glint", 3, 0.3)
     if (t >= F - Math.ceil(acBeamPlan.length / 3) - 2) acBeam(c, t - F)
   }
@@ -348,7 +381,7 @@ function acStep(c) {
     if (t === F) acSound("beam", c.mid)
     if (t === F + 2) acHit(c)
     if (t < F + 10) {
-      var inner = c.parts.filter((x) => x.p.orb < 0 && x.p.rune === undefined && Math.hypot(x.p.at[0], x.p.at[2]) < 4).slice(0, 12)
+      var inner = c.parts.filter((x) => x.p.orb < 0 && x.p.rune === undefined && Math.hypot(x.p.at[0], x.p.at[2]) < AC_CFG.beamWidth / 2 + 0.4).slice(0, 12)
       inner.forEach((x) => {
         acKill(c, x.id)
         c.parts.splice(c.parts.indexOf(x), 1)
@@ -365,7 +398,7 @@ function acStep(c) {
       } catch (e) {}
     })
     c.moving = c.moving.filter((x) => c.ids.indexOf(x.id) >= 0)
-    acFx([c.mid[0], c.mid[1] + 12 * k, c.mid[2]], null, "white", "blue", 0.5 * k, 0.9, "glint", 8, 10 * k)
+    acFx([c.mid[0], c.mid[1] + 6 * k, c.mid[2]], null, "white", "blue", 0.4 * k, 0.9, "glint", 8, 5 * k)
   }
   return t >= E && c.ids.length === 0
 }

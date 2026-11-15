@@ -52,10 +52,10 @@ def draw(tick, eye, look, title):
     d.text((8, 6), title, fill=(230, 235, 245))
     return img
 
-far = (MID[0] + 14, MID[1] + 16, MID[2] - 40)
-look = (MID[0], MID[1] + 11, MID[2])
-shots = [(B // 3, far, look, 'the circles are drawn'), (B + 4, far, look, 'complete'), (B + 4, (MID[0] + 6, MID[1] + 26, MID[2] - 16), (MID[0], MID[1] + 17, MID[2]), 'top ring with the four globes'),
-         (F - 1, far, look, 'a thin line marks the spot'), (F + 8, far, look, 'the white beam'), (F + 8, (MID[0] + 30, MID[1] + 6, MID[2] - 62), (MID[0], MID[1] + 26, MID[2]), 'the beam from far away')]
+far = (MID[0] + 7, MID[1] + 9.5, MID[2] - 21)
+look = (MID[0], MID[1] + 5.2, MID[2])
+shots = [(B // 3, far, look, 'the circles are drawn'), (B + 4, far, look, 'complete'), (B + 4, (MID[0] + 2.5, MID[1] + 13.5, MID[2] - 7.5), (MID[0], MID[1] + 8.6, MID[2]), 'top ring with the four globes'),
+         (B + 4, (MID[0] + 1, MID[1] + 6, MID[2] - 9), (MID[0], MID[1] + 1.5, MID[2]), 'bottom ring with the star'), (F + 8, far, look, 'the white beam'), (F + 8, (MID[0] + 16, MID[1] + 4, MID[2] - 36), (MID[0], MID[1] + 16, MID[2]), 'the beam from far away')]
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, (tick, eye, at, title) in enumerate(shots):
     sheet.paste(draw(tick, eye, at, '%.2f s  %s' % (tick / 20, title)), ((i % 3) * W, (i // 3) * H))
