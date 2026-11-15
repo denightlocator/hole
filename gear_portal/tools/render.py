@@ -88,8 +88,8 @@ def draw(frame, eye, look, title, zoom=520):
 
 mid = (BASE[0] + 3, BASE[1] + 0.6, BASE[2])
 eye = (BASE[0] + 3, BASE[1] + 7.5, BASE[2] - 10.5)
-titles = ['aiming: the arrow is there at once, here pointing straight ahead', 'aiming: the player has turned right, the arrow follows',
-          'go: the first portal opens under the player', '+0.3 s  arms up, the player drops in and fades',
+titles = ['aiming: ready pose, arrow pointing straight ahead', 'aiming: the player has turned right, the arrow follows',
+          'go: the clock-gear portal opens under the player (crouch)', '+0.3 s  corkscrew down, shrinking into the portal',
           '+0.3 s  lands where the arrow was: second portal opens, first folds away', '+0.5 s  the 360 slash sweeps round at once']
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, fr in enumerate(frames):

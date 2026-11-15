@@ -21,7 +21,7 @@ const check = (ok, msg) => { console.log((ok ? '  ok    ' : '  FAIL  ') + msg); 
 function game(opts = {}) {
   const meshes = new Map()
   let next = 1
-  const s = { meshes, fx: [], now: 0, errors: [], said: [], hurt: [], pushed: [], sounds: [], anims: [], worn: {}, opacity: [], options: {}, optionLog: [], peak: 0, calls: 0, moves: [], look: [0, -0.2, 0.98] }
+  const s = { meshes, fx: [], now: 0, errors: [], said: [], hurt: [], pushed: [], sounds: [], anims: [], worn: {}, opacity: [], scale: [], options: {}, optionLog: [], peak: 0, calls: 0, moves: [], look: [0, -0.2, 0.98] }
   s.where = { p1: [0.5, 10, 0.5], p2: [0.5, 10, 10.4], cow: [6.5, 10, 2.5], far: [0.5, 10, 14.5] }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
   const box = (o) => Object.keys(o).every((k) => BOX.includes(k)) && finite(o) && o.width > 0 && o.height > 0 && o.depth > 0
@@ -35,6 +35,7 @@ function game(opts = {}) {
     applyHealthChange: (id, n, by) => { s.hurt.push([id, n, by, s.now]) },
     applyImpulse: (id, x, y, z) => { need(finite([x, y, z]), 'bad impulse'); s.pushed.push([id, x, y, z]) },
     broadcastSound: (name, vol, rate, o) => { need(SOUNDS.includes(name) && finite([vol, rate, o.playerIdOrPos]), 'sound ' + name); s.sounds.push(name) },
+    setLifeformScale: (id, v) => { need(id === 'p1' && v > 0 && v <= 1, 'bad scale'); s.scale.push([s.now, v]) },
     setPlayerOpacity: (id, v) => { need(id === 'p1' && v >= 0 && v <= 1, 'bad opacity'); s.opacity.push([s.now, v]) },
     setClientOptions: (id, o) => { need(id === 'p1', 'options for the wrong player'); Object.assign(s.options, o); s.optionLog.push([s.now, o]) },
     setClientOptionToDefault: (id, k) => { delete s.options[k]; s.optionLog.push([s.now, k]) },
@@ -82,7 +83,7 @@ function play(s, ticks, each) {
     const calls = s.calls
     s.run.tick(50)
     worst = Math.max(worst, s.calls - calls)
-    frames.push({ meshes: [...s.meshes.values()].filter((m) => m.p).map((m) => ({ ...m.o, p: m.p, r: m.r })), player: s.where.p1.slice(), opacity: s.opacity.length ? s.opacity[s.opacity.length - 1][1] : 1, worn: Object.keys(s.worn).length, phase: s.run.gateList[0] ? s.run.gateList[0].phase : 'done' })
+    frames.push({ meshes: [...s.meshes.entries()].filter((e) => e[1].p).map(([id, m]) => ({ ...m.o, p: m.p, r: m.r, id })), player: s.where.p1.slice(), opacity: s.opacity.length ? s.opacity[s.opacity.length - 1][1] : 1, worn: Object.keys(s.worn).length, phase: s.run.gateList[0] ? s.run.gateList[0].phase : 'done' })
     s.now++
   }
   return { frames, worst }
@@ -103,20 +104,24 @@ check(run.frames[0].meshes.length === 6 && arrowOf(run.frames[0]).length === 6, 
 const before = arrowOf(run.frames[20]), after = arrowOf(run.frames[40])
 check(Math.abs(midOf(before)[0]) < 1e-6 && midOf(before)[1] > 2 && after.length === 6 && midOf(after)[0] > 2 && Math.abs(midOf(after)[1]) < 1e-6, 'the arrow points where the player is looking and follows when the player turns (here from ahead to the right)')
 check(s.optionLog.some((o) => o[1].groundArrowPath && Math.abs(o[1].groundArrowPath.target[0] - 6.5) < 1e-6 && Math.abs(o[1].groundArrowPath.target[2] - 0.5) < 1e-6), 'the caster also gets the game\'s own arrow strip on the ground to the landing spot, 6 blocks away')
-check(run.frames[40].opacity === 1 && run.frames[40].worn === 0 && !('speedMultiplier' in s.optionLog.filter((o) => o[0] < 60).reduce((a, o) => Object.assign(a, typeof o[1] === 'object' ? o[1] : {}), {})) && s.anims.every((a) => a[0] >= 60), 'while aiming the player is visible, free to walk, and nothing else has started')
+check(run.frames[40].opacity === 1 && run.frames[40].worn === 0 && !('speedMultiplier' in s.optionLog.filter((o) => o[0] < 60).reduce((a, o) => Object.assign(a, typeof o[1] === 'object' ? o[1] : {}), {})) && s.anims.filter((a) => a[0] < 60).map((a) => a[0]).join() === '0,4,24,44' && s.anims[0][1].nodeAnimations.ArmRightMesh.timeline[1].rotation[0] < -1.3, 'while aiming the player is visible and free to walk, and holds a ready pose with the blade arm pointing ahead')
 check(s.fx.some((q) => q.n < 60 && Math.abs((q.a[0] + q.b[0]) / 2 - (q.n < 30 ? 0.5 : 6.5)) < 1e-6), 'sparks mark the landing spot')
 
 console.log('The move itself: first portal under the player')
 check(s.moves.filter((m) => m[0] < 66).every((m) => m[1] === 0.5 && m[2] === 10 && m[3] === 0.5), 'the player is not moved yet: the first portal opens right under their feet')
 const N = s.run.gatePlan.length
 const portal = run.frames[65].meshes.filter((m) => !arrowOf(run.frames[65]).includes(m))
-check(N === 50 && run.frames[59].meshes.length === 6 && portal.length === N, `after 3 s of aiming the move goes off by itself; the portal (${N} meshes) opens under the player in 0.3 s`)
+check(N === 86 && run.frames[59].meshes.length === 6 && portal.length === N, `after 3 s of aiming the move goes off by itself; the portal (${N} meshes) opens under the player in 0.3 s`)
 const farOf = (m, c = [0.5, 0.5]) => Math.hypot(m.p[0] - c[0], m.p[2] - c[1])
-check(portal.every((m) => m.p[1] > 10 && m.p[1] < 10.15 && m.height <= 0.08 && farOf(m) < 1.51), 'it lies flat on the floor, 3 blocks across: gold rim, two cog rings, dark green disc, bright centre')
-const spinA = run.frames[64].meshes, spinB = run.frames[65].meshes
-const turning = spinA.filter((m, i) => !(Math.abs(m.depth - 0.5) < 1e-9 && Math.abs(m.width - 0.08) < 1e-9) && (m.p[0] !== spinB[i].p[0] || m.r[1] !== spinB[i].r[1]))
-check(turning.length === 28 && turning.every((m) => Math.abs(farOf(m) - 1.22) < 1e-6 || farOf(m) < 0.75), 'the outer cog ring (12 teeth) turns one way and the inner cog (16 parts) the other way; rim and disc stay still')
-check(s.anims[0][0] === 60 && s.anims[1][0] === 63 && s.anims[0][1].nodeAnimations.TorsoNode.timeline[1].rotation[0] > 0.3 && s.anims[1][1].nodeAnimations.ArmRightMesh.timeline[1].rotation[0] < -2.9, 'animation: the player braces, then throws the arms up and drops in')
+check(portal.every((m) => m.p[1] > 10 && m.p[1] < 10.15 && m.height <= 0.1 && farOf(m) < 2.45), 'it lies flat on the floor: a clock face inside a big gear, with three small gears meshing on the outside')
+const spinB = new Map(run.frames[70].meshes.map((m) => [m.id, m]))
+const turning = run.frames[69].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 6.5, m.p[2] - 0.5) < 2.5 && spinB.has(m.id) && (m.p[0] !== spinB.get(m.id).p[0] || m.r[1] !== spinB.get(m.id).r[1]))
+check(turning.length === 28, 'moving parts: the 12 big gear teeth, the spoked wheel, the two clock hands with their hub, and the three small gears (turning against each other); ' + turning.length + ' of 86 pieces move')
+const hand = (f) => f.meshes.find((m) => Math.abs(m.depth - 1.04) < 1e-9)
+check(Math.abs(Math.abs(hand(run.frames[65]).r[1] - hand(run.frames[64]).r[1]) - 0.32) < 1e-9, 'the long clock hand sweeps round fast (a full turn each second)')
+const go = s.anims.filter((a) => a[0] >= 60 && a[0] < 66 && a[1])
+check(go.map((a) => a[0]).join() === '60,62,64' && go[0][1].nodeAnimations.LegRightMesh.timeline[1].rotation[0] < -0.6 && go[1][1].nodeAnimations.ArmRightMesh.timeline[1].rotation[0] < -3 && Math.abs(go[2][1].nodeAnimations.TorsoNode.timeline[1].rotation[1] - Math.PI) < 1e-9, 'animation: crouch, leap with arms up, then a half-turn corkscrew down into the portal')
+check(s.scale.filter((q) => q[0] < 66).map((q) => q[1].toFixed(2)).join() === '0.84,0.68,0.52,0.36', 'the player shrinks as they go down, so it looks like sinking into the portal')
 check(run.frames[63].opacity === 0.5 && run.frames[65].opacity === 0, 'the player fades and is invisible when they are in')
 const heldAt = s.optionLog.find((o) => o[1].speedMultiplier === 0)
 check(heldAt && heldAt[0] === 65 && heldAt[1].invincible === true, 'for that moment the player cannot walk and cannot be hurt')
@@ -135,19 +140,21 @@ check(sizes[0] === 6 && Math.max(...sizes) === 24 && sizes[10] === 0, `the slash
 const allRing = new Set(); run.frames.slice(leftAt, leftAt + 12).forEach((f) => ringOf(f).forEach((m) => allRing.add(m.p.join())))
 check(allRing.size === 36 && [...allRing].every((p) => { const q = p.split(',').map(Number); const r = Math.hypot(q[0] - 6.5, q[2] - 0.5); return Math.abs(r - 2.58) < 1e-6 || Math.abs(r - 2.88) < 1e-6 }), 'it is a full circle of 18 pieces, 2.6 to 2.9 blocks out, at chest height')
 const yaws = s.anims.filter((a) => a[0] > leftAt && a[1] && a[1].animationDurationMs === 100).map((a) => a[1].nodeAnimations.TorsoNode.timeline.map((k) => Math.round((k.rotation[1] * 180) / Math.PI)))
-check(yaws.map((y) => y.join('>')).join(' ') === '0>90 90>180 180>270 270>360', 'animation: arms out, the body turns a full 360 in four quarter turns (4 small calls), then settles')
+check(yaws.map((y) => y.join('>')).join(' ') === '-45>45 45>135 135>225 225>315 -45>0', 'animation: wind-up, a full 360 leaning into the turn with the blade arm out (four quarter turns), then a lunge to finish')
+const tail = s.anims.filter((a) => a[0] > leftAt + 9 && a[1]).map((a) => a[0] - leftAt + ':' + a[1].animationDurationMs)
+check(tail.join() === '11:200,15:200' && s.scale.slice(-3).map((q) => q[1]).join() === '0.6,0.85,1', 'the finishing pose is held for 0.2 s, then the player stands up; the player grows back to full size while coming out')
 check(s.anims[s.anims.length - 1][1] === null, 'the animation is stopped at the end')
 check(s.hurt.length === 1 && s.hurt[0][0] === 'cow' && s.hurt[0][1] === -25 && s.hurt[0][2] === 'p1' && s.hurt[0][3] === leftAt + 1, 'the slash deals 25 damage once to everything within 3 blocks of where the player came out (a cow 2 blocks away); nothing else is touched')
 check(s.pushed.length === 1 && s.pushed[0][3] > 7, 'and knocks it away')
 const closed = run.frames.findIndex((f, i) => i > leftAt && f.meshes.length === 0)
 if (args.includes('--why')) console.log(closed, leftAt, run.frames.slice(leftAt, leftAt + 16).map((f) => f.meshes.length).join(' '))
-const secondAt = run.frames[leftAt].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 6.5, m.p[2] - 0.5) < 1.6).length
-check(secondAt === 25 && run.frames[leftAt + 1].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 6.5, m.p[2] - 0.5) < 1.6).length === 50, 'the second portal (50 meshes) opens at the exit spot as the player arrives, complete 0.05 s later')
-const firstLeft = (n) => run.frames[n].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5) < 1.6).length
-check(firstLeft(leftAt) === 50 && firstLeft(leftAt + 8) === 0, 'the first portal folds away in 0.4 s after the player has left it')
-check(closed === leftAt + 17 && s.meshes.size === 0 && s.run.held() === 0 && s.run.gateList.length === 0 && Object.keys(s.worn).length === 0, `the second portal closes after the slash; no mesh is left ${((closed + 1) / 20).toFixed(1)} s after the cast`)
-check(s.peak <= 130, `${s.peak} meshes at the most (limit 400)`)
-check(run.worst <= 190, `at most ${run.worst} api calls in a tick`)
+const secondAt = run.frames[leftAt].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 6.5, m.p[2] - 0.5) < 2.5).length
+check(secondAt === 43 && run.frames[leftAt + 1].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 6.5, m.p[2] - 0.5) < 2.5).length === 86, 'the second portal (86 meshes) opens at the exit spot as the player arrives, complete 0.05 s later')
+const firstLeft = (n) => run.frames[n].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5) < 2.5).length
+check(firstLeft(leftAt) === 86 && firstLeft(leftAt + 8) === 0, 'the first portal folds away in 0.4 s after the player has left it')
+check(closed === leftAt + 19 && s.meshes.size === 0 && s.run.held() === 0 && s.run.gateList.length === 0 && Object.keys(s.worn).length === 0, `the second portal closes after the slash; no mesh is left ${((closed + 1) / 20).toFixed(1)} s after the cast`)
+check(s.peak <= 230, `${s.peak} meshes at the most (limit 400)`)
+check(run.worst <= 230, `at most ${run.worst} api calls in a tick`)
 check(SOUNDS.every((n) => s.sounds.includes(n)), 'sounds for the portal, coming out and the slash')
 
 console.log('Leaving early and edge cases')
@@ -167,7 +174,7 @@ walked.g.gearPortal('p1')
 play(walked, 10)
 walked.where.p1 = [3.5, 10, 0.5]
 const wk = play(walked, 60)
-check(wk.frames[55].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 3.5, m.p[2] - 0.5) < 1.6).length === 50 && Math.abs(wk.frames[56].player[2] - 6.5) < 1e-9, 'if the player walks while aiming, the arrow and the first portal go with them')
+check(wk.frames[55].meshes.filter((m) => m.p[1] < 10.2 && Math.hypot(m.p[0] - 3.5, m.p[2] - 0.5) < 2.5 && !(Math.abs(m.depth - 0.5) < 1e-9 && Math.abs(m.width - 0.08) < 1e-9)).length === 86 && Math.abs(wk.frames[56].player[2] - 6.5) < 1e-9, 'if the player walks while aiming, the arrow and the first portal go with them')
 const wall = game({ wall: 3 })
 wall.g.gearPortal('p1')
 const w = play(wall, 70)

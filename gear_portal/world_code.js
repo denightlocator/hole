@@ -10,6 +10,7 @@ var GATE_CFG = {
   flip: 1,
   nodeMeshes: true,
   hidePlayer: true,
+  shrink: true,
   holdPlayer: true,
   clickFires: true,
   groundArrow: true,
@@ -37,14 +38,17 @@ var GATE_SND = {
   slash: [["rpgKnifeSlice1", 1, 0.8], ["bigDrumSwish1", 0.8, 0.9]],
 }
 
-var GATE_STEP = { sink: 6, open: 6, spin: 8, settle: 4, close: 8 }
+var GATE_STEP = { sink: 6, open: 6, spin: 8, land: 2, pose: 4, settle: 4, close: 8 }
 var GATE_NODES = ["TorsoNode", "HeadMesh", "ArmRightMesh", "ArmLeftMesh", "LegLeftMesh", "LegRightMesh"]
 var GATE_POSE = {
   rest: {},
-  brace: { TorsoNode: [18, 0, 0], HeadMesh: [25, 0, 0], ArmRightMesh: [0, 0, -40], ArmLeftMesh: [0, 0, 40], LegRightMesh: [-25, 0, 0], LegLeftMesh: [25, 0, 0] },
-  drop: { HeadMesh: [-20, 0, 0], ArmRightMesh: [-170, 0, 8], ArmLeftMesh: [-170, 0, -8] },
-  rise: { TorsoNode: [-10, 0, 12], ArmRightMesh: [0, 0, -85], ArmLeftMesh: [0, 0, 85] },
-  wide: { TorsoNode: [8, 0, 12], ArmRightMesh: [0, 0, -85], ArmLeftMesh: [0, 0, 70], LegRightMesh: [-15, 0, 0], LegLeftMesh: [15, 0, 0] },
+  ready: { TorsoNode: [8, 0, 0], ArmRightMesh: [-80, 0, 0], ArmLeftMesh: [20, 0, 10], LegRightMesh: [-12, 0, 0], LegLeftMesh: [12, 0, 0] },
+  crouch: { TorsoNode: [28, 0, 0], HeadMesh: [20, 0, 0], ArmRightMesh: [45, 0, -15], ArmLeftMesh: [45, 0, 15], LegRightMesh: [-40, 0, 0], LegLeftMesh: [40, 0, 0] },
+  leap: { TorsoNode: [-12, 0, 0], HeadMesh: [-25, 0, 0], ArmRightMesh: [-175, 0, -10], ArmLeftMesh: [-175, 0, 10], LegRightMesh: [8, 0, 0], LegLeftMesh: [-8, 0, 0] },
+  tuck: { TorsoNode: [20, 0, 0], HeadMesh: [15, 0, 0], ArmRightMesh: [-175, 0, 20], ArmLeftMesh: [-175, 0, -20], LegRightMesh: [-30, 0, 0], LegLeftMesh: [-30, 0, 0] },
+  windup: { TorsoNode: [12, 0, -10], HeadMesh: [0, 30, 0], ArmRightMesh: [-20, 0, -95], ArmLeftMesh: [-60, 0, -30], LegRightMesh: [-25, 0, 0], LegLeftMesh: [30, 0, 0] },
+  sweep: { TorsoNode: [14, 0, -14], HeadMesh: [0, 20, 0], ArmRightMesh: [0, 0, -100], ArmLeftMesh: [-50, 0, -25], LegRightMesh: [-30, 0, 0], LegLeftMesh: [35, 0, 0] },
+  finish: { TorsoNode: [22, 0, 0], HeadMesh: [-10, 0, 0], ArmRightMesh: [-70, 0, 25], ArmLeftMesh: [30, 0, 20], LegRightMesh: [-45, 0, 0], LegLeftMesh: [30, 0, 0] },
 }
 var GATE_TURNS = ["TorsoNode", "LegLeftMesh", "LegRightMesh"]
 var GATE_WORN = [
@@ -59,12 +63,32 @@ var gateMeshes = 0
 var gatePlan = (function () {
   var out = []
   var third = 1 / Math.sqrt(3)
-  for (var turn = 0; turn < 3; turn++) out.push({ radius: 0, angle: (turn * Math.PI) / 3, wide: 2.1, tall: 0.03, deep: 2.1 * third, lift: 0.04, col: "deep", spin: 0 })
-  for (var turn = 0; turn < 3; turn++) out.push({ radius: 0, angle: (turn * Math.PI) / 3, wide: 0.9, tall: 0.03, deep: 0.9 * third, lift: 0.075, col: "jade", spin: 0 })
-  for (var idx = 0; idx < 8; idx++) out.push({ radius: 0.6, angle: (idx / 8) * Math.PI * 2, wide: 0.53, tall: 0.05, deep: 0.07, lift: 0.1, col: "gold", spin: -0.1 })
-  for (var idx = 0; idx < 8; idx++) out.push({ radius: 0.74, angle: ((idx + 0.5) / 8) * Math.PI * 2, wide: 0.16, tall: 0.05, deep: 0.22, lift: 0.1, col: "brass", spin: -0.1 })
-  for (var idx = 0; idx < 12; idx++) out.push({ radius: 1.22, angle: (idx / 12) * Math.PI * 2, wide: 0.2, tall: 0.06, deep: 0.3, lift: 0.09, col: idx % 2 ? "gold" : "brass", spin: 0.06 })
-  for (var idx = 0; idx < 16; idx++) out.push({ radius: 1.5, angle: (idx / 16) * Math.PI * 2, wide: 0.63, tall: 0.08, deep: 0.12, lift: 0.06, col: "gold", spin: 0, rim: idx })
+  var full = Math.PI * 2
+  var add = function (radius, angle, wide, tall, deep, lift, col, spin, offX, offZ) {
+    out.push({ radius: radius, angle: angle, wide: wide, tall: tall, deep: deep, lift: lift, col: col, spin: spin || 0, offX: offX || 0, offZ: offZ || 0 })
+  }
+  for (var turn = 0; turn < 3; turn++) add(0, (turn * Math.PI) / 3, 2.7, 0.03, 2.7 * third, 0.04, "deep")
+  for (var turn = 0; turn < 3; turn++) add(0, (turn * Math.PI) / 3, 1.0, 0.03, 1.0 * third, 0.06, "jade")
+  for (var idx = 0; idx < 12; idx++) add(0.8, (idx / 12) * full, 0.45, 0.04, 0.07, 0.075, "brass")
+  for (var turn = 0; turn < 3; turn++) add(0, (turn * Math.PI) / 3, 0.09, 0.04, 1.56, 0.085, "brass", -0.07)
+  for (var idx = 0; idx < 12; idx++) {
+    var main = idx % 3 === 0
+    add(main ? 1.1 : 1.14, (idx / 12) * full, main ? 0.13 : 0.07, 0.04, main ? 0.32 : 0.2, 0.09, main ? "gold" : "mint")
+  }
+  for (var idx = 0; idx < 16; idx++) add(1.4, (idx / 16) * full, 0.6, 0.1, 0.16, 0.06, "gold")
+  for (var idx = 0; idx < 12; idx++) add(1.58, (idx / 12) * full, 0.3, 0.1, 0.24, 0.06, idx % 2 ? "gold" : "brass", 0.05)
+  add(0.3, 0, 0.13, 0.04, 0.6, 0.11, "brass", -0.04)
+  add(0.52, 0, 0.07, 0.04, 1.04, 0.13, "white", 0.32)
+  add(0, 0, 0.26, 0.08, 0.26, 0.13, "gold", 0.32)
+  add(0, Math.PI / 4, 0.16, 0.1, 0.16, 0.14, "dark", 0.32)
+  for (var gear = 0; gear < 3; gear++) {
+    var where = (gear / 3) * full + 0.7
+    var gearX = Math.sin(where) * 1.92
+    var gearZ = Math.cos(where) * 1.92
+    for (var turn = 0; turn < 3; turn++) add(0, (turn * Math.PI) / 3, 0.13, 0.08, 0.72, 0.06, gear === 1 ? "gold" : "brass", gear % 2 ? 0.22 : -0.22, gearX, gearZ)
+    for (var turn = 0; turn < 3; turn++) add(0, (turn * Math.PI) / 3, 0.44, 0.07, 0.44 * third, 0.065, "dark", 0, gearX, gearZ)
+    add(0, 0, 0.14, 0.1, 0.14, 0.08, "jade", 0, gearX, gearZ)
+  }
   return out
 })()
 
@@ -145,7 +169,7 @@ function gatePiece(cast, part, moment, first) {
   var scale = GATE_CFG.size
   var angle = part.piece.angle + part.piece.spin * moment
   var reach = part.piece.radius * scale
-  gatePut(part.ident, part.mid[0] + Math.sin(angle) * reach, part.mid[1] + part.piece.lift, part.mid[2] + Math.cos(angle) * reach, angle, first || part.piece.spin !== 0)
+  gatePut(part.ident, part.mid[0] + part.piece.offX * scale + Math.sin(angle) * reach, part.mid[1] + part.piece.lift, part.mid[2] + part.piece.offZ * scale + Math.cos(angle) * reach, angle, first || part.piece.spin !== 0)
 }
 
 function gateSchema(cast, from, upto, ticks, yawFrom, yawUpto) {
@@ -187,6 +211,16 @@ function gateWear(cast, worn) {
     })
   } catch (err) {
     GATE_CFG.nodeMeshes = false
+  }
+}
+
+function gateSize(cast, amount) {
+  if (!GATE_CFG.shrink) return
+  try {
+    api.setLifeformScale(cast.owner, amount)
+    cast.small = amount !== 1
+  } catch (err) {
+    GATE_CFG.shrink = false
   }
 }
 
@@ -343,6 +377,8 @@ function gateStep(cast) {
     cast.aim = gateFacing(cast.owner, cast.aim)
     cast.out = gateReach(cast.centre, cast.aim, Math.min(15, GATE_CFG.travel))
     gateArrow(cast, moment)
+    if (moment === 0) gateAnimate(cast, GATE_POSE.rest, GATE_POSE.ready, 4)
+    else if (moment % 20 === 4) gateAnimate(cast, GATE_POSE.ready, GATE_POSE.ready, 20)
     if (moment % 3 === 0) gateCloud([cast.out[0], cast.out[1] + 0.15, cast.out[2]], 0.7 * scale, 0.05, { life: 0.3, size: 0.12, count: 6, power: 0.3, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.5, 0.2], first: "mint", last: "jade" })
     if (moment < Math.round(GATE_CFG.aimTime * 20) && !cast.wantOut) return false
     cast.phase = "sink"
@@ -350,11 +386,13 @@ function gateStep(cast) {
     cast.gates.push({ mid: cast.centre, parts: [], next: 0, each: Math.ceil(gatePlan.length / GATE_STEP.open), shut: false })
     gateSound("open", cast.centre)
     gateWear(cast, true)
-    gateAnimate(cast, GATE_POSE.rest, GATE_POSE.brace, 3)
+    gateAnimate(cast, GATE_POSE.ready, GATE_POSE.crouch, 2)
   }
   var mid = cast.centre
   var since = moment - cast.fired
-  if (since === 3) gateAnimate(cast, GATE_POSE.brace, GATE_POSE.drop, 3)
+  if (cast.phase === "sink" && since === 2) gateAnimate(cast, GATE_POSE.crouch, GATE_POSE.leap, 2)
+  if (cast.phase === "sink" && since === 4) gateAnimate(cast, GATE_POSE.leap, GATE_POSE.tuck, 2, 0, 180)
+  if (cast.phase === "sink" && since >= 2) gateSize(cast, 1 - 0.16 * (since - 1))
   cast.gates.forEach((gate) => gateRun(cast, gate, moment))
   if (cast.phase === "sink") {
     var high = 1.8 * (1 - (since + 1) / GATE_STEP.sink)
@@ -388,29 +426,36 @@ function gateStep(cast) {
     gateWear(cast, true)
     gateSound("leave", cast.out)
     gateSound("slash", cast.out)
-    gateAnimate(cast, GATE_POSE.rise, GATE_POSE.wide, 1)
+    gateAnimate(cast, GATE_POSE.tuck, GATE_POSE.windup, 1, -135, -45)
+    gateSize(cast, 0.6)
     gateCloud([cast.out[0], cast.out[1] + 0.2, cast.out[2]], 1, 0.1, { life: 0.4, size: 0.2, count: 30, power: 3, dir1: [-1, 0.2, -1], dir2: [1, 1.5, 1], first: "white", last: "jade" })
     gateCloud([cast.out[0], cast.out[1] + 0.2, cast.out[2]], 0.8, 0.1, { life: 0.5, size: 0.16, count: 16, power: 2, dir1: [-1, 0.5, -1], dir2: [1, 2, 1], first: "white", last: "gold" })
     gateCloud([cast.out[0], cast.out[1] + 0.9, cast.out[2]], 0.3, 0.9, { life: 0.4, size: 0.14, count: 14, power: 1.5, dir1: [-0.3, 0.8, -0.3], dir2: [0.3, 1.6, 0.3], first: "mint", last: "gold" })
     return false
   }
   var age = moment - cast.left
+  if (age === 1) gateSize(cast, 0.85)
+  if (age === 2) gateSize(cast, 1)
   if (age >= 1 && age <= GATE_STEP.spin) {
     if ((age - 1) % 2 === 0) {
       var quarter = (age - 1) / 2
-      gateAnimate(cast, GATE_POSE.wide, GATE_POSE.wide, 2, (quarter * 90) % 360, ((quarter * 90) % 360) + 90)
+      gateAnimate(cast, quarter ? GATE_POSE.sweep : GATE_POSE.windup, GATE_POSE.sweep, 2, quarter * 90 - 45, quarter * 90 + 45)
     }
     gateHarm(cast)
   }
   if (age >= 1) gateSlash(cast, age - 1)
-  if (age === GATE_STEP.spin + 1) {
-    gateAnimate(cast, GATE_POSE.wide, GATE_POSE.rest, GATE_STEP.settle)
+  var landed = GATE_STEP.spin + 1
+  if (age === landed) gateAnimate(cast, GATE_POSE.sweep, GATE_POSE.finish, GATE_STEP.land, -45, 0)
+  if (age === landed + GATE_STEP.land) {
+    gateAnimate(cast, GATE_POSE.finish, GATE_POSE.finish, GATE_STEP.pose)
     cast.gates[1].shut = true
   }
-  return age >= GATE_STEP.spin + 1 + GATE_STEP.settle && !cast.gates.some((gate) => gate.parts.length)
+  if (age === landed + GATE_STEP.land + GATE_STEP.pose) gateAnimate(cast, GATE_POSE.finish, GATE_POSE.rest, GATE_STEP.settle)
+  return age >= landed + GATE_STEP.land + GATE_STEP.pose + GATE_STEP.settle && !cast.gates.some((gate) => gate.parts.length)
 }
 
 function gateEnd(cast) {
+  if (cast.small) gateSize(cast, 1)
   try {
     gateHold(cast, false)
   } catch (err) {}
