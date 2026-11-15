@@ -14,11 +14,31 @@ Paste `world_code.js` into World Code. If Dragon Pulse or other world code is
 there too, paste this **after** it: it keeps the earlier `tick`, chat and
 right-click handlers working. Then type `!claw`.
 
-Or place a Code Block and paste [`code_block.js`](code_block.js) into it
-(one line, `dragonClaw(myId)`): whoever clicks the block does the move. The
-world code above must be in World Code for this to work.
+### Without World Code: the code block
 
-From other code: `dragonClaw(playerId)`.
+Place a Code Block and paste [`code_block.js`](code_block.js) into it (17,389
+of 32,000 characters). Nothing is needed in World Code. Click the block and
+the move plays **around the block**: slashes, ring and hits are centred on it
+and fly off in the direction you are looking. You do the arm animation and
+get the hand claws, but you are not pushed and not hurt.
+
+How it works: the first click defines the whole move and its own `tick`;
+later clicks only start it. Limits:
+
+- This relies on the game calling a `tick` that a code block assigned. That is
+  not documented. If it does not, the second click says so in orange chat, and
+  the move has to go in World Code.
+- The definition is lost when World Code is saved or the world restarts; the
+  next click loads it again.
+- If an older Dragon Claw is still in World Code, the block uses that one and
+  plays at the player. Remove it or replace it with the current
+  `world_code.js`.
+
+`code_block.js` is generated from `world_code.js` by `tools/check.mjs`; do not
+edit it by hand.
+
+From other code: `dragonClaw(playerId)`, or `dragonClaw(playerId, [x, y, z])`
+to play it at a position instead of at the player.
 
 ## What happens (3.05 s)
 

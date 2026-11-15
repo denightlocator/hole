@@ -20,7 +20,7 @@ const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object
 const fail = []
 const check = (ok, msg) => { console.log((ok ? '  ok    ' : '  FAIL  ') + msg); if (!ok) fail.push(msg) }
 
-function game(before = '') {
+function game(before = '', bare = false) {
   const meshes = new Map()
   let next = 1
   const s = { meshes, calls: 0, errors: [], hurt: [], anims: [], hands: [], sounds: new Set(), peak: 0, particles: 0, pushes: [], now: 0 }
@@ -66,6 +66,7 @@ function game(before = '') {
     applyImpulse: (id, x, y, z) => { need(finite([x, y, z]), 'bad impulse'); s.pushes.push({ t: s.now, id }) },
   }
   s.g = {}
+  if (bare) { s.bare = { tick: undefined, onPlayerChat: undefined, onPlayerAltAction: undefined }; return s }
   s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerAltAction;\n' + before + '\n' + code +
     '\nreturn { tick, onPlayerChat, onPlayerAltAction, CLAW_CFG, CLAW_POSE, CLAW_NODES, CLAW_STEP, clawCasts, clawNodePose, clawSchema, held: () => clawMeshes }')(s.api, s.g)
   s.shipped = s.run.CLAW_CFG.slope
@@ -210,6 +211,33 @@ const asCode = steps.map((a, i) => i === 0
 fs.writeFileSync(path.join(dir, 'animation', 'animation_only.code_block.js'), asCode + '\n')
 check(asCode.length <= 32000, `wrote animation/animation_only.code_block.js: ${asCode.length} characters`)
 
+console.log('Code block')
+const blockCode = 'if (typeof dragonClaw !== "function") {\n  ;(function () {\n' + code.trimEnd() + '\n  })()\n}\n' +
+  'if (globalThis.clawSeen === dragonClawBeat()) api.sendMessage(myId, "Dragon Claw: the game is not running tick from this code block, so the move cannot play. Paste dragon_claw/world_code.js into World Code instead.", { color: "orange" })\n' +
+  'globalThis.clawSeen = dragonClawBeat()\n' +
+  'dragonClaw(myId, [thisPos[0] + 0.5, thisPos[1], thisPos[2] + 0.5])\n'
+fs.writeFileSync(path.join(dir, 'code_block.js'), blockCode)
+check(blockCode.length <= 32000 && !blockCode.includes('//'), `wrote code_block.js: ${blockCode.length} of 32,000 characters, no comments`)
+{
+  const b = game('', true)
+  const said = []
+  b.api.sendMessage = (id, m) => said.push(m)
+  const click = new Function('api', 'globalThis', 'myId', 'thisPos', 'with (globalThis) {' + blockCode + '}')
+  const G = b.bare
+  click(b.api, G, 'caster', [20, 10, 30])
+  check(typeof G.tick === 'function' && typeof G.dragonClaw === 'function', 'one click with no world code at all defines the move and its tick')
+  let n = 0, seen = [], peak = 0, last = 0
+  while (n < 100) { G.tick(50); b.now = ++n; if (b.meshes.size) last = n; peak = Math.max(peak, b.meshes.size); seen.push(...[...b.meshes.values()].map((m) => m.p).filter(Boolean)) }
+  const far = Math.max(...seen.map((p) => Math.hypot(p[0] - 20.5, p[2] - 30.5)))
+  check(last === T.drop2 && peak >= 21 && b.errors.length === 0 && b.meshes.size === 0 && b.anims.length === P.length, `the move then plays through tick, animation included: last mesh gone after ${(last / 20).toFixed(2)} s`)
+  const first = seen.slice(0, 21)
+  check(first.every((p) => Math.hypot(p[0] - 20.5, p[2] - 30.5) < 4.5 && p[1] > 10) && far <= 10.5, `it is centred on the code block, not on the player (slashes start within 4.5 blocks of the block, nothing further than ${far.toFixed(1)})`)
+  check(!b.pushes.some((p) => p.id === 'caster') && !b.hurt.some((h) => h.id === 'caster'), 'the player who clicked is not pushed and not hurt')
+  click(b.api, G, 'caster', [20, 10, 30])
+  const again = G.tick
+  click(b.api, G, 'caster', [20, 10, 30])
+  check(G.tick === again && said.length === 1 && /not running tick/.test(said[0]), 'clicking again does not load the code twice; if tick never ran in between, the player is told')
+}
 if (args.includes('--dump')) {
   fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames, pose: keyframes }))
 }

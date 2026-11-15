@@ -133,6 +133,7 @@ var clawRad = (deg) => Math.round(((deg * Math.PI) / 180) * 100) / 100
 
 var clawCasts = []
 var clawMeshes = 0
+var clawBeat = 0
 
 function clawNodePose(row, node) {
   var r = (row[1][node] || [0, 0, 0]).slice()
@@ -382,7 +383,7 @@ function clawSweep(c, tag, around, far) {
 }
 
 function clawLunge(c) {
-  if (!CLAW_CFG.lunge) return
+  if (!CLAW_CFG.lunge || c.at) return
   try {
     api.applyImpulse(c.id, c.F[0] * CLAW_CFG.lunge, 0, c.F[2] * CLAW_CFG.lunge)
   } catch (e) {}
@@ -391,7 +392,7 @@ function clawLunge(c) {
 function clawStep(c) {
   var T = CLAW_STEP
   var t = c.t
-  var p = api.getPosition(c.id)
+  var p = c.at || api.getPosition(c.id)
   c.pos = [p[0], p[1], p[2]]
   clawAnimate(c)
   if (t === 0) {
@@ -429,6 +430,7 @@ function clawEnd(c) {
 }
 
 function clawTick() {
+  clawBeat++
   for (var i = clawCasts.length - 1; i >= 0; i--) {
     var c = clawCasts[i]
     var done = true
@@ -447,15 +449,16 @@ function clawTick() {
   }
 }
 
-function dragonClaw(playerId) {
+function dragonClaw(playerId, at) {
   if (clawCasts.length >= CLAW_CFG.maxCasts || clawCasts.some((c) => c.id === playerId)) return false
   var f = api.getPlayerFacingInfo(playerId).dir
   var F = clawNorm([f[0], 0, f[2]])
-  var p = api.getPosition(playerId)
-  clawCasts.push({ id: playerId, t: 0, m: {}, hit: {}, from: [p[0], p[1], p[2]], F: F, R: [-F[2], 0, F[0]], turn: Math.atan2(-F[0], F[2]), pos: [p[0], p[1], p[2]] })
+  var p = at || api.getPosition(playerId)
+  clawCasts.push({ at: at ? [at[0], at[1], at[2]] : null, id: playerId, t: 0, m: {}, hit: {}, from: [p[0], p[1], p[2]], F: F, R: [-F[2], 0, F[0]], turn: Math.atan2(-F[0], F[2]), pos: [p[0], p[1], p[2]] })
   return true
 }
 globalThis.dragonClaw = dragonClaw
+globalThis.dragonClawBeat = () => clawBeat
 
 var clawOldTick = typeof tick === "function" ? tick : null
 tick = (ms) => {
