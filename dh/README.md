@@ -47,7 +47,7 @@ grows out from the centre in 1.2 seconds, then turns at 0.5 radians a second
 
 Particles fade, so the points are re-lit all the time: 55 each tick, so each
 point comes round again every 6 ticks, at its new turned position. That is
-at most 58 particle calls a tick (about 650 floor particles alive at once). If the game drops particles at that rate,
+at most 58 particle calls a tick (up to about 1,000 floor particles alive at once). If the game drops particles at that rate,
 lower `pointsPerTick` (each point then lives longer and the turning looks
 more stepped).
 
