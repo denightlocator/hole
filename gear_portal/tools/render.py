@@ -86,11 +86,11 @@ def draw(frame, eye, look, title, zoom=520):
     ImageDraw.Draw(img).text((8, 6), title, fill=(225, 235, 245))
     return img
 
-mid = (BASE[0] + 2, BASE[1] + 0.6, BASE[2] + 4)
-eye = (BASE[0] - 7, BASE[1] + 6.5, BASE[2] - 3)
-titles = ['0.1 s  dash: the player leans in, the portal starts to open', '0.3 s  the player dives into the open portal',
-          '1.0 s  inside (hidden): arrows show the way out, here straight ahead', '2.3 s  the player has turned right; the rim is running out',
-          '3.5 s  out on the right: the 360 slash sweeps round', '3.6 s  slash closing the circle, portal folding away']
+mid = (BASE[0] + 3, BASE[1] + 0.6, BASE[2])
+eye = (BASE[0] + 3, BASE[1] + 7.5, BASE[2] - 10.5)
+titles = ['0.1 s  the first portal opens under the player', '0.3 s  arms up, the player drops in and fades',
+          '1.0 s  inside (hidden): arrows show where the player will come out', '2.3 s  the player has turned right; the rim is running out',
+          '3.3 s  teleported 6 blocks: second portal opens, first one folds away', '3.5 s  the 360 slash sweeps round at once']
 sheet = Image.new('RGB', (W * 3, H * 2))
 for i, fr in enumerate(frames):
     sheet.paste(draw(fr, eye, mid, titles[i], 620), ((i % 3) * W, (i // 3) * H))

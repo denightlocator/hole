@@ -1,8 +1,7 @@
 var GATE_CFG = {
   chat: "!portal",
-  dash: 4,
+  travel: 6,
   stay: 3,
-  leave: 4,
   slashRadius: 3,
   damage: 25,
   knockback: 8,
@@ -33,18 +32,17 @@ var GATE_COL = {
 }
 
 var GATE_SND = {
-  dash: [["bigDrumSwish1", 0.8, 1.3]],
   open: [["futureStrangePulse", 0.7, 0.8]],
   leave: [["zapAccent1", 0.7, 1.1]],
   slash: [["rpgKnifeSlice1", 1, 0.8], ["bigDrumSwish1", 0.8, 0.9]],
 }
 
-var GATE_STEP = { dash: 6, open: 6, spin: 8, settle: 4, close: 8 }
+var GATE_STEP = { sink: 6, open: 6, spin: 8, settle: 4, close: 8 }
 var GATE_NODES = ["TorsoNode", "HeadMesh", "ArmRightMesh", "ArmLeftMesh", "LegLeftMesh", "LegRightMesh"]
 var GATE_POSE = {
   rest: {},
-  lean: { TorsoNode: [35, 0, 0], ArmRightMesh: [70, 0, -12], ArmLeftMesh: [70, 0, 12], LegRightMesh: [-30, 0, 0], LegLeftMesh: [35, 0, 0] },
-  dive: { TorsoNode: [85, 0, 0], HeadMesh: [-30, 0, 0], ArmRightMesh: [-150, 0, 0], ArmLeftMesh: [-150, 0, 0], LegRightMesh: [20, 0, 0], LegLeftMesh: [-10, 0, 0] },
+  brace: { TorsoNode: [18, 0, 0], HeadMesh: [25, 0, 0], ArmRightMesh: [0, 0, -40], ArmLeftMesh: [0, 0, 40], LegRightMesh: [-25, 0, 0], LegLeftMesh: [25, 0, 0] },
+  drop: { HeadMesh: [-20, 0, 0], ArmRightMesh: [-170, 0, 8], ArmLeftMesh: [-170, 0, -8] },
   rise: { TorsoNode: [-10, 0, 12], ArmRightMesh: [0, 0, -85], ArmLeftMesh: [0, 0, 85] },
   wide: { TorsoNode: [8, 0, 12], ArmRightMesh: [0, 0, -85], ArmLeftMesh: [0, 0, 70], LegRightMesh: [-15, 0, 0], LegLeftMesh: [15, 0, 0] },
 }
@@ -147,7 +145,7 @@ function gatePiece(cast, part, moment, first) {
   var scale = GATE_CFG.size
   var angle = part.piece.angle + part.piece.spin * moment
   var reach = part.piece.radius * scale
-  gatePut(part.ident, cast.centre[0] + Math.sin(angle) * reach, cast.centre[1] + part.piece.lift, cast.centre[2] + Math.cos(angle) * reach, angle, first || part.piece.spin !== 0)
+  gatePut(part.ident, part.mid[0] + Math.sin(angle) * reach, part.mid[1] + part.piece.lift, part.mid[2] + Math.cos(angle) * reach, angle, first || part.piece.spin !== 0)
 }
 
 function gateSchema(cast, from, upto, ticks, yawFrom, yawUpto) {
@@ -254,7 +252,7 @@ function gateArrow(cast, moment) {
   }
   if (GATE_CFG.groundArrow && moment % 4 === 0) {
     try {
-      api.setClientOptions(cast.owner, { groundArrowPath: { target: [cast.centre[0] + cast.aim[0] * GATE_CFG.leave, cast.centre[1], cast.centre[2] + cast.aim[1] * GATE_CFG.leave], colour: "#46eba5" } })
+      api.setClientOptions(cast.owner, { groundArrowPath: { target: [cast.centre[0] + cast.aim[0] * GATE_CFG.travel, cast.centre[1], cast.centre[2] + cast.aim[1] * GATE_CFG.travel], colour: "#46eba5" } })
     } catch (err) {
       GATE_CFG.groundArrow = false
     }
@@ -309,47 +307,54 @@ function gateSlash(cast, age) {
   }
 }
 
+function gateRun(cast, gate, moment) {
+  var scale = GATE_CFG.size
+  var mid = gate.mid
+  if (gate.shut) {
+    if (!gate.parts.length) return
+    var take = Math.ceil(gatePlan.length / GATE_STEP.close)
+    var gone = gate.parts.splice(Math.max(0, gate.parts.length - take), take)
+    gateDrop(cast, gone.map((part) => part.ident))
+    if (!gate.parts.length) gateCloud([mid[0], mid[1] + 0.2, mid[2]], 0.4, 0.1, { life: 0.4, size: 0.14, count: 14, power: 2, first: "jade", last: "gold" })
+    return
+  }
+  for (var num = 0; num < gate.each && gate.next < gatePlan.length; num++) {
+    var piece = gatePlan[gate.next++]
+    var ident = gateBox(cast, piece.wide, piece.tall, piece.deep, piece.col)
+    if (!ident) continue
+    var part = { ident: ident, piece: piece, mid: mid }
+    gate.parts.push(part)
+    gatePiece(cast, part, moment, true)
+  }
+  gate.parts.forEach((part) => {
+    if (part.piece.spin) gatePiece(cast, part, moment, false)
+  })
+  if (moment % 2 === 0) gateCloud([mid[0], mid[1] + 0.3, mid[2]], 1.1 * scale, 0.2, { life: 0.6, size: 0.1, count: 3, power: 0.8, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.5, 0.2], first: "mint", last: "jade" })
+  if (moment % 5 === 0) gateCloud([mid[0], mid[1] + 0.2, mid[2]], 1.5 * scale, 0.1, { life: 0.5, size: 0.16, count: 2, power: 0.3, first: "white", last: "gold" })
+  if (moment % 7 === 0) gateCloud([mid[0] + Math.sin(moment) * 1.5 * scale, mid[1] + 0.2, mid[2] + Math.cos(moment) * 1.5 * scale], 0.1, 0.1, { texture: "square_particle", life: 0.8, size: 0.3, count: 3, power: 0.6, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.4, 0.2], first: "steam", last: "steam" })
+}
+
 function gateStep(cast) {
   var moment = cast.moment
   var scale = GATE_CFG.size
   var mid = cast.centre
   if (moment === 0) {
-    gateSound("dash", cast.from)
     gateSound("open", mid)
     gateWear(cast, true)
-    gateAnimate(cast, GATE_POSE.rest, GATE_POSE.lean, 3)
+    gateAnimate(cast, GATE_POSE.rest, GATE_POSE.brace, 3)
   }
-  if (moment === 3) gateAnimate(cast, GATE_POSE.lean, GATE_POSE.dive, 3)
-  if (cast.next < gatePlan.length && !cast.closing) {
-    var each = Math.ceil(gatePlan.length / GATE_STEP.open)
-    for (var num = 0; num < each && cast.next < gatePlan.length; num++) {
-      var piece = gatePlan[cast.next++]
-      var ident = gateBox(cast, piece.wide, piece.tall, piece.deep, piece.col)
-      if (!ident) continue
-      var part = { ident: ident, piece: piece }
-      cast.parts.push(part)
-      gatePiece(cast, part, moment, true)
-    }
-  }
-  if (!cast.closing) {
-    cast.parts.forEach((part) => {
-      if (part.piece.spin) gatePiece(cast, part, moment, false)
-    })
-    if (moment % 2 === 0) gateCloud([mid[0], mid[1] + 0.3, mid[2]], 1.1 * scale, 0.2, { life: 0.6, size: 0.1, count: 3, power: 0.8, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.5, 0.2], first: "mint", last: "jade" })
-    if (moment % 5 === 0) gateCloud([mid[0], mid[1] + 0.2, mid[2]], 1.5 * scale, 0.1, { life: 0.5, size: 0.16, count: 2, power: 0.3, first: "white", last: "gold" })
-    if (moment % 7 === 0) gateCloud([mid[0] + Math.sin(moment) * 1.5 * scale, mid[1] + 0.2, mid[2] + Math.cos(moment) * 1.5 * scale], 0.1, 0.1, { texture: "square_particle", life: 0.8, size: 0.3, count: 3, power: 0.6, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.4, 0.2], first: "steam", last: "steam" })
-  }
-  if (cast.phase === "dash") {
-    var part = Math.min(1, (moment + 1) / GATE_STEP.dash)
-    var here = [cast.from[0] + (mid[0] - cast.from[0]) * part, cast.from[1], cast.from[2] + (mid[2] - cast.from[2]) * part]
-    api.setPosition(cast.owner, here[0], here[1], here[2])
-    gateCloud([here[0], here[1] + 0.9, here[2]], 0.25, 0.6, { life: 0.35, size: 0.14, count: 6, power: 0.4, first: "mint", last: "gold" })
-    if (GATE_CFG.hidePlayer && moment === GATE_STEP.dash - 2) {
+  if (moment === 3) gateAnimate(cast, GATE_POSE.brace, GATE_POSE.drop, 3)
+  cast.gates.forEach((gate) => gateRun(cast, gate, moment))
+  if (cast.phase === "sink") {
+    var high = 1.8 * (1 - (moment + 1) / GATE_STEP.sink)
+    gateCloud([mid[0], mid[1] + high * 0.5 + 0.1, mid[2]], 0.3, high * 0.5 + 0.1, { life: 0.35, size: 0.14, count: 8, power: 1.2, dir1: [-0.3, -1.5, -0.3], dir2: [0.3, -0.8, 0.3], first: "mint", last: "gold" })
+    if (GATE_CFG.holdPlayer) api.setPosition(cast.owner, mid[0], mid[1], mid[2])
+    if (GATE_CFG.hidePlayer && moment === GATE_STEP.sink - 3) {
       try {
         api.setPlayerOpacity(cast.owner, 0.5)
       } catch (err) {}
     }
-    if (moment >= GATE_STEP.dash - 1) {
+    if (moment >= GATE_STEP.sink - 1) {
       cast.phase = "inside"
       cast.enter = moment + 1
       gateWear(cast, false)
@@ -364,29 +369,35 @@ function gateStep(cast) {
     cast.aim = gateFacing(cast.owner, cast.aim)
     var where = api.getPosition(cast.owner)
     if (GATE_CFG.holdPlayer && Math.hypot(where[0] - mid[0], where[2] - mid[2]) > 0.25) api.setPosition(cast.owner, mid[0], mid[1], mid[2])
-    gateArrow(cast, moment)
-    var total = Math.max(1, Math.round(GATE_CFG.stay * 20))
-    var spent = Math.min(16, Math.floor((waited / total) * 16))
-    while (cast.rimGone < spent) {
-      var slot = cast.parts.filter((part) => part.piece.rim === cast.rimGone)[0]
-      if (slot) api.updateMeshEntity(slot.ident, "Box", { width: slot.piece.wide * scale, height: slot.piece.tall * scale, depth: slot.piece.deep * scale, diffuseColor: [0, 0, 0], emissiveColor: GATE_COL.dark, hideDist: GATE_CFG.hideDist })
-      cast.rimGone++
+    var total = Math.round(GATE_CFG.stay * 20)
+    if (waited < total && !cast.wantOut) {
+      gateArrow(cast, moment)
+      var spent = Math.min(16, Math.floor((waited / total) * 16))
+      while (cast.rimGone < spent) {
+        var slot = cast.gates[0].parts.filter((part) => part.piece.rim === cast.rimGone)[0]
+        if (slot) api.updateMeshEntity(slot.ident, "Box", { width: slot.piece.wide * scale, height: slot.piece.tall * scale, depth: slot.piece.deep * scale, diffuseColor: [0, 0, 0], emissiveColor: GATE_COL.dark, hideDist: GATE_CFG.hideDist })
+        cast.rimGone++
+      }
+      return false
     }
-    if (waited < total && !cast.wantOut) return false
     cast.phase = "leave"
     cast.left = moment
-    cast.out = gateReach(mid, cast.aim, GATE_CFG.leave)
+    cast.out = gateReach(mid, cast.aim, Math.min(15, GATE_CFG.travel))
     gateDrop(cast, cast.arrow.filter((made) => made))
     cast.arrow.length = 0
     gateHold(cast, false)
     api.setPosition(cast.owner, cast.out[0], cast.out[1], cast.out[2])
+    cast.gates[0].shut = true
+    var second = { mid: cast.out, parts: [], next: 0, each: Math.ceil(gatePlan.length / 2), shut: false }
+    cast.gates.push(second)
+    gateRun(cast, second, moment)
     gateWear(cast, true)
     gateSound("leave", cast.out)
     gateSound("slash", cast.out)
     gateAnimate(cast, GATE_POSE.rise, GATE_POSE.wide, 1)
     gateCloud([cast.out[0], cast.out[1] + 0.2, cast.out[2]], 1, 0.1, { life: 0.4, size: 0.2, count: 30, power: 3, dir1: [-1, 0.2, -1], dir2: [1, 1.5, 1], first: "white", last: "jade" })
     gateCloud([cast.out[0], cast.out[1] + 0.2, cast.out[2]], 0.8, 0.1, { life: 0.5, size: 0.16, count: 16, power: 2, dir1: [-1, 0.5, -1], dir2: [1, 2, 1], first: "white", last: "gold" })
-    cast.closing = true
+    gateCloud([cast.out[0], cast.out[1] + 0.9, cast.out[2]], 0.3, 0.9, { life: 0.4, size: 0.14, count: 14, power: 1.5, dir1: [-0.3, 0.8, -0.3], dir2: [0.3, 1.6, 0.3], first: "mint", last: "gold" })
     return false
   }
   var age = moment - cast.left
@@ -398,22 +409,18 @@ function gateStep(cast) {
     gateHarm(cast)
   }
   if (age >= 1) gateSlash(cast, age - 1)
-  if (age === GATE_STEP.spin + 1) gateAnimate(cast, GATE_POSE.wide, GATE_POSE.rest, GATE_STEP.settle)
-  if (cast.closing && cast.parts.length) {
-    var take = Math.ceil(gatePlan.length / GATE_STEP.close)
-    var gone = cast.parts.splice(Math.max(0, cast.parts.length - take), take)
-    gateDrop(cast, gone.map((part) => part.ident))
-    if (!cast.parts.length) gateCloud([mid[0], mid[1] + 0.2, mid[2]], 0.4, 0.1, { life: 0.4, size: 0.14, count: 14, power: 2, first: "jade", last: "gold" })
+  if (age === GATE_STEP.spin + 1) {
+    gateAnimate(cast, GATE_POSE.wide, GATE_POSE.rest, GATE_STEP.settle)
+    cast.gates[1].shut = true
   }
-  if (age >= GATE_STEP.spin + 1 + GATE_STEP.settle) return true
-  return false
+  return age >= GATE_STEP.spin + 1 + GATE_STEP.settle && !cast.gates.some((gate) => gate.parts.length)
 }
 
 function gateEnd(cast) {
   try {
     gateHold(cast, false)
   } catch (err) {}
-  if (cast.phase === "dash" && GATE_CFG.hidePlayer) {
+  if (cast.phase === "sink" && GATE_CFG.hidePlayer) {
     try {
       api.setPlayerOpacity(cast.owner, 1)
     } catch (err) {}
@@ -455,7 +462,7 @@ function gearPortal(playerId) {
   var where = api.getPosition(playerId)
   var face = gateFacing(playerId, [0, 1])
   var from = [where[0], where[1], where[2]]
-  gateList.push({ owner: playerId, moment: 0, phase: "dash", from: from, aim: face, centre: gateReach(from, face, Math.min(15, GATE_CFG.dash)), made: [], parts: [], arrow: [], slash: [], hurt: {}, next: 0, rimGone: 0, held: false, worn: false, closing: false, wantOut: false })
+  gateList.push({ owner: playerId, moment: 0, phase: "sink", aim: face, centre: from, gates: [{ mid: from, parts: [], next: 0, each: Math.ceil(gatePlan.length / GATE_STEP.open), shut: false }], made: [], arrow: [], slash: [], hurt: {}, rimGone: 0, held: false, worn: false, wantOut: false })
   return true
 }
 
