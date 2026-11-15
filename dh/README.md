@@ -33,21 +33,21 @@ could be caught by the word filter.
 
 | Part | Particles | Moves |
 |---|---|---|
-| Two outer rings | 84 and 76 points, at 5 and 4.5 blocks from the centre | Turn one way |
-| Inner ring | 66 points at 3.9 blocks | Turns the other way |
-| Star | 100 points, 20 on each of its 5 lines, tips on the inner ring | Turns with the inner ring |
+| Two outer rings | 70 and 64 points, at 5 and 4.5 blocks from the centre | Turn one way |
+| Inner ring | 56 points at 3.9 blocks | Turns the other way |
+| Star | 80 points, 16 on each of its 5 lines, tips on the inner ring | Turns with the inner ring |
 | Sparks | White, 3 every tick | Rise from the centre and slow down |
 | Falling strings | Short strings of small white and pink squares, 6 to 9 blocks out and 3 to 9 up | Drift down and fade |
 
-The pattern is 326 points with 2 particles on each, set within 0.09 blocks
+The pattern is 270 points with 2 particles on each, set within 0.09 blocks
 of the point so the lines look thick and solid. It is 10 blocks across and
 lies flat on the floor. It makes no sound. It
 grows out from the centre in 1.2 seconds, then turns at 0.5 radians a second
 (a full turn every 12.6 seconds).
 
-Particles fade, so the points are re-lit all the time: 55 each tick, so each
+Particles fade, so the points are re-lit all the time: 45 each tick, so each
 point comes round again every 6 ticks, at its new turned position. That is
-at most 58 particle calls a tick (up to about 1,000 floor particles alive at once). If the game drops particles at that rate,
+at most 48 particle calls a tick (up to about 800 floor particles alive at once). If the game drops particles at that rate,
 lower `pointsPerTick` (each point then lives longer and the turning looks
 more stepped).
 
@@ -58,8 +58,8 @@ more stepped).
 | `chat` | Chat command (`!dh`) |
 | `size` | Scale (1 = 10 blocks across) |
 | `spin` | Turning speed in radians a second (0.5). 0 = still |
-| `pointsPerTick` | Points re-lit each tick (55) |
-| `perPoint` | Particles on each point (2). Raise for even denser lines at no extra calls |
+| `pointsPerTick` | Points re-lit each tick (45) |
+| `perPoint` | Particles on each point (2). 1 = thinner lines, 3 = denser, at no change in calls |
 | `thick` | How far those particles may sit from the point, in blocks (0.09) |
 | `sparks`, `glyphs` | The rising sparks and the falling strings; false = off |
 | `growTicks` | Ticks to grow to full size (24) |

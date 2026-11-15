@@ -3,7 +3,7 @@ if (typeof spinCircleStill !== "function") {
 var RITE_CFG = {
   size: 1,
   spin: 0.5,
-  pointsPerTick: 55,
+  pointsPerTick: 45,
   perPoint: 2,
   thick: 0.09,
   sparks: true,
@@ -24,11 +24,11 @@ var RITE_COL = {
 }
 
 var RITE_RINGS = [
-  [5, 84, -1],
-  [4.5, 76, -1],
-  [3.9, 66, 1],
+  [5, 70, -1],
+  [4.5, 64, -1],
+  [3.9, 56, 1],
 ]
-var RITE_STAR = { radius: 3.9, tips: 5, perEdge: 20, turn: 1 }
+var RITE_STAR = { radius: 3.9, tips: 5, perEdge: 16, turn: 1 }
 var riteList = []
 var riteBeat = 0
 
