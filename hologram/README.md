@@ -14,10 +14,10 @@ player-sized figure for scale. It is not a screenshot of the game.
 
 Either way works on its own.
 
-- **World Code:** paste `world_code.js` (about 14,700 characters) and type
+- **World Code:** paste `world_code.js` (about 17,500 characters) and type
   `!holo`. It opens 2 blocks in front of you, facing you. `!holo` again
   closes it. If other world code is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (14,612 of
+- **Code Block, no World Code needed:** paste `code_block.js` (17,318 of
   32,000 characters) into a Code Block and click it. The whole hologram
   appears at once on top of the block, facing whoever clicked. Click again
   to remove it. There is no chat command in this version.
@@ -31,6 +31,14 @@ it does not depend on anything else running. Two things follow from that:
 - The moving parts need the game to call a `tick` that a code block
   assigned, which is not documented. If it does, the hologram moves; if not,
   it is a still picture.
+
+Code blocks go through the game's word filter, which replaces anything it
+reads as a bad word with `**` and so breaks the code. It reads each run of
+characters between spaces with the punctuation taken out, so `s.x` counted
+as the word "sx". To stay clear of it, the code uses no 1 or 2 letter names
+(`state.posX` instead of `s.x`), and `tools/check.mjs` fails if any piece of
+the code block reads as a word on its filter list. The game's real list is
+not known, so that list is a guess.
 
 From other code: `hologram(playerId)`, `hologram(playerId, [x, y, z])`, or
 `hologram(playerId, [x, y, z], [fx, fz])` to choose the direction it faces.

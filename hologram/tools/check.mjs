@@ -167,6 +167,25 @@ check(blockCode.length <= 32000 && !blockCode.includes('//'), `wrote code_block.
   check(g1.meshes.size === 0, 'and one click still closes it')
 }
 
+console.log('Word filter (the game stars out words in code blocks, which breaks the code)')
+{
+  // A code block is passed through a word filter. It looks at each run of characters between
+  // spaces with the punctuation taken out, so "s.x" was read as one word and replaced by **.
+  const SHORT = ['sx', 'pp', 'fk', 'fu', 'bj', 'hj', 'mf', 'bs', 'af', 'kys', 'wtf', 'ass', 'cum', 'tit', 'fag', 'sex', 'gay', 'hoe', 'vag', 'dik', 'fuk', 'fck', 'sht', 'bch', 'cok', 'kkk', 'nig', 'std', 'poo', 'pee', 'bum', 'sob', 'pos', 'pms', 'xxx', 'die', 'kms', 'gtfo', 'stfu', 'lmao', 'hell', 'damn', 'crap', 'piss', 'dick', 'cock', 'anal', 'anus', 'butt', 'slut', 'rape', 'kill', 'porn', 'suck', 'nazi', 'homo', 'arse', 'boob', 'jizz', 'orgy', 'wank', 'tard', 'shit', 'fuck', 'tits', 'dumb', 'noob', 'hate', 'sexy', 'nude', 'meth', 'coke', 'weed', 'drug', 'pedo', 'cunt', 'twat', 'dyke', 'spic', 'jerk', 'puss', 'turd', 'fart', 'milf', 'thot', 'simp']
+  const LONG = SHORT.filter((w) => w.length >= 4).concat(['bitch', 'nigg', 'penis', 'vagin', 'pussy', 'whore', 'idiot', 'stupid', 'retard', 'faggot', 'bastard', 'asshole', 'suicide', 'murder', 'horny'])
+  const leet = (w) => w.replace(/0/g, 'o').replace(/1/g, 'i').replace(/3/g, 'e').replace(/4/g, 'a').replace(/5/g, 's').replace(/7/g, 't').replace(/8/g, 'b')
+  const tokens = blockCode.split(/\s+/).filter(Boolean)
+  const words = tokens.map((tok) => tok.toLowerCase().replace(/[^a-z0-9]/g, ''))
+  const tiny = [...new Set(tokens.filter((tok, i) => /[^A-Za-z0-9]/.test(tok) && /[a-z]/.test(words[i]) && words[i].length <= 2))]
+  check(tiny.length === 0, 'no piece of code shrinks to a 1 or 2 letter word when its punctuation is removed (like s.x did)' + (tiny.length ? ': ' + tiny.slice(0, 8).join('  ') : ''))
+  const exact = [...new Set(tokens.filter((tok, i) => SHORT.includes(words[i]) || SHORT.includes(leet(words[i]))))]
+  check(exact.length === 0, 'no piece of code reads as a filtered word' + (exact.length ? ': ' + exact.slice(0, 8).join('  ') : ''))
+  const inside = [...new Set(tokens.filter((tok, i) => LONG.some((w) => words[i].includes(w) || leet(words[i]).includes(w))))]
+  check(inside.length === 0, 'no piece of code has a filtered word of 4+ letters inside it' + (inside.length ? ': ' + inside.slice(0, 8).join('  ') : ''))
+  const names = [...new Set(blockCode.replace(/"(?:[^"\\]|\\.)*"/g, '""').match(/[A-Za-z_$][A-Za-z0-9_$]*/g))].filter((w) => w.length <= 2 && !['if', 'PI', 'on'].includes(w))
+  check(names.length === 0, 'no 1 or 2 letter names are left in the code' + (names.length ? ': ' + names.join(' ') : ''))
+}
+
 if (args.includes('--dump')) fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames: [boot.frames[12], boot.frames[100], boot.frames[110]], player: [0.5, 10, 0.5] }))
 console.log(fail.length ? `\n${fail.length} check(s) failed` : '\nAll checks passed')
 process.exit(fail.length ? 1 : 0)
