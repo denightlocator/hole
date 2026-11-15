@@ -3,6 +3,8 @@ var HOLO_CFG = {
   distance: 2,
   size: 1,
   spawnPerTick: 5,
+  particles: true,
+  dotsPerTick: 5,
   animate: true,
   sounds: true,
   hideDist: 60,
@@ -30,14 +32,15 @@ var HOLO_PANEL = {
   right: { posX: 1.3, posY: 1.55, posZ: 0.2, yaw: -38, wide: 0.85, tall: 1 },
 }
 
-var HOLO_BASE = { rings: [[1.1, 0.05, 16, 0.03, "cyan"], [0.82, 0.05, 12, 0.02, "blue"], [0.36, 0.72, 8, 0.02, "cyan"]], pins: 8, spokes: 4 }
-var HOLO_GLOBE = { posY: 1.05, radius: 0.28, hoops: [[-0.68, 5, "blue"], [0, 6, "bright"], [0.68, 5, "blue"]] }
-var HOLO_ARC = { posY: 2.45, radius: 1.35, from: 108, upto: 252, pieces: 10, ticks: 7 }
-var HOLO_KEYS = { posY: 0.95, posZ: 0.6, rows: 3, cols: 9, wide: 0.1, gap: 0.03 }
+var HOLO_BASE = { rings: [[1.1, 0.05, 10, 0.03, "cyan"]], dotRings: [[0.82, 0.06, 12, "blue"], [1.1, 0.24, 8, "cyan"], [0.36, 0.72, 6, "cyan"]], spokes: 4 }
+var HOLO_GLOBE = { posY: 1.05, radius: 0.28, hoops: [[0, 6, "bright"]], dotHoops: [[-0.68, 4, "blue"], [0.68, 4, "blue"]] }
+var HOLO_ARC = { posY: 2.45, radius: 1.35, from: 108, upto: 252, pieces: 6, dots: 9, ticks: 5 }
+var HOLO_KEYS = { posY: 0.95, posZ: 0.6, rows: 3, cols: 5, wide: 0.19, gap: 0.045 }
 var HOLO_TEXT = [0.62, 0.4, 0.7, 0.3, 0.55, 0.46]
 var HOLO_T = 0.02
 
 var holoList = []
+var holoDots = []
 var holoMeshes = 0
 var holoBeat = 0
 
@@ -45,6 +48,17 @@ var holoPlan = (function () {
   var out = []
   var rad = (deg) => (deg * Math.PI) / 180
   var add = (piece) => (out.push(piece), piece)
+  var dotAt = (posX, posY, posZ, col) => {
+    var made = { posX: posX, posY: posY, posZ: posZ, col: col }
+    holoDots.push(made)
+    return made
+  }
+  var dotRing = (radius, posY, num, col, from, upto) => {
+    for (var idx = 0; idx < num; idx++) {
+      var ang = from === undefined ? (idx / num) * Math.PI * 2 : rad(from + ((idx + 0.5) / num) * (upto - from))
+      dotAt(Math.sin(ang) * radius, posY, Math.cos(ang) * radius, col)
+    }
+  }
   var flat = (endX1, endZ1, endX2, endZ2, posY, thick, col) => {
     var distX = endX2 - endX1
     var distZ = endZ2 - endZ1
@@ -72,20 +86,22 @@ var holoPlan = (function () {
         onto(panel, (signX * panel.wide) / 2, signY * (panel.tall / 2 - ang / 2), 0.025, ang, "bright")
       }
     }
+    if (panel.yaw) return
     onto(panel, 0, panel.tall / 2, panel.wide - 2 * ang - 0.08, 0.012, "blue")
     onto(panel, 0, -panel.tall / 2, panel.wide - 2 * ang - 0.08, 0.012, "blue")
   }
 
   HOLO_BASE.rings.forEach((item) => ring(item[0], item[1], item[2], item[3], item[4]))
-  for (var idx = 0; idx < HOLO_BASE.pins; idx++) {
-    var ang = ((idx + 0.5) / HOLO_BASE.pins) * Math.PI * 2
-    add({ posX: Math.sin(ang) * 1.1, posY: 0.14, posZ: Math.cos(ang) * 1.1, wide: 0.035, tall: 0.18, deep: 0.035, yaw: ang, col: idx % 2 ? "blue" : "cyan" })
-  }
+  HOLO_BASE.dotRings.forEach((item) => dotRing(item[0], item[1], item[2], item[3]))
   for (var state = 0; state < HOLO_BASE.spokes; state++) {
     var other = (state / HOLO_BASE.spokes) * Math.PI * 2 + Math.PI / 4
     flat(Math.sin(other) * 0.2, Math.cos(other) * 0.2, Math.sin(other) * 0.82, Math.cos(other) * 0.82, 0.05, 0.015, "dim")
   }
-  for (var opts = 0; opts < 2; opts++) add({ posX: 0, posY: 0.05, posZ: 0.96, wide: 0.12, tall: 0.04, deep: 0.05, yaw: 0, col: "bright", anim: "orbit", num: opts })
+  for (var opts = 0; opts < 2; opts++) {
+    var mark = dotAt(0, 0.08, 0.96, "bright")
+    mark.anim = "orbit"
+    mark.num = opts
+  }
   add({ posX: 0, posY: 0.4, posZ: 0, wide: 0.015, tall: 0.66, deep: 0.015, yaw: 0, col: "blue" })
   add({ posX: 0, posY: 0.1, posZ: 0, wide: 0.16, tall: 0.08, deep: 0.16, yaw: Math.PI / 4, col: "cyan" })
 
@@ -94,6 +110,15 @@ var holoPlan = (function () {
     for (var idx = 0; idx < hpos[1]; idx++) {
       var ang = ((idx + 0.5) / hpos[1]) * Math.PI * 2
       add({ posX: 0, posY: HOLO_GLOBE.posY + HOLO_GLOBE.radius * hpos[0], posZ: 0, wide: 0.016, tall: 0.016, deep: 2 * radius * Math.tan(Math.PI / hpos[1]) * 1.05, yaw: 0, col: hpos[2], anim: "globe", ang: ang, radius: radius })
+    }
+  })
+  HOLO_GLOBE.dotHoops.forEach((hpos) => {
+    var radius = HOLO_GLOBE.radius * Math.cos(Math.asin(hpos[0]))
+    for (var idx = 0; idx < hpos[1]; idx++) {
+      var made = dotAt(0, HOLO_GLOBE.posY + HOLO_GLOBE.radius * hpos[0], 0, hpos[2])
+      made.anim = "globe"
+      made.ang = (idx / hpos[1]) * Math.PI * 2
+      made.radius = radius
     }
   })
   add({ posX: 0, posY: HOLO_GLOBE.posY, posZ: 0, wide: 0.014, tall: HOLO_GLOBE.radius * 2.5, deep: 0.014, yaw: 0, col: "cyan" })
@@ -125,18 +150,14 @@ var holoPlan = (function () {
   var holoL1 = [[0, grid, 0.2, 0.022], [0, -grid, 0.2, 0.022], [grid, 0, 0.022, 0.2], [-grid, 0, 0.022, 0.2]]
   holoL1.forEach((item) => onto(leftP, item[0], gaugeY + item[1], item[2], item[3], "cyan", 1))
   var spots = []
-  var dial = [[0.145, 0.235], [0.195, 0.195], [0.235, 0.145]]
-  for (var signX = -1; signX <= 1; signX += 2) {
-    for (var signY = -1; signY <= 1; signY += 2) {
-      for (var qidx = 0; qidx < 3; qidx++) onto(leftP, signX * dial[qidx][0], gaugeY + signY * dial[qidx][1], 0.05, 0.05, "cyan", 1)
-    }
-  }
   for (var scale = 0; scale < 16; scale++) {
     var kang = (scale / 16) * Math.PI * 2
     spots.push([Math.sin(kang) * 0.17, gaugeY + Math.cos(kang) * 0.17])
+    var ringX = Math.sin(kang) * 0.25
+    dotAt(leftP.posX - ringX * Math.cos(rad(leftP.yaw)), leftP.posY + gaugeY + Math.cos(kang) * 0.25, leftP.posZ + ringX * Math.sin(rad(leftP.yaw)), "cyan")
   }
-  var holoL2 = [0.02, 0.09]
-  holoL2.forEach((radius, idx) => onto(leftP, 0, gaugeY, radius * 2, radius * 2 > 0.1 ? 0.012 : 0.04, idx ? "blue" : "bright", 1))
+  onto(leftP, 0, gaugeY, 0.18, 0.012, "blue", 1)
+  onto(leftP, 0, gaugeY, 0.04, 0.04, "bright", 2)
   onto(leftP, 0, gaugeY, 0.012, 0.18, "blue", 1)
   var needle = onto(leftP, spots[0][0], spots[0][1], 0.045, 0.045, "warn", 2)
   needle.anim = "needle"
@@ -151,8 +172,8 @@ var holoPlan = (function () {
 
   var rightP = HOLO_PANEL.right
   frame(rightP)
-  for (var gridX = 0; gridX < 5; gridX++) onto(rightP, -0.3 + gridX * 0.15, 0.12, 0.008, 0.5, "dim", 0)
-  for (var gridH = 0; gridH < 4; gridH++) onto(rightP, 0, -0.13 + gridH * 0.1667, 0.6, 0.008, "dim", 0)
+  for (var gridX = 0; gridX < 3; gridX++) onto(rightP, -0.3 + gridX * 0.3, 0.12, 0.008, 0.5, "dim", 0)
+  for (var gridH = 0; gridH < 2; gridH++) onto(rightP, 0, -0.13 + gridH * 0.5, 0.6, 0.008, "dim", 0)
   for (var deep = 0; deep < 8; deep++) {
     var dot = onto(rightP, -0.28 + deep * 0.08, 0.12, 0.05, 0.04, deep === 5 ? "warn" : "bright", 1)
     dot.anim = "plot"
@@ -168,7 +189,7 @@ var holoPlan = (function () {
 
   var arcs = HOLO_ARC
   ring(arcs.radius, arcs.posY, arcs.pieces, 0.025, "cyan", arcs.from, arcs.upto)
-  ring(arcs.radius - 0.07, arcs.posY, arcs.pieces, 0.012, "blue", arcs.from, arcs.upto)
+  dotRing(arcs.radius - 0.09, arcs.posY, arcs.dots, "blue", arcs.from, arcs.upto)
   for (var moment = 0; moment < arcs.ticks; moment++) {
     var tang = rad(arcs.from + ((moment + 0.5) / arcs.ticks) * (arcs.upto - arcs.from))
     add({ posX: Math.sin(tang) * arcs.radius, posY: arcs.posY - (moment % 3 === 1 ? 0.1 : 0.06), posZ: Math.cos(tang) * arcs.radius, wide: 0.02, tall: moment % 3 === 1 ? 0.2 : 0.12, deep: 0.02, yaw: tang, col: moment === 3 ? "warn" : "bright" })
@@ -178,7 +199,7 @@ var holoPlan = (function () {
   var step = keys.wide + keys.gap
   for (var row = 0; row < keys.rows; row++) {
     for (var col = 0; col < keys.cols; col++) {
-      add({ posX: (col - (keys.cols - 1) / 2) * step, posY: keys.posY, posZ: keys.posZ + (row - 1) * step, wide: keys.wide, tall: 0.012, deep: keys.wide, yaw: 0, col: row === 1 && col === 4 ? "bright" : "blue", anim: "key", num: row * keys.cols + col })
+      add({ posX: (col - (keys.cols - 1) / 2) * step, posY: keys.posY, posZ: keys.posZ + (row - 1) * step, wide: keys.wide, tall: 0.012, deep: keys.wide, yaw: 0, col: row === 1 && col === 2 ? "bright" : "blue", anim: "key", num: row * keys.cols + col })
     }
   }
   var half = (keys.cols * step) / 2 + 0.04
@@ -200,7 +221,7 @@ function holoSound(name, where) {
   })
 }
 
-function holoFx(where, col, num, spread) {
+function holoFx(where, col, num, spread, life, power, size) {
   var ang = HOLO_COL[col]
   api.playParticleEffect({
     dir1: [-1, -1, -1],
@@ -208,12 +229,12 @@ function holoFx(where, col, num, spread) {
     pos1: [where[0] - spread, where[1] - spread, where[2] - spread],
     pos2: [where[0] + spread, where[1] + spread, where[2] + spread],
     texture: "glint",
-    minLifeTime: 0.2,
-    maxLifeTime: 0.35,
-    minEmitPower: 0.1,
-    maxEmitPower: 0.5,
-    minSize: 0.08,
-    maxSize: 0.16,
+    minLifeTime: life || 0.2,
+    maxLifeTime: (life || 0.2) * 1.5,
+    minEmitPower: power === undefined ? 0.1 : power,
+    maxEmitPower: power === undefined ? 0.5 : power,
+    minSize: size || 0.08,
+    maxSize: (size || 0.08) * 1.6,
     manualEmitCount: num,
     gravity: [0, 0, 0],
     colorGradients: [
@@ -227,6 +248,27 @@ function holoFx(where, col, num, spread) {
     blendMode: 2,
     hideDist: HOLO_CFG.hideDist,
   })
+}
+
+function holoDot(unit, dot, moment, life) {
+  var state = holoState(dot, moment)
+  var scale = HOLO_CFG.size
+  var cosv = Math.cos(unit.yaw)
+  var sinv = Math.sin(unit.yaw)
+  holoFx([unit.place[0] + (state.posX * cosv + state.posZ * sinv) * scale, unit.place[1] + state.posY * scale, unit.place[2] + (state.posZ * cosv - state.posX * sinv) * scale], dot.col, 1, 0.004, life, 0, 0.05 * scale)
+}
+
+function holoDust(unit, moment) {
+  var top = unit.next ? unit.parts[unit.next - 1].piece.posY : 0
+  var slow = Math.ceil(holoSlow.length / HOLO_CFG.dotsPerTick)
+  for (var num = 0; num < HOLO_CFG.dotsPerTick; num++) {
+    var dot = holoSlow[(moment * HOLO_CFG.dotsPerTick + num) % holoSlow.length]
+    if (dot.posY <= top) holoDot(unit, dot, moment, (slow + 2) / 20 / 1.25)
+  }
+  if (moment % 3) return
+  for (var idx = 0; idx < holoFast.length; idx++) {
+    if (holoFast[idx].posY <= top) holoDot(unit, holoFast[idx], moment, 0.16)
+  }
 }
 
 function holoState(piece, moment) {
@@ -271,6 +313,9 @@ function holoState(piece, moment) {
   }
   return state
 }
+
+var holoSlow = holoDots.filter((dot) => !dot.anim)
+var holoFast = holoDots.filter((dot) => dot.anim)
 
 var HOLO_EVERY = { text: 2, bar: 3, scan: 1, needle: 3, plot: 2, orbit: 1, globe: 2, key: 4 }
 
@@ -333,6 +378,7 @@ function holoStep(unit) {
     unit.next++
     if (unit.next === unit.parts.length) holoSound("ready", unit.place)
   }
+  if (HOLO_CFG.particles) holoDust(unit, moment)
   if (!HOLO_CFG.animate) return false
   for (var idx = 0; idx < unit.moving.length; idx++) {
     var part = unit.moving[idx]
@@ -408,6 +454,7 @@ function hologramInstant(playerId, place, facing) {
     if (!holoPut(unit, unit.parts[idx], 0, true)) break
     unit.next++
   }
+  if (HOLO_CFG.particles) holoDots.forEach((dot) => holoDot(unit, dot, 0, 3))
   return true
 }
 

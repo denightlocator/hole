@@ -1,6 +1,6 @@
 """Draws the hologram from a dump of tools/check.mjs, with a player-sized figure for scale.
 Usage: python tools/render.py frames.json preview/hologram.png
-A rough stand-in: glowing boxes on a dark background, no particles."""
+A rough stand-in: glowing boxes on a dark background, particles drawn as round dots."""
 import json, math, sys
 from PIL import Image, ImageDraw
 
@@ -46,12 +46,19 @@ def draw(frame, eye, look, title, zoom=620):
     for _, poly, col in sorted(polys, key=lambda q: -q[0]):
         d.polygon(poly, fill=col)
         d.line(poly + [poly[0]], fill=col)
+    for q in frame.get('dots', []):
+        s = proj(q['p'])
+        if not s: continue
+        rr = max(1.2, q['size'] * 0.5 / s[2] * zoom)
+        col = tuple(int(v) for v in q['col'])
+        d.ellipse([s[0] - rr * 1.4, s[1] - rr * 1.4, s[0] + rr * 1.4, s[1] + rr * 1.4], fill=tuple(v // 3 for v in col))
+        d.ellipse([s[0] - rr, s[1] - rr, s[0] + rr, s[1] + rr], fill=col)
     d.text((8, 6), title, fill=(225, 235, 245))
     return img
 
 px, py, pz = PLAYER
 mid = (px, py + 1.4, pz + 2)
-shots = [(frames[0], (px + 2.6, py + 2.3, pz - 3.2), mid, '0.6 s  booting from the floor up', 620),
+shots = [(frames[0], (px + 2.6, py + 2.3, pz - 3.2), mid, '0.4 s  booting from the floor up', 620),
          (frames[1], (px + 2.6, py + 2.3, pz - 3.2), mid, 'complete, seen from behind the player', 620),
          (frames[1], (px, py + 1.65, pz + 0.1), (px, py + 1.6, pz + 2), 'what the player sees', 330),
          (frames[2], (px - 3.4, py + 2.6, pz + 4.6), mid, 'from the far side, half a second later', 620)]

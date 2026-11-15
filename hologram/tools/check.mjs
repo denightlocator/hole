@@ -21,7 +21,7 @@ const check = (ok, msg) => { console.log((ok ? '  ok    ' : '  FAIL  ') + msg); 
 function game(before = '', bare = false) {
   const meshes = new Map()
   let next = 1
-  const s = { meshes, calls: 0, errors: [], sounds: new Set(), peak: 0, particles: 0, made: 0, said: [] }
+  const s = { meshes, calls: 0, errors: [], sounds: new Set(), peak: 0, particles: 0, made: 0, said: [], fx: [], now: 0 }
   // the player stands at the origin and looks along +Z
   const pos = { p1: [0.5, 10, 0.5], p2: [8.5, 10, 0.5] }
   const need = (ok, msg) => { if (!ok) s.errors.push(msg) }
@@ -30,7 +30,7 @@ function game(before = '', bare = false) {
     getPlayerFacingInfo: () => ({ camPos: [0.5, 11.6, 0.5], dir: [0, -0.2, 0.98] }),
     sendMessage: (id, m) => s.said.push(m),
     broadcastSound: (name, vol, rate, o) => { need(SOUNDS.includes(name) && finite([vol, rate, o.playerIdOrPos]), 'sound ' + name); s.sounds.add(name) },
-    playParticleEffect: (o) => { s.calls++; s.particles++; need(PARTICLE.every((k) => k in o) && finite(o) && TEXTURES.includes(o.texture) && o.colorGradients.every((g) => g.minColor.length === 4 && g.maxColor.length === 4), 'bad particle') },
+    playParticleEffect: (o) => { s.calls++; s.particles++; s.fx.push({ n: s.now, p: o.pos1.map((v, i) => (v + o.pos2[i]) / 2), col: o.colorGradients[0].maxColor.slice(0, 3), life: o.maxLifeTime, power: o.maxEmitPower, size: o.maxSize }); need(PARTICLE.every((k) => k in o) && finite(o) && TEXTURES.includes(o.texture) && o.colorGradients.every((g) => g.minColor.length === 4 && g.maxColor.length === 4), 'bad particle') },
     attemptCreateMeshEntity: (type, o) => {
       s.calls++; s.made++
       need(type === 'Box' && Object.keys(o).every((k) => BOX.includes(k)) && finite(o) && o.width > 0 && o.height > 0 && o.depth > 0, 'bad Box')
@@ -57,6 +57,7 @@ function play(s, ticks, tick = s.run?.tick) {
   for (let n = 0; n < ticks; n++) {
     const calls = s.calls, made = s.made
     tick(50)
+    s.now++
     worst = Math.max(worst, s.calls - calls)
     mostMade = Math.max(mostMade, s.made - made)
     frames.push({ t: n, meshes: [...s.meshes.values()].filter((m) => m.p).map((m) => ({ ...m.o, p: m.p, r: m.r })) })
@@ -76,11 +77,11 @@ check(s.run.onPlayerChat('p1', '!holo') === false && s.run.holoList.length === 1
 const boot = play(s, 120)
 check(s.errors.length === 0, 'every api call is well formed and every mesh is level (only turned left or right) ' + [...new Set(s.errors)].join('; '))
 check(boot.mostMade <= 5, `never more than ${boot.mostMade} meshes created in one tick (100 a second)`)
-check(N < 400 && s.peak === N, `${N} meshes (limit 400)`)
+check(N === 120 && s.peak === N, `${N} meshes, never more`)
 const upAt = boot.frames.findIndex((f) => f.meshes.length === N)
-const grow = [5, 15, 25, upAt].map((t) => boot.frames[t].meshes.length)
+const grow = [3, 9, 16, upAt].map((t) => boot.frames[t].meshes.length)
 const topOf = (f) => Math.max(...f.meshes.map((m) => m.p[1] + m.height / 2))
-check(grow.every((n, i) => !i || n > grow[i - 1]) && topOf(boot.frames[5]) < topOf(boot.frames[25]), `it boots from the floor up in ${((upAt + 1) / 20).toFixed(1)} s (${grow.join(', ')} meshes)`)
+check(grow.every((n, i) => !i || n > grow[i - 1]) && topOf(boot.frames[3]) < topOf(boot.frames[16]), `it boots from the floor up in ${((upAt + 1) / 20).toFixed(1)} s (${grow.join(', ')} meshes)`)
 const done = boot.frames[100].meshes
 const span = (k) => [Math.min(...done.map((m) => m.p[k])), Math.max(...done.map((m) => m.p[k]))]
 const H = topOf(boot.frames[100]) - 10
@@ -94,12 +95,12 @@ check(main.length > 20 && main.every((m) => Math.abs(m.p[2] - 2.75) < 0.05), `th
 const sides = plates.filter((m) => Math.abs(Math.cos(m.r[1]) + 1) > 1e-6)
 check(sides.every((m) => (m.p[0] - 0.5) * Math.sin(m.r[1]) < 0), 'both side screens are turned toward the player')
 const flatOnes = done.filter((m) => m.height <= 0.05 && Math.abs(m.depth - 0.02) > 1e-9)
-check(flatOnes.length > 60, `${flatOnes.length} parts lie flat: floor rings, the arc overhead and the 27-key board`)
+check(flatOnes.length > 30, `${flatOnes.length} parts lie flat: floor ring, the arc overhead and the 15-key board`)
 
 console.log('It moves')
 const a = boot.frames[100].meshes, b = boot.frames[110].meshes
 const moved = a.filter((m, i) => m.p.some((v, k) => Math.abs(v - b[i].p[k]) > 1e-6) || m.width !== b[i].width || m.height !== b[i].height || m.emissiveColor !== b[i].emissiveColor).length
-check(moved >= 30 && moved < N / 2, `${moved} of the ${N} parts change within half a second (globe, text lines, bars, graph, needle, scan line, keys, markers)`)
+check(moved >= 20 && moved < N / 2, `${moved} of the ${N} parts change within half a second (globe, text lines, bars, graph, needle, scan line, keys, markers)`)
 const texts = (f) => f.meshes.filter((m) => Math.abs(m.height - 0.028) < 1e-9).map((m) => m.width)
 const widths = boot.frames.slice(60, 120).map((f) => texts(f)[0])
 check(Math.min(...widths) < 0.1 && Math.max(...widths) > 0.25, 'text lines type themselves out, hold, and clear')
@@ -107,11 +108,24 @@ const rest = play(s, 40)
 check(rest.worst <= 80, `at most ${Math.max(boot.worst, rest.worst)} api calls in a tick while it boots, ${rest.worst} once it is up`)
 const still = game()
 still.run.HOLO_CFG.animate = false
+still.run.HOLO_CFG.particles = false
 still.g.hologram('p1')
 play(still, 80)
 const quiet = still.calls
 play(still, 20)
 check(still.calls === quiet && still.meshes.size === N, 'with animate off it is built and then costs no api calls at all')
+
+console.log('Particles')
+const dotsNow = (n) => s.fx.filter((q) => q.power === 0 && q.n <= n && q.n + q.life * 20 > n)
+const lit = dotsNow(100)
+const spotsLit = new Set(lit.filter((q) => q.life > 0.3).map((q) => q.p.map((v) => v.toFixed(2)).join()))
+check(spotsLit.size === 51, `${spotsLit.size} still points are kept lit by particles: two floor rings, the ring under the globe, the gauge dial and the inner arc`)
+const fast = s.fx.filter((q) => q.power === 0 && q.life < 0.3 && q.n === 99)
+check(fast.length === 10, `${fast.length} moving points: 2 markers running round the floor ring and 8 on the turning globe`)
+check(lit.every((q) => q.p[1] > 10 && q.p[1] < 12.6 && Math.abs(q.p[0] - 0.5) < 1.8 && q.p[2] > 1 && q.p[2] < 4), 'every point lies inside the hologram')
+const perTick = Math.max(...Array.from({ length: 60 }, (_, i) => s.fx.filter((q) => q.n === 60 + i).length))
+check(perTick <= 16, `at most ${perTick} particle calls in a tick`)
+check(s.fx.filter((q) => q.n < 3 && q.power === 0).every((q) => q.p[1] < 10.3), 'while booting, points only light up as far as the meshes have been built')
 
 console.log('Closing')
 check(s.g.hologram('p1') === false, '!holo again closes it')
@@ -145,6 +159,7 @@ check(blockCode.length <= 32000 && !blockCode.includes('//'), `wrote code_block.
   const m = [...g2.meshes.values()].map((q) => ({ ...q.o, p: q.p, r: q.r }))
   const low = Math.min(...m.map((q) => q.p[1] - q.height / 2))
   const xs = [Math.min(...m.map((q) => q.p[0])), Math.max(...m.map((q) => q.p[0]))]
+  check(g2.fx.length === 61, 'the click also lights all 61 particle points once (they last about 3 to 4 seconds unless tick keeps them going)')
   check(g2.errors.length === 0 && m.length === N && m.every((q) => q.p), `one click, no world code, tick never run: all ${N} meshes are there straight away`)
   check(low > 10.99 && low < 11.1 && Math.abs((xs[0] + xs[1]) / 2 - 0.5) < 0.05, 'it stands on top of the block')
   const mainZ = m.filter((q) => Math.abs(q.depth - 0.02) < 1e-9 && Math.abs(q.width - 0.02) > 1e-9 && Math.abs(Math.cos(q.r[1]) + 1) < 1e-6)
@@ -186,6 +201,6 @@ console.log('Word filter (the game stars out words in code blocks, which breaks 
   check(names.length === 0, 'no 1 or 2 letter names are left in the code' + (names.length ? ': ' + names.join(' ') : ''))
 }
 
-if (args.includes('--dump')) fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames: [boot.frames[12], boot.frames[100], boot.frames[110]], player: [0.5, 10, 0.5] }))
+if (args.includes('--dump')) fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify({ frames: [boot.frames[8], boot.frames[100], boot.frames[110]].map((f) => ({ ...f, dots: dotsNow(f.t) })), player: [0.5, 10, 0.5] }))
 console.log(fail.length ? `\n${fail.length} check(s) failed` : '\nAll checks passed')
 process.exit(fail.length ? 1 : 0)
