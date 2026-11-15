@@ -1,26 +1,28 @@
-# Fire Rings
+# FR
 
 A slanted stack of ten pink rings over a six-pointed star, a line of gold
 sparks down the middle, and a fireball that drops through every ring and
 bursts on the floor. Rebuilt from your screenshot with few meshes (12) and
 many particles. Sim-tested only; it has not been run in Bloxd.
 
-![six moments of the move](preview/fire_rings.png)
+![six moments of the move](preview/fr.png)
 
 The picture is drawn by `tools/render.py` from the test run, with a
 player-sized figure for scale. It is not a screenshot of the game.
 
 ## Use it
 
-- **World Code (the full move):** paste `world_code.js` (about 15,500
-  characters) and type `!rings`. It lands 8 blocks in front of you. If other
+- **World Code (the full move):** paste `world_code.js` (about 14,900
+  characters) and type `!fr`. It lands 8 blocks in front of you. If other
   world code is there too, paste this **after** it.
-- **Code Block, no World Code needed:** paste `code_block.js` (15,213 of
+- **Code Block, no World Code needed:** paste `code_block.js` (14,619 of
   32,000 characters) and click the block. The show plays on top of the
   block. See below for what is different.
 
-From other code: `fireRings(playerId)`, `fireRings(playerId, [x, y, z])` or
-`fireRings(playerId, [x, y, z], [fx, fz])` to choose which way it leans.
+From other code: `fr(playerId)`, `fr(playerId, [x, y, z])` or
+`fr(playerId, [x, y, z], [fx, fz])` to choose which way it leans. Inside the
+code block the names are `frCast` and `frOnce`, and the chat command is left
+out, because a bare two-letter word could be caught by the word filter.
 
 ## World Code version (3.9 seconds)
 
@@ -61,11 +63,11 @@ It makes 448 particle calls on the click. The unseen-then-visible trick
 relies on the game following the colour steps of a particle exactly; if the
 trail or flash show from the start, tell me.
 
-## Settings (`LANCE_CFG`)
+## Settings (`FR_CFG`)
 
 | Name | Meaning |
 |---|---|
-| `chat` | Chat command (`!rings`) |
+| `chat` | Chat command (`!fr`) |
 | `distance` | Blocks in front of the caster where it lands (8, never more than 15) |
 | `size` | Scale |
 | `tilt` | Lean of the line in degrees (18). 0 = straight up |
@@ -76,15 +78,15 @@ trail or flash show from the start, tell me.
 | `hideDist` | Visible up to 150 blocks |
 | `maxCasts`, `maxMeshes` | 2 casts at once, 60 meshes |
 
-Rings are in `LANCE_RINGS` as `[distance up the line, radius, colour]`,
-colours in `LANCE_COL`, the fireball boxes in `LANCE_BALL`. There are no
+Rings are in `FR_RINGS` as `[distance up the line, radius, colour]`,
+colours in `FR_COL`, the fireball boxes in `FR_BALL`. There are no
 sounds.
 
 ## Check it
 
 ```
-node tools/check.mjs --dump /tmp/lance.json
-python tools/render.py /tmp/lance.json preview/fire_rings.png
+node tools/check.mjs --dump /tmp/fr.json
+python tools/render.py /tmp/fr.json preview/fr.png
 ```
 
 `code_block.js` is generated from `world_code.js` by `tools/check.mjs`; do not

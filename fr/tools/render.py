@@ -1,5 +1,5 @@
-"""Draws Fire Rings from a dump of tools/check.mjs.
-Usage: python tools/render.py frames.json preview/fire_rings.png
+"""Draws FR from a dump of tools/check.mjs.
+Usage: python tools/render.py frames.json preview/fr.png
 A rough stand-in: particles are glowing dots, meshes are flat-shaded boxes."""
 import json, math, random, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageChops

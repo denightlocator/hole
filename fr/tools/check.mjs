@@ -1,4 +1,4 @@
-// Stand-in game test for Fire Rings. Run: node tools/check.mjs [--dump frames.json]
+// Stand-in game test for FR. Run: node tools/check.mjs [--dump frames.json]
 // It also writes code_block.js (the standalone code block) from the world code.
 import fs from 'node:fs'
 import path from 'node:path'
@@ -50,7 +50,7 @@ function game(before = '', bare = false) {
   }
   s.g = {}
   if (bare) { s.bare = { tick: undefined, onPlayerChat: undefined }; return s }
-  s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat;\n' + before + '\n' + code + '\nreturn { tick, onPlayerChat, LANCE_CFG, LANCE_RINGS, lanceList, lancePlan, held: () => lanceMeshes }')(s.api, s.g)
+  s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat;\n' + before + '\n' + code + '\nreturn { tick, onPlayerChat, FR_CFG, FR_RINGS, frList, frPlan, held: () => frMeshes }')(s.api, s.g)
   return s
 }
 function play(s, ticks) {
@@ -71,8 +71,8 @@ check(code.length <= 512000 && !code.includes('//'), `world_code.js is ${code.le
 
 console.log('World Code: the move')
 const s = game()
-const N = s.run.lancePlan.length
-check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!rings') === false && s.run.lanceList.length === 1, '!rings casts it and is hidden from chat')
+const N = s.run.frPlan.length
+check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!fr') === false && s.run.frList.length === 1, '!fr casts it and is hidden from chat')
 const run = play(s, 100)
 check(s.errors.length === 0, 'every api call is well formed and every mesh is level (only turned left or right) ' + [...new Set(s.errors)].join('; '))
 const BASE = [0.5, 10, 8.5]
@@ -85,7 +85,7 @@ check(s.peak === 12 && s.made === 12, `${s.peak} meshes in all: 6 bars for the s
 const star = run.frames[10]
 check(star.length === 6 && star.every((m) => Math.abs(m.p[1] - 10.08) < 1e-9 && Math.abs(m.depth - 3.1 * Math.sqrt(3)) < 1e-6 && Math.hypot(m.p[0] - 0.5, m.p[2] - 8.5) < 1.56), 'the star is two crossed triangles, 6.2 blocks across, flat on the floor 8 blocks in front of the caster')
 const dots = s.fx.filter((q) => q.count === 1 && q.power === 0)
-const ringOf = (q) => s.run.LANCE_RINGS.findIndex((r) => Math.abs(alongOf(q.p) - r[0]) < 1e-6 && Math.abs(offOf(q.p) - r[1]) < 1e-6)
+const ringOf = (q) => s.run.FR_RINGS.findIndex((r) => Math.abs(alongOf(q.p) - r[0]) < 1e-6 && Math.abs(offOf(q.p) - r[1]) < 1e-6)
 check(dots.length > 1000 && dots.every((q) => ringOf(q) >= 0), `${N} ring points on 10 rings of different sizes (0.7 to 3.4 blocks), all square to one slanted line that leans 18 degrees back toward the caster`)
 const aliveAt = (n) => dots.filter((q) => q.n <= n && q.n + q.minLife * 20 > n)
 const seenRings = (n) => new Set(aliveAt(n).map(ringOf)).size
@@ -98,36 +98,36 @@ check(ball(41).length === 0 && flight.every((f) => f.length === 6 && f.every((m)
 const alongs = flight.map((f) => alongOf(f[0].p))
 check(flight.every((f) => offOf(f[0].p) < 1e-6) && alongs[0] > 12.9 && alongs[25] < 1e-6 && alongs.every((v, i) => !i || v < alongs[i - 1]) && alongs[0] - alongs[1] < alongs[24] - alongs[25], `it flies down the middle of the rings, from ${alongs[0].toFixed(1)} blocks up the line to the floor in 1.3 s, speeding up`)
 const passes = s.fx.filter((q) => q.count === 14)
-check(passes.length === 10 && passes.every((q, i) => Math.abs(alongOf(q.p) - s.run.LANCE_RINGS[9 - i][0]) < 1e-6), 'it passes through all 10 rings, top to bottom, and each ring throws off a burst as it goes through')
+check(passes.length === 10 && passes.every((q, i) => Math.abs(alongOf(q.p) - s.run.FR_RINGS[9 - i][0]) < 1e-6), 'it passes through all 10 rings, top to bottom, and each ring throws off a burst as it goes through')
 const trail = s.fx.filter((q) => q.count === 18)
 check(trail.length === 26 && trail.every((q, i) => Math.abs(alongOf(q.p) - alongs[i]) < 1e-6), 'it leaves a thick gold trail (23 particles a tick)')
 const stream = s.fx.filter((q) => q.count === 4 && q.tex === 'glint')
 check(stream.length > 100 && stream.every((q) => offOf(q.p) < 1e-6 && q.d1[1] < 0), `${stream.length} bursts of gold sparks run down the line while it charges`)
 const boom = s.fx.filter((q) => q.n === 68 && q.count >= 30)
 check(boom.length === 5 && boom.reduce((sum, q) => sum + q.count, 0) === 200, 'when it lands: 200 particles burst out, with a shock ring along the floor')
-check(ball(68).length === 0 && run.frames[77].length === 6 && run.frames[78].length === 0 && s.meshes.size === 0 && s.run.held() === 0 && s.run.lanceList.length === 0, 'the fireball is deleted on landing, the star half a second later; no mesh is left (3.9 s in all)')
+check(ball(68).length === 0 && run.frames[77].length === 6 && run.frames[78].length === 0 && s.meshes.size === 0 && s.run.held() === 0 && s.run.frList.length === 0, 'the fireball is deleted on landing, the star half a second later; no mesh is left (3.9 s in all)')
 check(s.hurt.length === 2 && s.hurt.every((h) => h[1] === -40 && h[2] === 'p1' && h[3] === 68) && s.hurt.map((h) => h[0]).sort().join() === 'cow,p2', 'it deals 40 damage on landing to everything within 4 blocks; the caster and a mob 6 blocks away are not touched')
 check(s.pushed.length === 2 && s.pushed.find((q) => q[0] === 'cow')[3] > 9 && s.pushed.find((q) => q[0] === 'p2')[1] > 9, 'and knocks them away from the middle')
 const perTick = Math.max(...Array.from({ length: 100 }, (_, n) => s.fx.filter((q) => q.n === n).length))
 check(perTick <= 60 && run.worst <= 70, `at most ${perTick} particle calls and ${run.worst} api calls in a tick`)
 const two = game()
-two.g.fireRings('p1'); two.g.fireRings('p2')
-check(two.g.fireRings('p1') === false && /Too many/.test(two.said[0]), 'two casts can run together (24 meshes); a third is refused')
+two.g.fr('p1'); two.g.fr('p2')
+check(two.g.fr('p1') === false && /Too many/.test(two.said[0]), 'two casts can run together (24 meshes); a third is refused')
 const boomy = game()
 boomy.api.setPosition = () => { throw new Error('nope') }
-boomy.g.fireRings('p1')
+boomy.g.fr('p1')
 play(boomy, 3)
-check(/^Fire Rings stopped at tick 0: Error: nope$/.test(boomy.said[0] || '') && boomy.meshes.size === 0 && boomy.run.lanceList.length === 0, 'if the game refuses a call it stops, cleans up and tells the caster')
+check(/^Stopped at tick 0: Error: nope$/.test(boomy.said[0] || '') && boomy.meshes.size === 0 && boomy.run.frList.length === 0, 'if the game refuses a call it stops, cleans up and tells the caster')
 const both = game('globalThis.seen = 0; tick = () => { globalThis.seen++ }; onPlayerChat = (id, m) => m === "x" ? "old" : undefined;')
 both.run.tick(50)
 check(both.run.onPlayerChat('p1', 'x') === 'old' && both.g.seen === 1, 'earlier tick and onPlayerChat still run')
 
 console.log('Code block (runs only at the click: particles only, no meshes)')
-const cut = code.slice(0, code.indexOf('var lanceOldTick')).trimEnd().replace('  chat: "!rings",\n', '')
-const blockCode = 'if (typeof fireRingsOnce !== "function") {\n  (function () {\n' + cut + '\n  })()\n}\n' +
-  'fireRingsOnce(myId, [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5])\n'
+const cut = code.slice(0, code.indexOf('var frOldTick')).trimEnd().replace('  chat: "!fr",\n', '')
+const blockCode = 'if (typeof frOnce !== "function") {\n  (function () {\n' + cut + '\n  })()\n}\n' +
+  'frOnce(myId, [thisPos[0] + 0.5, thisPos[1] + 1, thisPos[2] + 0.5])\n'
 fs.writeFileSync(path.join(dir, 'code_block.js'), blockCode)
-check(blockCode.length <= 32000 && !blockCode.includes('//') && !blockCode.includes('onPlayerChat') && !blockCode.includes('!rings'), `wrote code_block.js: ${blockCode.length} of 32,000 characters, no comments, no chat command`)
+check(blockCode.length <= 32000 && !blockCode.includes('//') && !blockCode.includes('onPlayerChat') && !blockCode.includes('!fr'), `wrote code_block.js: ${blockCode.length} of 32,000 characters, no comments, no chat command`)
 const g1 = game('', true)
 new Function('api', 'globalThis', 'myId', 'thisPos', 'with (globalThis) {' + blockCode + '}')(g1.api, g1.bare, 'p1', [0, 9, 8])
 {
