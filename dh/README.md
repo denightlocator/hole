@@ -80,7 +80,7 @@ more stepped).
 | `growTicks` | Ticks to grow to full size (24) |
 | `duration` | Seconds until it closes by itself; 0 = stays until toggled off |
 | `onceTime` | Code block: seconds one click lasts (6) |
-| `onceTurn` | Code block: how far it turns in that time (1 = about 63 degrees, with 12% growth; 0.7 = about 39 degrees, 3% growth) |
+| `onceTurn` | Code block: how far it turns in that time (1 = about 63 degrees, with 12% growth; 0.7 = about 43 degrees, 3% growth) |
 | `hideDist` | Visible up to 120 blocks |
 | `maxCircles` | How many can be open at once (2) |
 
