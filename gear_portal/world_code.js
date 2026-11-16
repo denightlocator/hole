@@ -14,6 +14,9 @@ var GATE_CFG = {
   hidePlayer: true,
   shrink: true,
   slashWay: -1,
+  slashPieces: 18,
+  slashGap: 26,
+  slashJitter: 1,
   slashMs: 2100,
   slashShare: 0.19,
   holdPlayer: true,
@@ -351,26 +354,67 @@ function gateHarm(cast) {
   }
 }
 
-function gateSlash(cast, age) {
-  var scale = GATE_CFG.size
-  var reach = GATE_CFG.slashRadius * 0.86 * scale
-  var count = 18
-  var start = Math.atan2(cast.aim[0], cast.aim[1])
-  var long = 2 * reach * Math.tan(Math.PI / count) * 1.08
-  for (var num = 0; num < count; num++) {
-    var born = Math.floor(num / 3)
-    if (age === born) {
-      var way = GATE_CFG.slashWay < 0 ? -1 : 1
-      var angle = start + way * (num / count) * Math.PI * 2
-      var tall = cast.out[1] + 0.95 * scale
-      var outer = gateBox(cast, long / scale, 0.06, 0.55, "jade")
-      var inner = gateBox(cast, (long * 0.9) / scale, 0.09, 0.16, "mint")
-      if (outer) gatePut(outer, cast.out[0] + Math.sin(angle) * reach, tall, cast.out[2] + Math.cos(angle) * reach, angle, true)
-      if (inner) gatePut(inner, cast.out[0] + Math.sin(angle) * (reach + 0.3 * scale), tall, cast.out[2] + Math.cos(angle) * (reach + 0.3 * scale), angle, true)
-      cast.slash.push({ gone: age + 4, ids: [outer, inner].filter((made) => made) })
-      if (num % 3 === 0) gateCloud([cast.out[0] + Math.sin(angle) * reach, tall, cast.out[2] + Math.cos(angle) * reach], 0.3, 0.1, { life: 0.3, size: 0.14, count: 8, power: 4, dir1: [way * Math.cos(angle) - 0.3, -0.1, -way * Math.sin(angle) - 0.3], dir2: [way * Math.cos(angle) + 0.3, 0.3, -way * Math.sin(angle) + 0.3], first: "white", last: "jade" })
+function gateWobble(seed) {
+  var raw = Math.sin(seed * 12.9898 + 78.233) * 43758.5453
+  return raw - Math.floor(raw)
+}
+
+function gateSlashPlan(cast) {
+  var count = GATE_CFG.slashPieces
+  var way = GATE_CFG.slashWay < 0 ? -1 : 1
+  var front = gateFacing(cast.owner, cast.aim)
+  var start = Math.atan2(front[0], front[1])
+  var half = Math.PI - (GATE_CFG.slashGap * Math.PI) / 360
+  var sides = Math.max(2, Math.round(count / 2))
+  var plan = []
+  for (var side = 0; side < 2; side++) {
+    for (var num = 0; num < sides; num++) {
+      if (side && !num) continue
+      var share = sides > 1 ? num / (sides - 1) : 0
+      if (GATE_CFG.slashJitter && num && num < sides - 1) share = Math.min(0.97, Math.max(0.03, share + (gateWobble(side * 13 + num + 3) - 0.5) * 0.08))
+      var loose = GATE_CFG.slashJitter ? gateWobble(side * 29 + num + 41) : 0.5
+      plan.push({
+        share: share,
+        side: side,
+        born: Math.min(5, Math.floor(share * 6)),
+        reach: GATE_CFG.slashRadius * 0.86 + (loose - 0.5) * 0.14,
+        rise: 0.95 + (GATE_CFG.slashJitter ? (gateWobble(side * 31 + num + 17) - 0.5) * 0.18 : 0),
+        deep: 0.55 + (GATE_CFG.slashJitter ? (gateWobble(side * 37 + num + 71) - 0.5) * 0.1 : 0),
+        gone: 3 + Math.round((GATE_CFG.slashJitter ? gateWobble(side * 43 + num + 61) : 0.5) * 2),
+        angle: start + way * (side ? 1 : -1) * share * half,
+      })
     }
   }
+  plan.forEach((piece) => {
+    var near = Math.PI * 2
+    plan.forEach((other) => {
+      if (other === piece) return
+      var apart = Math.abs(Math.atan2(Math.sin(other.angle - piece.angle), Math.cos(other.angle - piece.angle)))
+      if (apart < near) near = apart
+    })
+    piece.step = Math.max(0.05, near)
+  })
+  return plan
+}
+
+function gateSlash(cast, age) {
+  var scale = GATE_CFG.size
+  var way = GATE_CFG.slashWay < 0 ? -1 : 1
+  if (!cast.slashPlan) cast.slashPlan = gateSlashPlan(cast)
+  cast.slashPlan.forEach((piece) => {
+    if (piece.born !== age) return
+    var reach = piece.reach * scale
+    var tall = cast.out[1] + piece.rise * scale
+    var long = 2 * reach * Math.tan(piece.step / 2) * 1.12
+    var outer = gateBox(cast, long / scale, 0.06, piece.deep, "jade")
+    var inner = gateBox(cast, (long * 0.9) / scale, 0.09, 0.16, "mint")
+    if (outer) gatePut(outer, cast.out[0] + Math.sin(piece.angle) * reach, tall, cast.out[2] + Math.cos(piece.angle) * reach, piece.angle, true)
+    if (inner) gatePut(inner, cast.out[0] + Math.sin(piece.angle) * (reach + 0.3 * scale), tall, (cast.out[2] + Math.cos(piece.angle) * (reach + 0.3 * scale)), piece.angle, true)
+    cast.slash.push({ gone: age + piece.gone, ids: [outer, inner].filter((made) => made) })
+    if (piece.share < 0.98) {
+      gateCloud([cast.out[0] + Math.sin(piece.angle) * reach, tall, cast.out[2] + Math.cos(piece.angle) * reach], 0.3, 0.1, { life: 0.3, size: 0.14, count: 8, power: 4, dir1: [way * Math.cos(piece.angle) - 0.3, -0.1, -way * Math.sin(piece.angle) - 0.3], dir2: [way * Math.cos(piece.angle) + 0.3, 0.3, -way * Math.sin(piece.angle) + 0.3], first: "white", last: "jade" })
+    }
+  })
   for (var idx = cast.slash.length - 1; idx >= 0; idx--) {
     if (cast.slash[idx].gone <= age) {
       gateDrop(cast, cast.slash[idx].ids)

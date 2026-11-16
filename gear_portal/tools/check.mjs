@@ -134,15 +134,22 @@ check(leftAt === 66, 'right after dropping in (0.3 s) the player is teleported')
 check(run.frames[leftAt].player.map((v) => +v.toFixed(6)).join() === '6.5,10,0.5', 'the player lands 6 blocks away, exactly where the arrow pointed (to the right)')
 check(run.frames[leftAt].opacity === 1 && !('speedMultiplier' in s.options) && !('jumpAmount' in s.options) && !('invincible' in s.options) && s.options.groundArrowPath === null, 'visible again; walking, jumping and damage are back to normal; the arrow strip is gone')
 check(arrowOf(run.frames[leftAt]).length === 0 && run.frames[leftAt].worn === 3, 'arrow heads removed, worn meshes back on')
-const ringOf = (f) => f.meshes.filter((m) => Math.abs(m.p[1] - 10.95) < 1e-9)
+const ringOf = (f) => f.meshes.filter((m) => m.p[1] > 10.5)
 const sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((k) => ringOf(run.frames[leftAt + k]).length)
-check(sizes[0] === 6 && Math.max(...sizes) === 24 && sizes[10] === 0, `the slash sweeps once round the player in 0.3 s as a green band with a bright edge (${sizes.join(', ')} meshes), then is gone`)
+check(sizes[0] === 6 && Math.max(...sizes) >= 22 && sizes[10] === 0, `the band grows out from the front of the player in both directions over 0.3 s (${sizes.join(', ')} meshes), then is gone`)
 const angOf = (m) => Math.atan2(m.p[0] - 6.5, m.p[2] - 0.5)
-const firstBits = ringOf(run.frames[leftAt + 1]).map(angOf), nextBits = ringOf(run.frames[leftAt + 2]).map(angOf).filter((a) => !firstBits.some((b) => Math.abs(a - b) < 1e-6))
-const norm = (a) => Math.atan2(Math.sin(a), Math.cos(a))
-check(nextBits.every((a) => norm(a - Math.PI / 2) < -0.5) && firstBits.every((a) => norm(a - Math.PI / 2) > -0.75 && norm(a - Math.PI / 2) < 0.01), 'the slash band now sweeps the other way round (angle going down), to match the way the body turns in game')
+const nearFront = (deg) => Math.abs(((deg - 90 + 540) % 360) - 180) < 1e-6
+const relOf = (a) => (((a * 180) / Math.PI - 90 + 540) % 360) - 180
+const earlyRing = [...new Set(ringOf(run.frames[leftAt + 1]).map((m) => Math.round(relOf(angOf(m)))))]
+const laterRing = [...new Set(ringOf(run.frames[leftAt + 3]).map((m) => Math.round(relOf(angOf(m)))))]
+check(earlyRing.length > 0 && Math.max(...earlyRing.map(Math.abs)) < 20 && Math.max(...laterRing.map(Math.abs)) > 55 && Math.min(...laterRing.map(Math.abs)) < 5, 'the band starts in front of the player and runs out to both sides at once, the two ends going round towards the back')
+const spread = [...new Set(run.frames.slice(leftAt, leftAt + 9).flatMap((f) => ringOf(f).map((m) => Math.round(relOf(angOf(m)) * 10) / 10)))].sort((a, b) => a - b)
+const far = Math.max(...spread.map(Math.abs))
+check(spread.every((a) => Math.abs(a) < 170) && Math.abs(360 - 2 * far - 26) < 10, `the two ends stop ${Math.round(360 - 2 * far)}° apart, and that free area is behind the player, ${Math.round(180 - far)}° either side of straight behind`)
+const steps = spread.map((a, i) => (i + 1 < spread.length ? spread[i + 1] - a : spread[0] + 360 - a))
+check(Math.max(...steps) - Math.min(...steps) > 4 && Math.abs(spread.length - 17) < 3, `the pieces are not evenly spaced (${Math.round(Math.min(...steps))}° to ${Math.round(Math.max(...steps))}° apart), so the band does not look made by a machine`)
 const allRing = new Set(); run.frames.slice(leftAt, leftAt + 12).forEach((f) => ringOf(f).forEach((m) => allRing.add(m.p.join())))
-check(allRing.size === 36 && [...allRing].every((p) => { const q = p.split(',').map(Number); const r = Math.hypot(q[0] - 6.5, q[2] - 0.5); return Math.abs(r - 2.58) < 1e-6 || Math.abs(r - 2.88) < 1e-6 }), 'it is a full circle of 18 pieces, 2.6 to 2.9 blocks out, at chest height')
+check(allRing.size === 34 && [...allRing].every((p) => { const q = p.split(',').map(Number); const r = Math.hypot(q[0] - 6.5, q[2] - 0.5); return r > 2.4 && r < 3.1 }), 'it is 17 pieces, 2.4 to 3.1 blocks out and at slightly uneven heights, each made of a wide green slab with a thin bright edge')
 const slashMove = s.anims.filter((a) => a[0] === leftAt && a[1])[0][1]
 const arm = (name, key, axis) => slashMove.nodeAnimations[name].timeline[key].rotation[axis]
 check(Math.abs(slashMove.animationDurationMs * slashMove.nodeAnimations.TorsoNode.timeline[1].timeFraction - 400) < 3 && Math.abs(arm('ArmRightMesh', 0, 0) + 1.0821) < 1e-6 && Math.abs(arm('ArmLeftMesh', 1, 2) - 1.9024) < 1e-6 && Math.abs(arm('ArmRightMesh', 1, 2) + 2.0944) < 1e-6 && Math.abs(arm('LegLeftMesh', 0, 0) - 0.5411) < 1e-6, `the slash plays your animation sped up to the 360 instead of over 1.9 s: the arms cross over in ${Math.round(slashMove.animationDurationMs * 0.19)} ms, the same 0.4 s the band takes to sweep round`)

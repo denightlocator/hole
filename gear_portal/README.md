@@ -34,7 +34,7 @@ A wall in the way shortens the teleport.
 ## Parts
 
 - **Two portals, 86 meshes each:** a clock face inside a big gear. Dark green face with a bright centre, 12 hour marks (the four main ones bigger and gold), a short hour hand and a long white minute hand that sweeps a full turn each second, a spoked wheel turning the other way, a gold rim with 12 gear teeth that turn slowly, and three small gears on the outside turning against each other. 28 of the 86 pieces move.
-- **Slash, 36 meshes:** 18 green pieces with a bright edge, shown for 0.2 s each.
+- **Slash, 34 meshes:** 17 green pieces with a bright edge, each shown for 0.15 to 0.25 s. The band starts in front of the player and runs out to both sides at once, the two ends going round the back and stopping 26° apart, so a small free area is left behind the player. The spacing, size, height and depth of each piece are a little uneven on purpose (`slashJitter`), so it does not look machine-made.
 - **Arrow, 6 meshes**, plus the game's own arrow strip on the ground (only the caster sees that one).
 - **Node meshes, 3:** a green blade on the right arm, a brass block on the left arm, a gear plate on the back. They are on while dropping in and during the slash.
 - **Particles:** green sparks rising from the portal, gold glints, grey steam puffs, a stream pulled down into the first portal, bursts on entering and leaving, sparks along the slash.
@@ -55,7 +55,10 @@ At most 167 meshes exist at once.
 | `shrink` | true | the player shrinks while going down and grows back coming out (uses `setLifeformScale`) |
 | `hidePlayer`, `holdPlayer` | true | invisible / held in place and safe for the moment inside the portal |
 | `animate`, `nodeMeshes`, `groundArrow`, `sounds` | true | switch a part off |
-| `slashWay` | -1 | which way round the green slash band sweeps; set to 1 if it turns against the player's body |
+| `slashPieces` | 18 | how many positions the band uses (17 pieces: the front one is shared) |
+| `slashGap` | 26 | free angle in degrees left behind the player at the end |
+| `slashJitter` | 1 | 1 = uneven spacing, height and length; 0 = a perfectly even ring |
+| `slashWay` | -1 | which way the two ends of the band go round the player |
 | `slashMs` | 2100 | length of the supplied slash animation in milliseconds (0.19 of it = 399 ms, the same as the band's 0.4 s sweep) |
 | `slashShare` | 0.19 | the part of it where the arms cross over (the rest is a hold) |
 | `aimLimit` | 3 | hard cap in seconds on how long the arrow stays out |
