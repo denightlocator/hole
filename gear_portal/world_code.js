@@ -12,6 +12,8 @@ var GATE_CFG = {
   hidePlayer: true,
   shrink: true,
   slashWay: -1,
+  slashMs: 10000,
+  slashShare: 0.19,
   holdPlayer: true,
   clickFires: true,
   groundArrow: true,
@@ -39,7 +41,7 @@ var GATE_SND = {
   slash: [["rpgKnifeSlice1", 1, 0.8], ["bigDrumSwish1", 0.8, 0.9]],
 }
 
-var GATE_STEP = { sink: 6, open: 6, spin: 8, land: 2, pose: 4, settle: 4, close: 8 }
+var GATE_STEP = { sink: 6, open: 6, spin: 8, settle: 4, close: 8 }
 var GATE_NODES = ["TorsoNode", "HeadMesh", "ArmRightMesh", "ArmLeftMesh", "LegLeftMesh", "LegRightMesh"]
 var GATE_POSE = {
   rest: {},
@@ -47,9 +49,15 @@ var GATE_POSE = {
   crouch: { TorsoNode: [28, 0, 0], HeadMesh: [20, 0, 0], ArmRightMesh: [45, 0, -15], ArmLeftMesh: [45, 0, 15], LegRightMesh: [-40, 0, 0], LegLeftMesh: [40, 0, 0] },
   leap: { TorsoNode: [-12, 0, 0], HeadMesh: [-25, 0, 0], ArmRightMesh: [-175, 0, -10], ArmLeftMesh: [-175, 0, 10], LegRightMesh: [8, 0, 0], LegLeftMesh: [-8, 0, 0] },
   tuck: { TorsoNode: [20, 0, 0], HeadMesh: [15, 0, 0], ArmRightMesh: [-175, 0, 20], ArmLeftMesh: [-175, 0, -20], LegRightMesh: [-30, 0, 0], LegLeftMesh: [-30, 0, 0] },
-  windup: { TorsoNode: [12, 0, -10], HeadMesh: [0, 30, 0], ArmRightMesh: [-20, 0, -95], ArmLeftMesh: [-60, 0, -30], LegRightMesh: [-25, 0, 0], LegLeftMesh: [30, 0, 0] },
-  sweep: { TorsoNode: [14, 0, -14], HeadMesh: [0, 20, 0], ArmRightMesh: [0, 0, -100], ArmLeftMesh: [-50, 0, -25], LegRightMesh: [-30, 0, 0], LegLeftMesh: [35, 0, 0] },
-  finish: { TorsoNode: [22, 0, 0], HeadMesh: [-10, 0, 0], ArmRightMesh: [-70, 0, 25], ArmLeftMesh: [30, 0, 20], LegRightMesh: [-45, 0, 0], LegLeftMesh: [30, 0, 0] },
+}
+
+var GATE_SLASH = {
+  HeadMesh: [[-0.2793, 0, 0], [-0.2793, 0, 0]],
+  TorsoNode: [[0.2793, 0, 0], [0.2926, 0, 0]],
+  ArmLeftMesh: [[-1.2217, 0, -0.4363], [-1.5708, 0, 1.9024]],
+  ArmRightMesh: [[-1.0821, 0, 0.3665], [-1.5708, 0, -2.0944]],
+  LegLeftMesh: [[0.5411, 0, 0], [0.5411, 0, 0]],
+  LegRightMesh: [[-0.6632, 0, 0], [-0.6632, 0, 0]],
 }
 var GATE_TURNS = ["TorsoNode", "LegLeftMesh", "LegRightMesh"]
 var GATE_WORN = [
@@ -200,6 +208,32 @@ function gateAnimate(cast, from, upto, ticks, yawFrom, yawUpto) {
       api.sendMessage(cast.owner, "Portal animation stopped: " + err, { color: "orange" })
     } catch (other) {}
   }
+}
+
+function gateSlashMove(cast) {
+  if (!GATE_CFG.animate) return
+  var nodes = {}
+  GATE_NODES.forEach((node) => {
+    var keys = GATE_SLASH[node]
+    if (!keys) return
+    var turn = (rot) => [rot[0] * GATE_CFG.flip, rot[1], rot[2]]
+    nodes[node] = { timeline: [{ timeFraction: 0, rotation: turn(keys[0]) }, { timeFraction: GATE_CFG.slashShare, rotation: turn(keys[1]) }] }
+  })
+  try {
+    api.animateEntity(cast.owner, { animationDurationMs: GATE_CFG.slashMs, loop: false, nodeAnimations: nodes }, 0, 1)
+  } catch (err) {
+    GATE_CFG.animate = false
+  }
+}
+
+function gateSlashEnd(cast) {
+  var out = {}
+  GATE_NODES.forEach((node) => {
+    var keys = GATE_SLASH[node]
+    if (!keys) return
+    out[node] = [(keys[1][0] * 180) / Math.PI / GATE_CFG.flip, (keys[1][1] * 180) / Math.PI, (keys[1][2] * 180) / Math.PI]
+  })
+  return out
 }
 
 function gateWear(cast, worn) {
@@ -428,7 +462,7 @@ function gateStep(cast) {
     gateWear(cast, true)
     gateSound("leave", cast.out)
     gateSound("slash", cast.out)
-    gateAnimate(cast, GATE_POSE.tuck, GATE_POSE.windup, 1, -135, -45)
+    gateSlashMove(cast)
     gateSize(cast, 0.6)
     gateCloud([cast.out[0], cast.out[1] + 0.2, cast.out[2]], 1, 0.1, { life: 0.4, size: 0.2, count: 30, power: 3, dir1: [-1, 0.2, -1], dir2: [1, 1.5, 1], first: "white", last: "jade" })
     gateCloud([cast.out[0], cast.out[1] + 0.2, cast.out[2]], 0.8, 0.1, { life: 0.5, size: 0.16, count: 16, power: 2, dir1: [-1, 0.5, -1], dir2: [1, 2, 1], first: "white", last: "gold" })
@@ -438,22 +472,13 @@ function gateStep(cast) {
   var age = moment - cast.left
   if (age === 1) gateSize(cast, 0.85)
   if (age === 2) gateSize(cast, 1)
-  if (age >= 1 && age <= GATE_STEP.spin) {
-    if ((age - 1) % 2 === 0) {
-      var quarter = (age - 1) / 2
-      gateAnimate(cast, quarter ? GATE_POSE.sweep : GATE_POSE.windup, GATE_POSE.sweep, 2, quarter * 90 - 45, quarter * 90 + 45)
-    }
-    gateHarm(cast)
-  }
+  if (age >= 1 && age <= GATE_STEP.spin) gateHarm(cast)
   if (age >= 1) gateSlash(cast, age - 1)
   var landed = GATE_STEP.spin + 1
-  if (age === landed) gateAnimate(cast, GATE_POSE.sweep, GATE_POSE.finish, GATE_STEP.land, -45, 0)
-  if (age === landed + GATE_STEP.land) {
-    gateAnimate(cast, GATE_POSE.finish, GATE_POSE.finish, GATE_STEP.pose)
-    cast.gates[1].shut = true
-  }
-  if (age === landed + GATE_STEP.land + GATE_STEP.pose) gateAnimate(cast, GATE_POSE.finish, GATE_POSE.rest, GATE_STEP.settle)
-  return age >= landed + GATE_STEP.land + GATE_STEP.pose + GATE_STEP.settle && !cast.gates.some((gate) => gate.parts.length)
+  var holdEnd = Math.max(landed, Math.round((GATE_CFG.slashMs * GATE_CFG.slashShare) / 50))
+  if (age === landed && cast.gates[1]) cast.gates[1].shut = true
+  if (age === holdEnd) gateAnimate(cast, gateSlashEnd(cast), GATE_POSE.rest, GATE_STEP.settle)
+  return age >= holdEnd + GATE_STEP.settle && !cast.gates.some((gate) => gate.parts.length)
 }
 
 function gateEnd(cast) {

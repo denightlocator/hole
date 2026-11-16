@@ -24,7 +24,8 @@ The picture is my own render of the test run, not a Bloxd screenshot. **The move
 | Go | On a click, a second `!portal`, or by itself after 3 seconds. The landing spot is fixed at this moment. |
 | 0 – 0.3 s | The first portal opens under the player's feet. The player crouches, leaps with arms up, and corkscrews down, shrinking and fading. |
 | 0.3 s | The player lands where the arrow pointed. The second portal opens there and the first one folds away. |
-| 0.35 – 1.25 s | The player winds up and turns a full 360 with the blade arm out while a green band sweeps once round. Everything within 3 blocks takes 25 damage and is knocked away. The player ends in a lunge, holds it, and stands up while the second portal folds away. |
+| 0.3 – 0.7 s | A green band sweeps once round the player. Everything within 3 blocks takes 25 damage and is knocked away, straight away. The second portal folds away. |
+| 0.3 – 2.4 s | The slash animation plays on the body: the arms cross over in the first 1.9 s, then it holds. At 1.9 s the pose eases back to a normal stand in 0.2 s. |
 
 Set `aimTime` to 0 for no aiming step: one use, and the move goes off straight ahead.
 
@@ -37,7 +38,7 @@ A wall in the way shortens the teleport.
 - **Arrow, 6 meshes**, plus the game's own arrow strip on the ground (only the caster sees that one).
 - **Node meshes, 3:** a green blade on the right arm, a brass block on the left arm, a gear plate on the back. They are on while dropping in and during the slash.
 - **Particles:** green sparks rising from the portal, gold glints, grey steam puffs, a stream pulled down into the first portal, bursts on entering and leaving, sparks along the slash.
-- **Player animation, 16 small `animateEntity` calls:** ready pose with the blade arm pointing ahead while aiming; crouch, leap with arms up, half-turn corkscrew down while the player shrinks into the portal; coming out the player grows back, winds up, turns a full 360 leaning into the turn with the blade arm out, ends in a lunge that is held for 0.2 s, then stands up.
+- **Player animation:** a ready pose with the blade arm pointing ahead while aiming; crouch, leap with arms up, half-turn corkscrew down while the player shrinks into the portal; coming out the player grows back and then plays the supplied slash animation (`GATE_SLASH`: 10 s long, arms crossing over in its first 1.9 s), which is replaced by a 0.2 s easing back to a normal stand when the arms have crossed.
 
 At most 167 meshes exist at once.
 
@@ -55,11 +56,14 @@ At most 167 meshes exist at once.
 | `hidePlayer`, `holdPlayer` | true | invisible / held in place and safe for the moment inside the portal |
 | `animate`, `nodeMeshes`, `groundArrow`, `sounds` | true | switch a part off |
 | `slashWay` | -1 | which way round the green slash band sweeps; set to 1 if it turns against the player's body |
+| `slashMs` | 10000 | length of the supplied slash animation in milliseconds |
+| `slashShare` | 0.19 | the part of it where the arms cross over (the rest is a hold) |
 | `flip` | 1 | set to -1 if the player bends backwards instead of forwards |
 
 ## Not sure until it is tried in Bloxd
 
-- Whether the poses bend the right way (`flip` fixes forward/backward) and whether the 360 turn looks smooth.
+- Whether the poses bend the right way (`flip` fixes forward/backward).
+- The slash animation is used exactly as supplied: 10 s with the arms crossing in its first 1.9 s. If it feels too slow or too long, change `slashMs` and `slashShare`.
 - Whether `shrink` behaves: it changes the player's real size for a moment. If the player gets stuck or stays small, set `shrink` to false.
 - Where the three node meshes sit on the body.
 - The name tag probably stays visible while the player is hidden.
