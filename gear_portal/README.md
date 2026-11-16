@@ -20,14 +20,14 @@ The picture is my own render of the test run, not a Bloxd screenshot. **The move
 
 | Step | What you see |
 |---|---|
-| Aim (up to 3 s) | Three arrow heads on the floor in front of the player, there from the first tick, following where the player looks. Sparks mark the landing spot 6 blocks away. The caster also sees the game's own arrow strip. The player is visible and can walk; the arrow goes with them. |
-| Go | On a click, a second `!portal`, or by itself after 3 seconds. The landing spot is fixed at this moment. |
+| Aim (3 s at most) | Three arrow heads on the floor in front of the player, there from the first tick, following where the player looks. Sparks mark the landing spot 6 blocks away. The caster also sees the game's own arrow strip. The player is visible and can walk; the arrow goes with them. |
+| Go | On a click, a second `!portal`, or by itself on the 3 s mark. The landing spot is fixed at this moment. |
 | 0 – 0.3 s | The first portal opens under the player's feet. The player crouches, leaps with arms up, and corkscrews down, shrinking and fading. |
 | 0.3 s | The player lands where the arrow pointed. The second portal opens there and the first one folds away. |
 | 0.3 – 0.7 s | A green band sweeps once round the player. Everything within 3 blocks takes 25 damage and is knocked away, straight away. The second portal folds away. |
-| 0.3 – 2.4 s | The slash animation plays on the body: the arms cross over in the first 1.9 s, then it holds. At 1.9 s the pose eases back to a normal stand in 0.2 s. |
+| 0.3 – 0.9 s | The body plays the slash animation sped up to the same 0.4 s the band takes: the 10 s animation is run in 2.1 s, so the arms cross over in its first 399 ms. Then the pose eases back to a normal stand in 0.2 s. |
 
-Set `aimTime` to 0 for no aiming step: one use, and the move goes off straight ahead.
+Set `aimTime` to 0 for no aiming step: one use, and the move goes off straight ahead. `aimLimit` is a hard cap of 3 s: the arrow never stays out longer, whatever `aimTime` says. With `aimCancels` set to true the 3 s limit takes the arrow away and drops the move instead of going off.
 
 A wall in the way shortens the teleport.
 
@@ -38,7 +38,7 @@ A wall in the way shortens the teleport.
 - **Arrow, 6 meshes**, plus the game's own arrow strip on the ground (only the caster sees that one).
 - **Node meshes, 3:** a green blade on the right arm, a brass block on the left arm, a gear plate on the back. They are on while dropping in and during the slash.
 - **Particles:** green sparks rising from the portal, gold glints, grey steam puffs, a stream pulled down into the first portal, bursts on entering and leaving, sparks along the slash.
-- **Player animation:** a ready pose with the blade arm pointing ahead while aiming; crouch, leap with arms up, half-turn corkscrew down while the player shrinks into the portal; coming out the player grows back and then plays the supplied slash animation (`GATE_SLASH`: 10 s long, arms crossing over in its first 1.9 s), which is replaced by a 0.2 s easing back to a normal stand when the arms have crossed.
+- **Player animation:** a ready pose with the blade arm pointing ahead while aiming; crouch, leap with arms up, half-turn corkscrew down while the player shrinks into the portal; coming out the player grows back and then plays the supplied slash animation (`GATE_SLASH`, run over 2.1 s so the arms cross over in 399 ms, level with the sweep of the green band), which is replaced by a 0.2 s easing back to a normal stand when the band is done.
 
 At most 167 meshes exist at once.
 
@@ -56,14 +56,16 @@ At most 167 meshes exist at once.
 | `hidePlayer`, `holdPlayer` | true | invisible / held in place and safe for the moment inside the portal |
 | `animate`, `nodeMeshes`, `groundArrow`, `sounds` | true | switch a part off |
 | `slashWay` | -1 | which way round the green slash band sweeps; set to 1 if it turns against the player's body |
-| `slashMs` | 10000 | length of the supplied slash animation in milliseconds |
+| `slashMs` | 2100 | length of the supplied slash animation in milliseconds (0.19 of it = 399 ms, the same as the band's 0.4 s sweep) |
 | `slashShare` | 0.19 | the part of it where the arms cross over (the rest is a hold) |
+| `aimLimit` | 3 | hard cap in seconds on how long the arrow stays out |
+| `aimCancels` | false | true = the cap cancels the move instead of going off |
 | `flip` | 1 | set to -1 if the player bends backwards instead of forwards |
 
 ## Not sure until it is tried in Bloxd
 
 - Whether the poses bend the right way (`flip` fixes forward/backward).
-- The slash animation is used exactly as supplied: 10 s with the arms crossing in its first 1.9 s. If it feels too slow or too long, change `slashMs` and `slashShare`.
+- The slash animation is your schema with only its length changed (`slashMs` 2100 ms, `slashShare` 0.19). It is not clear how the game treats a shortened animation with keys at those fractions, so it may come out at a different speed than intended.
 - Whether `shrink` behaves: it changes the player's real size for a moment. If the player gets stuck or stays small, set `shrink` to false.
 - Where the three node meshes sit on the body.
 - The name tag probably stays visible while the player is hidden.

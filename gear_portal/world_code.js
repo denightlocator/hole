@@ -2,6 +2,8 @@ var GATE_CFG = {
   chat: "!portal",
   travel: 6,
   aimTime: 3,
+  aimLimit: 3,
+  aimCancels: false,
   slashRadius: 3,
   damage: 25,
   knockback: 8,
@@ -12,7 +14,7 @@ var GATE_CFG = {
   hidePlayer: true,
   shrink: true,
   slashWay: -1,
-  slashMs: 10000,
+  slashMs: 2100,
   slashShare: 0.19,
   holdPlayer: true,
   clickFires: true,
@@ -416,7 +418,13 @@ function gateStep(cast) {
     if (moment === 0) gateAnimate(cast, GATE_POSE.rest, GATE_POSE.ready, 4)
     else if (moment % 20 === 4) gateAnimate(cast, GATE_POSE.ready, GATE_POSE.ready, 20)
     if (moment % 3 === 0) gateCloud([cast.out[0], cast.out[1] + 0.15, cast.out[2]], 0.7 * scale, 0.05, { life: 0.3, size: 0.12, count: 6, power: 0.3, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.5, 0.2], first: "mint", last: "jade" })
-    if (moment < Math.round(GATE_CFG.aimTime * 20) && !cast.wantOut) return false
+    var aimTicks = Math.round(Math.min(GATE_CFG.aimTime, GATE_CFG.aimLimit) * 20)
+    if (moment < aimTicks && !cast.wantOut) return false
+    if (GATE_CFG.aimCancels && !cast.wantOut) {
+      gateDrop(cast, cast.arrow.filter((made) => made))
+      cast.arrow.length = 0
+      return true
+    }
     cast.phase = "sink"
     cast.fired = moment
     cast.gates.push({ mid: cast.centre, parts: [], next: 0, each: Math.ceil(gatePlan.length / GATE_STEP.open), shut: false })
@@ -476,7 +484,7 @@ function gateStep(cast) {
   if (age >= 1) gateSlash(cast, age - 1)
   var landed = GATE_STEP.spin + 1
   var holdEnd = Math.max(landed, Math.round((GATE_CFG.slashMs * GATE_CFG.slashShare) / 50))
-  if (age === landed && cast.gates[1]) cast.gates[1].shut = true
+  if (age === holdEnd && cast.gates[1]) cast.gates[1].shut = true
   if (age === holdEnd) gateAnimate(cast, gateSlashEnd(cast), GATE_POSE.rest, GATE_STEP.settle)
   return age >= holdEnd + GATE_STEP.settle && !cast.gates.some((gate) => gate.parts.length)
 }
