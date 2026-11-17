@@ -36,11 +36,11 @@ A wall in the way shortens the teleport.
 - **Two portals, 86 meshes each:** a clock face inside a big gear. Dark green face with a bright centre, 12 hour marks (the four main ones bigger and gold), a short hour hand and a long white minute hand that sweeps a full turn each second, a spoked wheel turning the other way, a gold rim with 12 gear teeth that turn slowly, and three small gears on the outside turning against each other. 28 of the 86 pieces move.
 - **Slash, 34 meshes:** 17 green pieces with a bright edge, each shown for 0.15 to 0.25 s. The band starts in front of the player and runs out to both sides at once, the two ends going round the back and stopping 26° apart, so a small free area is left behind the player. The spacing, size, height and depth of each piece are a little uneven on purpose (`slashJitter`), so it does not look machine-made.
 - **Arrow, 6 meshes**, plus the game's own arrow strip on the ground (only the caster sees that one).
-- **Node meshes, 3:** a green blade on the right arm, a brass block on the left arm, a gear plate on the back. They are on while dropping in and during the slash.
+- **Node meshes, 2:** a green blade on each arm and nothing else — no block on the hand, no plate on the back. They are on while dropping in and during the slash.
 - **Particles:** green sparks rising from the portal, gold glints, grey steam puffs, a stream pulled down into the first portal, bursts on entering and leaving, sparks along the slash.
 - **Player animation:** a ready pose with the blade arm pointing ahead while aiming; crouch, leap with arms up, half-turn corkscrew down while the player shrinks into the portal; coming out the player grows back and then plays the supplied slash animation (`GATE_SLASH`, run over 2.1 s so the arms cross over in 399 ms, level with the sweep of the green band), which is replaced by a 0.2 s easing back to a normal stand when the band is done.
 
-At most 167 meshes exist at once.
+At most 167 meshes exist at once. The only thing that ever lies on the floor is the gear clock portal itself; the 6 arrow heads are there only while aiming and are removed the instant the move goes off, and nothing at all is left once it is over.
 
 ## Settings (`GATE_CFG` at the top)
 

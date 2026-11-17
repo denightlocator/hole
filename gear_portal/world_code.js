@@ -67,8 +67,7 @@ var GATE_SLASH = {
 var GATE_TURNS = ["TorsoNode", "LegLeftMesh", "LegRightMesh"]
 var GATE_WORN = [
   ["ArmRightMesh", 0.08, 1.2, 0.24, "jade", [0, -1, 0]],
-  ["ArmLeftMesh", 0.3, 0.3, 0.3, "brass", [0, -0.45, 0]],
-  ["TorsoNode", 0.5, 0.5, 0.1, "gold", [0, 0.1, -0.22]],
+  ["ArmLeftMesh", 0.06, 1.0, 0.2, "jade", [0, -0.9, 0]],
 ]
 
 var gateList = []
