@@ -1,0 +1,86 @@
+# Arena Shell — build the downloadable Windows .exe
+#
+# Paste this file into the GitHub web UI as   .github/workflows/build.yml
+# (Actions tab -> "New workflow" -> "set up a workflow yourself").
+#
+# The sandbox token used to prepare this repo is not allowed to create
+# workflow files, but the owner account can. After adding it:
+#   Actions -> "Build Arena Shell" -> Run workflow
+# and download the "arena-shell-windows" artifact.
+
+name: Build Arena Shell
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows executables
+        run: npx electron-builder --win --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List build output
+        run: dir dist
+        shell: cmd
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arena-shell-windows
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.exe
+          generate_release_notes: true
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Linux AppImage
+        run: npx electron-builder --linux --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arena-shell-linux
+          path: dist/*.AppImage
+          if-no-files-found: warn
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.AppImage
