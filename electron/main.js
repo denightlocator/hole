@@ -16,8 +16,6 @@ const {
   ipcMain,
   shell,
   Menu,
-  Tray,
-  nativeImage,
   dialog,
   session
 } = require('electron');
@@ -48,7 +46,6 @@ const installDir = argValue('install-dir');
 const settingsFileArg = argValue('settings-file');
 
 let mainWindow = null;
-let tray = null;
 let settings = null;
 let scriptLog = [];
 let scriptState = { running: false, code: null, startedAt: null, endedAt: null, command: '' };
