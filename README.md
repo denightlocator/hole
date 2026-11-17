@@ -1,8 +1,12 @@
 # Arena Shell
 
-A one-file download: **`start.bat`** pulls the whole app from this repo and launches it. It connects to a website (default: `https://arena.ai/agent`) in its own window — same UI, same session, no browser tabs — with **custom themes** that re-skin both the shell and the site it loads (Claude Code, ChatGPT, Claude Light, Midnight Mono).
+A one-file download: **`start.bat`** pulls the whole app from this repo and launches it.
+
+It is a small browser built around a custom UI layer: **tabs, bookmarks, history, downloads, an ad/tracker blocker, Chrome extensions, and a floating YouTube mini player** — plus a **theme engine** that re-skins both the shell *and* the websites you load (Claude Code, ChatGPT, Claude Light, Midnight Mono).
 
 ![Arena Shell](docs/screens/01-default-arena.png)
+
+![Mini player](docs/screens/18-mini-player.png)
 
 | Theme | Applied to the shell **and** the connected page |
 | --- | --- |
@@ -10,6 +14,10 @@ A one-file download: **`start.bat`** pulls the whole app from this repo and laun
 | ChatGPT (full re-skin) | ![ChatGPT](docs/screens/03-theme-chatgpt-reskin.png) |
 | Claude Light (full re-skin) | ![Claude Light](docs/screens/04-theme-claude-light-reskin.png) |
 | Midnight Mono (full re-skin) | ![Midnight](docs/screens/05-theme-midnight-reskin.png) |
+
+| Shields | Extensions | YouTube |
+| --- | --- | --- |
+| ![Shields](docs/screens/13-panel-shields.png) | ![Extensions](docs/screens/14-panel-extensions.png) | ![YouTube](docs/screens/17-panel-youtube.png) |
 
 ---
 
@@ -66,6 +74,69 @@ npm install
 npm run dist:win        # -> dist/*.exe  (run on Windows)
 npm start              # or just run it in place
 ```
+
+
+## What's in it
+
+| | Feature |
+| --- | --- |
+| 🗂 | **Tabs** — `Ctrl+T` new, `Ctrl+W` close, `Ctrl+Tab` cycle, `Ctrl+1…9` jump, middle-click to close |
+| ⭐ | **Bookmarks bar** — `Ctrl+D` toggles, right-click the bar to remove |
+| 🕘 | **History** — searchable, per-entry delete, powers URL-bar suggestions (`Ctrl+H`) |
+| ⬇ | **Downloads** — progress, open/reveal, never overwrites an existing file (`Ctrl+J`) |
+| 🛡 | **Ad & tracker blocking** — hostname lists, cosmetic filtering, per-site allowlist, custom rules |
+| 🧩 | **Extensions** — install unpacked folders, `.zip`, or `.crx`; enable/disable actually unloads |
+| ▶ | **YouTube** — custom page UI and an **always-on-top mini player** that floats over other apps |
+| 🎨 | **Themes** — 5 presets + accent/font/radius/scale/custom CSS, applied to the shell *and* the page |
+| ⌨ | **Boot hook** — `app-start.bat` runs your own setup on launch, with a live console |
+
+### Ad blocking
+
+Two independent switches (ads, trackers) plus cosmetic filtering. Matching is a
+hostname set lookup, so it stays fast. It **never cancels the page you asked
+for** — only subresources — and any site can be allowlisted. Custom rules:
+
+```
+ads.example.com        # block this host and its subdomains
+@@safe.example.com     # allow (overrides the built-in lists)
+re:/promo/banner       # regex against the full URL
+```
+
+Counts are real (requests cancelled), shown on the shield in the toolbar.
+
+### Extensions — what actually works
+
+Electron can run **unpacked** Chrome extensions. It cannot talk to the Chrome
+Web Store (Google's update service is the only thing allowed to install from
+it), so:
+
+- ✅ MV2 extensions, and MV3 extensions that don't rely on background service workers
+- ✅ content scripts, popups, storage, declarativeNetRequest (partially)
+- ❌ Web Store "Add to Chrome" — download the `.crx`/`.zip` or clone the repo instead
+- ❌ extensions needing APIs Electron doesn't implement — these show the real
+  error on their card instead of failing silently
+
+### YouTube mini player
+
+While a video plays, either press **Pop out** on the player (injected UI) or use
+the mini-player button in the titlebar. The window is:
+
+- **always on top** (`floating` level) and visible across workspaces
+- draggable by its own bar, resizable from the corner, double-click to grow
+- restartable from the shell — closing it doesn't stop playback, and
+  "keep a mini player when I leave a video" pops out automatically on navigation
+
+### Custom UIs on the site you load
+
+`Settings → Web app` controls how hard the theme pushes into the page:
+
+- **Off** — no injection
+- **Subtle** — scrollbars, selection colour, fonts
+- **Full re-skin** — forces backgrounds, text and borders (turns a light site dark)
+
+Per-site tweaks go in **Custom CSS**, injected on top. YouTube additionally gets
+its own hand-written UI layer (`electron/youtube.js`) — a quieter header, rounded
+player, Shorts hidden, and the pop-out button.
 
 ## What it does on launch
 
@@ -151,6 +222,12 @@ Add an entry to `THEMES` in `ui/themes.js` — no build step:
 
 | Keys | Action |
 | --- | --- |
+| `Ctrl/Cmd + T` / `W` | New / close tab |
+| `Ctrl/Cmd + Tab` | Next tab |
+| `Ctrl/Cmd + 1…9` | Jump to tab |
+| `Ctrl/Cmd + D` | Bookmark this page |
+| `Ctrl/Cmd + J` | Downloads |
+| `Ctrl/Cmd + H` | History |
 | `Ctrl/Cmd + ,` | Settings |
 | `Ctrl/Cmd + B` | Toggle sidebar |
 | `` Ctrl/Cmd + ` `` | Toggle script console |
@@ -172,18 +249,31 @@ bootstrap.sh           <- macOS/Linux version
 app-start.bat          <- runs inside the app on boot (edit me)
 app-start.sh           <- macOS/Linux equivalent
 electron/
-  main.js              window, IPC, start-script runner, menu
+  main.js              window, IPC, start-script runner, mini player, downloads
   preload.js           narrow contextBridge API (no generic invoke)
+  page-preload.js      allowlisted bridge for scripts injected into pages
   settings-store.js    atomic JSON settings with debounced writes
+  browser-store.js     history, bookmarks, downloads, extensions, prefs
+  adblock.js           ad/tracker matcher + cosmetic rules
+  extensions.js        unpacked/.zip/.crx extension manager
+  youtube.js           URL parsing + injected YouTube UI
 ui/
   index.html           shell layout
   shell.css            chrome styles, entirely token-driven
-  shell.js             renderer: webview, settings, console
+  shell.js             renderer: webview, settings, console (exposes ArenaShell)
+  browser.js           tabs, bookmarks, history, downloads, panels
+  mini-player.*        the always-on-top video window
   themes.js            theme tokens -> CSS variables + injected page CSS
 scripts/
   preview-server.js    run the UI in a normal browser (no Electron needed)
   screenshot.js        dev-only screenshot pass
-test/main.test.cjs     headless checks for main-process behaviour
+test/                  157 headless checks across 6 suites:
+  main.test.cjs        settings, IPC, script runner, recursion guard
+  launcher.test.cjs    launcher -> app argument contract
+  adblock.test.cjs     blocking decisions, allowlist, custom rules
+  store.test.cjs       history/bookmarks/downloads persistence
+  youtube.test.cjs     video-id parsing, embed URLs, injected script
+  extensions.test.cjs  install from folder/zip, enable/disable, errors
 docs/ci-build.yml       build recipe for the .exe (paste into Actions)
 ```
 
