@@ -36,7 +36,18 @@ const electronStub = {
   Tray: function(){ return {}; },
   nativeImage: { createFromPath: () => ({}) },
   dialog: { showSaveDialog: async () => ({ canceled: true }), showOpenDialog: async () => ({ canceled: true }) },
-  session: { defaultSession: { setPermissionRequestHandler(){} } }
+  session: {
+    defaultSession: { setPermissionRequestHandler(){} },
+    fromPartition: () => ({
+      webRequest: { onBeforeRequest(){} },
+      on() {},
+      loadExtension: async () => ({ id: 'x' }),
+      clearStorageData: async () => {},
+      clearCache: async () => {}
+    })
+  },
+  webContents: {},
+  nativeTheme: { shouldUseDarkColors: true }
 };
 
 const origLoad = Module._load;

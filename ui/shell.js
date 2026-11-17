@@ -22,6 +22,8 @@
   let settings = null;
   let currentView = 'web';       // web | settings
   let currentUrl = '';
+  let lastTitle = '';
+  let lastFavicon = '';
   let activeConnection = null;
 
   const webview = $('webview');
@@ -81,6 +83,19 @@
   /* navigation                                                          */
   /* ------------------------------------------------------------------ */
 
+  /* Navigation event bus: browser.js (tabs, bookmarks, history) subscribes to
+     this instead of re-binding webview events. */
+  const navListeners = new Set();
+  function emitNavigate(info) {
+    for (const fn of navListeners) {
+      try {
+        fn(info);
+      } catch (err) {
+        console.error('[nav listener]', err);
+      }
+    }
+  }
+
   /* Safe wrappers: the <webview> is unavailable in browser previews and can
      briefly be un-attached in Electron. Never let that kill the shell. */
   const wv = {
@@ -110,6 +125,14 @@
     if (!value) return '';
     if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value) || value.startsWith('about:')) return value;
     if (/^localhost(:\d+)?(\/|$)/i.test(value)) return `http://${value}`;
+    // Paths and relative URLs (used by the browser preview harness) resolve
+    // against the current origin instead of becoming a web search.
+    if (value.startsWith('/')) {
+      const origin = (window.PREVIEW_MODE && window.location.origin && window.location.origin !== 'null')
+        ? window.location.origin
+        : '';
+      if (origin) return origin + value;
+    }
     if (/^[\w-]+(\.[\w-]+)+/.test(value)) return `https://${value}`;
     return `https://www.google.com/search?q=${encodeURIComponent(value)}`;
   }
@@ -127,8 +150,15 @@
     }
     wv.load(target);
     if (record) {
-      settings.homeUrl = target;
-      api.settings.set({ homeUrl: target });
+      // Remember only real origin URLs as the home page; a relative preview
+      // path or a search query must not overwrite it.
+      try {
+        const parsed = new URL(target);
+        if (parsed.pathname === '/' || parsed.pathname === '') {
+          settings.homeUrl = target;
+          api.settings.set({ homeUrl: target });
+        }
+      } catch { /* ignore non-absolute */ }
     }
   }
 
@@ -169,6 +199,7 @@
       pageStyleKey = null;
       setTimeout(() => { applyPageTheme(true); refreshPageZoom(); }, 120);
       updateNavButtons();
+      emitNavigate({ url: currentUrl, title: lastTitle, favicon: lastFavicon });
     });
 
     webview.addEventListener('did-navigate-in-page', (e) => {
@@ -180,6 +211,18 @@
 
     webview.addEventListener('page-title-updated', (e) => {
       document.title = e.title ? `${e.title} — Arena Shell` : 'Arena Shell';
+      lastTitle = e.title || '';
+      emitNavigate({ url: currentUrl, title: lastTitle, favicon: lastFavicon });
+    });
+
+    webview.addEventListener('page-favicon-updated', (e) => {
+      lastFavicon = (e.favicons && e.favicons[0]) || '';
+      emitNavigate({ url: currentUrl, title: lastTitle, favicon: lastFavicon });
+    });
+
+    // Forgetting where you were is worse than a slightly stale tab title.
+    webview.addEventListener('did-start-navigation', (e) => {
+      if (e.isMainFrame) emitNavigate({ url: e.url, title: '', favicon: '' });
     });
 
     webview.addEventListener('did-fail-load', (e) => {
@@ -764,6 +807,19 @@
     api.script.onState(renderScriptState);
 
   }
+
+  /* Public surface for ui/browser.js (tabs, bookmarks, panels). */
+  window.ArenaShell = {
+    settings: () => settings,
+    currentUrl: () => currentUrl,
+    navigate: (url) => navigate(url),
+    setView: (view) => setView(view),
+    toast: (message, kind) => toast(message, kind),
+    onNavigate: (fn) => {
+      navListeners.add(fn);
+      return () => navListeners.delete(fn);
+    }
+  };
 
   document.addEventListener('DOMContentLoaded', () => {
     boot().catch((err) => {

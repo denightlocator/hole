@@ -26,7 +26,18 @@ const stub = {
   ipcMain: { handle: (c, f) => { handlers[c] = f; } },
   shell: {}, Menu: { setApplicationMenu(){}, buildFromTemplate: () => ({}) },
   Tray: function(){}, nativeImage: { createFromPath: () => ({}) }, dialog: {},
-  session: { defaultSession: { setPermissionRequestHandler(){} } }
+  session: {
+    defaultSession: { setPermissionRequestHandler(){} },
+    fromPartition: () => ({
+      webRequest: { onBeforeRequest(){} },
+      on() {},
+      loadExtension: async () => ({ id: 'x' }),
+      clearStorageData: async () => {},
+      clearCache: async () => {}
+    })
+  },
+  webContents: {},
+  nativeTheme: { shouldUseDarkColors: true }
 };
 const orig = Module._load;
 Module._load = function (r) { if (r === 'electron') return stub; return orig.apply(this, arguments); };

@@ -58,6 +58,101 @@ contextBridge.exposeInMainWorld('arena', {
     }
   },
 
+  adblock: {
+    get: () => ipcRenderer.invoke('adblock:get'),
+    set: (patch) => ipcRenderer.invoke('adblock:set', patch),
+    resetStats: () => ipcRenderer.invoke('adblock:reset-stats'),
+    onChanged: (cb) => {
+      const handler = (_e, summary) => cb(summary);
+      ipcRenderer.on('adblock:changed', handler);
+      return () => ipcRenderer.removeListener('adblock:changed', handler);
+    }
+  },
+
+  history: {
+    list: (query) => ipcRenderer.invoke('history:list', query),
+    clear: (range) => ipcRenderer.invoke('history:clear', range),
+    remove: (url) => ipcRenderer.invoke('history:delete', url),
+    suggest: (query) => ipcRenderer.invoke('history:suggest', query)
+  },
+
+  bookmarks: {
+    list: () => ipcRenderer.invoke('bookmarks:list'),
+    add: (payload) => ipcRenderer.invoke('bookmarks:add', payload),
+    remove: (id) => ipcRenderer.invoke('bookmarks:remove', id),
+    update: (id, patch) => ipcRenderer.invoke('bookmarks:update', id, patch),
+    isBookmarked: (url) => ipcRenderer.invoke('bookmarks:is', url),
+    onChanged: (cb) => {
+      const handler = (_e, items) => cb(items);
+      ipcRenderer.on('bookmarks:changed', handler);
+      return () => ipcRenderer.removeListener('bookmarks:changed', handler);
+    }
+  },
+
+  downloads: {
+    list: () => ipcRenderer.invoke('downloads:list'),
+    clear: () => ipcRenderer.invoke('downloads:clear'),
+    open: (id) => ipcRenderer.invoke('downloads:open', id),
+    reveal: (idOrPath) => ipcRenderer.invoke('downloads:reveal', idOrPath),
+    folder: () => ipcRenderer.invoke('downloads:folder'),
+    onChanged: (cb) => {
+      const handler = (_e, items) => cb(items);
+      ipcRenderer.on('downloads:changed', handler);
+      return () => ipcRenderer.removeListener('downloads:changed', handler);
+    }
+  },
+
+  extensions: {
+    list: () => ipcRenderer.invoke('extensions:list'),
+    install: () => ipcRenderer.invoke('extensions:install'),
+    setEnabled: (id, enabled) => ipcRenderer.invoke('extensions:set-enabled', id, enabled),
+    folder: () => ipcRenderer.invoke('extensions:folder'),
+    remove: (id) => ipcRenderer.invoke('extensions:remove', id),
+    onChanged: (cb) => {
+      const handler = (_e, list) => cb(list);
+      ipcRenderer.on('extensions:changed', handler);
+      return () => ipcRenderer.removeListener('extensions:changed', handler);
+    }
+  },
+
+  mini: {
+    open: (video) => ipcRenderer.invoke('mini:open', video),
+    close: () => ipcRenderer.invoke('mini:close'),
+    get: () => ipcRenderer.invoke('mini:get'),
+    focusSource: () => ipcRenderer.invoke('mini:focus-source'),
+    setAlwaysOnTop: (on) => ipcRenderer.invoke('mini:always-on-top', on),
+    onState: (cb) => {
+      const handler = (_e, state) => cb(state);
+      ipcRenderer.on('mini:state', handler);
+      return () => ipcRenderer.removeListener('mini:state', handler);
+    }
+  },
+
+  youtube: {
+    get: () => ipcRenderer.invoke('youtube:get'),
+    set: (patch) => ipcRenderer.invoke('youtube:set', patch),
+    onState: (cb) => {
+      const handler = (_e, state) => cb(state);
+      ipcRenderer.on('youtube:state', handler);
+      return () => ipcRenderer.removeListener('youtube:state', handler);
+    }
+  },
+
+  browser: {
+    clearData: () => ipcRenderer.invoke('shell:clear-data'),
+    exportStore: () => ipcRenderer.invoke('store:export'),
+    onNavigate: (cb) => {
+      const handler = (_e, url) => cb(url);
+      ipcRenderer.on('navigate', handler);
+      return () => ipcRenderer.removeListener('navigate', handler);
+    },
+    onToast: (cb) => {
+      const handler = (_e, payload) => cb(payload);
+      ipcRenderer.on('toast', handler);
+      return () => ipcRenderer.removeListener('toast', handler);
+    }
+  },
+
   layout: {
     onSidebarWidth: (cb) => {
       const handler = (_e, w) => cb(w);

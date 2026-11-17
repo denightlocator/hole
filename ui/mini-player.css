@@ -1,0 +1,192 @@
+/* Mini player — deliberately tiny and token-free: it lives outside the shell
+   window, so it defines its own compact palette. */
+
+:root {
+  --mp-bg: #0d1017;
+  --mp-bg-elev: #161a23;
+  --mp-border: rgba(201, 242, 228, 0.18);
+  --mp-text: #e9f4ef;
+  --mp-muted: #8b97a5;
+  --mp-accent: #c9f2e4;
+  --mp-radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--mp-text);
+  user-select: none;
+}
+
+.frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-radius: var(--mp-radius);
+  overflow: hidden;
+  background: var(--mp-bg);
+  border: 1px solid var(--mp-border);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+}
+
+body.dragging .frame { box-shadow: 0 26px 70px rgba(0, 0, 0, 0.72); }
+
+/* ── drag strip ─────────────────────────────────────────────── */
+.drag-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 0 6px 0 10px;
+  background: var(--mp-bg-elev);
+  border-bottom: 1px solid var(--mp-border);
+  -webkit-app-region: drag;
+  cursor: grab;
+}
+body.dragging .drag-strip { cursor: grabbing; }
+
+.dot-live {
+  width: 7px; height: 7px; flex: 0 0 7px;
+  border-radius: 50%;
+  background: var(--mp-accent);
+  box-shadow: 0 0 0 3px rgba(201, 242, 228, 0.16);
+  transition: background .2s ease, box-shadow .2s ease;
+}
+.dot-live.paused {
+  background: var(--mp-muted);
+  box-shadow: 0 0 0 3px rgba(139, 151, 165, 0.14);
+}
+
+.drag-title {
+  flex: 1 1 auto;
+  font-size: 11px;
+  color: var(--mp-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.drag-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 22px; height: 22px;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mp-muted);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.icon-btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--mp-text); }
+.icon-btn svg { width: 100%; height: 100%; }
+
+/* ── stage ──────────────────────────────────────────────────── */
+.stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: #000;
+}
+
+#player {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 10, 14, 0.86);
+  transition: opacity .25s ease;
+}
+.overlay[hidden] { display: none; }
+
+.overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--mp-muted);
+}
+
+.spinner {
+  width: 22px; height: 22px;
+  color: var(--mp-accent);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── meta ───────────────────────────────────────────────────── */
+.meta {
+  flex: 0 0 auto;
+  padding: 7px 10px 8px;
+  background: var(--mp-bg-elev);
+  border-top: 1px solid var(--mp-border);
+}
+
+.meta-title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 3px;
+}
+
+.badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(201, 242, 228, 0.14);
+  color: var(--mp-accent);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.hint {
+  font-size: 10px;
+  color: var(--mp-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── resize ─────────────────────────────────────────────────── */
+.resize-handle {
+  position: absolute;
+  right: 0; bottom: 0;
+  width: 16px; height: 16px;
+  cursor: nwse-resize;
+  background:
+    linear-gradient(135deg, transparent 0 45%, rgba(201, 242, 228, 0.35) 45% 55%, transparent 55% 100%);
+  -webkit-app-region: no-drag;
+}

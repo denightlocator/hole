@@ -13,7 +13,7 @@
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:linux": "electron-builder --linux",
-    "test": "node test/main.test.cjs && node test/launcher.test.cjs",
+    "test": "node test/main.test.cjs && node test/launcher.test.cjs && node test/adblock.test.cjs && node test/store.test.cjs && node test/youtube.test.cjs && node test/extensions.test.cjs",
     "screens": "node scripts/screenshot.js"
   },
   "devDependencies": {

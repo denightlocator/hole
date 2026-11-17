@@ -57,6 +57,17 @@
       </div>
 
       <div class="titlebar-right">
+        <button class="nav-btn nav-badge" id="btnShield" title="Ad blocking">
+          <svg viewBox="0 0 24 24"><path d="M12 3.2 19 6v5.4c0 4.2-2.9 7.4-7 9.4-4.1-2-7-5.2-7-9.4V6l7-2.8Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="m9 12 2.2 2.2L15.4 10" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nav-count" id="shieldCount">0</span>
+        </button>
+        <button class="nav-btn nav-badge" id="btnDownloads" title="Downloads (Ctrl+J)">
+          <svg viewBox="0 0 24 24"><path d="M12 4v10m0 0 3.6-3.6M12 14l-3.6-3.6" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 16.5V19h14v-2.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>
+          <span class="nav-count" id="downloadCount" hidden>0</span>
+        </button>
+        <button class="nav-btn" id="btnMini" title="Mini player (always on top)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M13 9.2v5l4-2.5-4-2.5Z" fill="currentColor"/><path d="M8 21h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
         <button class="nav-btn" id="btnConsole" title="Script console (Ctrl+\`)">
           <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M7.5 10.5 10 13l-2.5 2.5M12.5 15.5h4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -76,6 +87,22 @@
         </div>
       </div>
     </header>
+
+    <!-- ── tab strip ─────────────────────────────────────────── -->
+    <div class="tabstrip" id="tabstrip">
+      <div class="tabs-scroll" id="tabsScroll"></div>
+      <button class="tab-new" id="btnNewTab" title="New tab (Ctrl+T)">
+        <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- ── bookmarks bar ─────────────────────────────────────── -->
+    <div class="bmbar" id="bmbar">
+      <div class="bm-items" id="bmItems"></div>
+      <button class="bm-add" id="btnBmStar" title="Bookmark this page (Ctrl+D)">
+        <svg viewBox="0 0 24 24"><path d="M12 4.8l2.3 4.7 5.2.8-3.8 3.6.9 5.1-4.6-2.4-4.6 2.4.9-5.1L4.5 10.3l5.2-.8L12 4.8Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
 
     <!-- ── body ──────────────────────────────────────────────── -->
     <div class="body">
@@ -152,6 +179,11 @@
                   <button class="tab" data-tab="page">Web app</button>
                   <button class="tab" data-tab="startup">Startup script</button>
                   <button class="tab" data-tab="connections">Connections</button>
+                  <button class="tab" data-tab="shields">Shields</button>
+                  <button class="tab" data-tab="extensions">Extensions</button>
+                  <button class="tab" data-tab="downloads">Downloads</button>
+                  <button class="tab" data-tab="history">History</button>
+                  <button class="tab" data-tab="youtube">YouTube</button>
                   <button class="tab" data-tab="advanced">Advanced</button>
                 </div>
 
@@ -265,6 +297,146 @@
                   </div>
                 </section>
 
+
+                <!-- shields / ad blocking -->
+                <section class="tab-panel" data-panel="shields">
+                  <div class="card">
+                    <div class="card-head">
+                      <h3>Ad &amp; tracker blocking</h3>
+                      <p>Applied to everything you browse in the shell. Never blocks the page you asked for.</p>
+                    </div>
+                    <div class="shield-stats">
+                      <div class="stat">
+                        <b id="statBlocked">0</b>
+                        <span>requests blocked</span>
+                      </div>
+                      <div class="stat">
+                        <b id="statSession">0</b>
+                        <span>minutes this session</span>
+                      </div>
+                      <div class="stat">
+                        <b id="statHosts">0</b>
+                        <span>different hosts</span>
+                      </div>
+                    </div>
+                    <div class="field-grid toggles">
+                      <label class="switch-row"><input type="checkbox" id="abEnabled" /><span class="switch"></span><span>Blocking enabled</span></label>
+                      <label class="switch-row"><input type="checkbox" id="abAds" /><span class="switch"></span><span>Block ads</span></label>
+                      <label class="switch-row"><input type="checkbox" id="abTrackers" /><span class="switch"></span><span>Block trackers</span></label>
+                      <label class="switch-row"><input type="checkbox" id="abCosmetic" /><span class="switch"></span><span>Hide empty ad containers</span></label>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Blocked on this session</h3><p>Top hosts, newest numbers first.</p></div>
+                    <div class="ab-hosts" id="abHosts"><p class="hint">Nothing blocked yet. Browse something with ads.</p></div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Allowlist</h3><p>Sites that should never be filtered — one host per line.</p></div>
+                    <textarea id="abAllowlist" class="code-area code-sm" spellcheck="false" placeholder="news.example.com&#10;shop.example.com"></textarea>
+                    <div class="row-gap">
+                      <button class="btn btn-primary" id="btnAbSave">Save allowlist</button>
+                      <span class="hint" id="abSaveStatus"></span>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Custom rules</h3><p>One rule per line. A hostname, <code>@@host</code> to allow, or <code>re:pattern</code> for a regex.</p></div>
+                    <textarea id="abRules" class="code-area code-sm" spellcheck="false" placeholder="tracker.example&#10;@@ads.example&#10;re:\/promo\/banner"></textarea>
+                    <div class="row-gap">
+                      <button class="btn btn-primary" id="btnAbRules">Save rules</button>
+                      <button class="btn" id="btnAbReset">Reset counters</button>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- extensions -->
+                <section class="tab-panel" data-panel="extensions">
+                  <div class="card">
+                    <div class="card-head">
+                      <h3>Extensions</h3>
+                      <p>Install unpacked Chrome extensions, or a <code>.zip</code> / <code>.crx</code> you already downloaded.</p>
+                    </div>
+                    <div class="row-gap wrap">
+                      <button class="btn btn-primary" id="btnExtInstall">Install extension…</button>
+                      <button class="btn" id="btnExtFolder">Open extensions folder</button>
+                    </div>
+                    <p class="hint">Electron can run unpacked extensions but cannot sign in to the Chrome Web Store, so install the <em>unpacked</em> version of an extension. MV2 extensions work best; some MV3 extensions need APIs Electron does not implement, and the error is shown on the card.</p>
+                    <div class="ext-list" id="extList"></div>
+                  </div>
+                </section>
+
+                <!-- downloads -->
+                <section class="tab-panel" data-panel="downloads">
+                  <div class="card">
+                    <div class="card-head">
+                      <h3>Downloads</h3>
+                      <p>Files land in your system Downloads folder.</p>
+                    </div>
+                    <div class="row-gap wrap">
+                      <button class="btn" id="btnDlFolder">Open downloads folder</button>
+                      <button class="btn btn-danger" id="btnDlClear">Clear finished</button>
+                    </div>
+                    <div class="dl-list" id="dlList"><p class="hint">No downloads yet.</p></div>
+                  </div>
+                </section>
+
+                <!-- history -->
+                <section class="tab-panel" data-panel="history">
+                  <div class="card">
+                    <div class="card-head"><h3>History</h3><p>Searchable, and it powers the URL bar suggestions.</p></div>
+                    <div class="row-gap">
+                      <input type="text" id="historySearch" class="grow" placeholder="Search history…" spellcheck="false" />
+                      <button class="btn" id="btnHistoryClear">Clear all</button>
+                    </div>
+                    <div class="history-list" id="historyList"></div>
+                  </div>
+                </section>
+
+                <!-- youtube -->
+                <section class="tab-panel" data-panel="youtube">
+                  <div class="card">
+                    <div class="card-head">
+                      <h3>YouTube</h3>
+                      <p>A custom YouTube UI, plus a video window that floats above every other app.</p>
+                    </div>
+                    <div class="field-grid toggles">
+                      <label class="switch-row"><input type="checkbox" id="ytEnabled" /><span class="switch"></span><span>Custom YouTube UI</span></label>
+                      <label class="switch-row"><input type="checkbox" id="ytPopout" /><span class="switch"></span><span>Keep a mini player when I leave a video</span></label>
+                    </div>
+                    <label class="field" style="margin-top:16px">
+                      <span>Preferred quality</span>
+                      <select id="ytQuality">
+                        <option value="">Let YouTube decide</option>
+                        <option value="hd1080">1080p</option>
+                        <option value="hd720">720p</option>
+                        <option value="large">480p</option>
+                        <option value="medium">360p</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Mini player</h3><p>Always on top, follows you across desktops, drag by its bar.</p></div>
+                    <div class="mini-preview">
+                      <div class="mini-demo">
+                        <div class="mini-demo-bar"><span class="dot ok"></span><span>Video title</span></div>
+                        <div class="mini-demo-stage">▶</div>
+                        <div class="mini-demo-meta">Floats above other apps</div>
+                      </div>
+                      <div class="mini-copy">
+                        <p class="hint">On YouTube, hover the player and press <b>Pop out</b> — or press the mini-player button in the titlebar while a video is playing.</p>
+                        <div class="row-gap wrap">
+                          <button class="btn" id="btnMiniShortcut">Pop out the video on this page</button>
+                          <button class="btn" id="btnMiniClose">Close mini player</button>
+                        </div>
+                        <p class="hint" id="miniStatus">No mini player open.</p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
                 <!-- advanced -->
                 <section class="tab-panel" data-panel="advanced">
                   <div class="card">
@@ -346,5 +518,6 @@
 
   <script src="themes.js"></script>
   <script src="shell.js"></script>
+  <script src="browser.js"></script>
 </body>
 </html>

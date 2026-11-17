@@ -92,6 +92,58 @@
   });
   window.__mirrorThemeToPage = mirrorThemeToPage;
 
+  // ---- browser feature stubs (mirror the real preload surface) ----------
+  const listeners = {};
+  const on = (ch) => (cb) => {
+    listeners[ch] = listeners[ch] || [];
+    listeners[ch].push(cb);
+    return () => { listeners[ch] = listeners[ch].filter((f) => f !== cb); };
+  };
+  const emit = (ch, payload) => (listeners[ch] || []).forEach((cb) => cb(payload));
+
+  let bookmarks = [
+    { id: 'b1', url: 'https://arena.ai/agent', title: 'Arena Agent' },
+    { id: 'b2', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', title: 'YouTube' },
+    { id: 'b3', url: 'https://github.com/denightlocator/hole', title: 'hole' }
+  ];
+
+  const historyItems = [
+    { url: 'https://arena.ai/agent', title: 'Arena Agent', at: Date.now() - 120000, visits: 12 },
+    { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', title: 'A video — YouTube', at: Date.now() - 3600000, visits: 3 },
+    { url: 'https://github.com/denightlocator/hole', title: 'denightlocator/hole', at: Date.now() - 7200000, visits: 7 },
+    { url: 'https://example.com/docs/getting-started', title: 'Getting started', at: Date.now() - 86400000, visits: 1 }
+  ];
+
+  let adblockState = {
+    enabled: true, blockAds: true, blockTrackers: true, cosmetic: true,
+    blocked: 47, since: Date.now() - 18 * 60000,
+    top: [
+      { host: 'ad.doubleclick.net', count: 18 },
+      { host: 'www.google-analytics.com', count: 12 },
+      { host: 'securepubads.g.doubleclick.net', count: 9 },
+      { host: 'static.criteo.net', count: 5 },
+      { host: 'bat.bing.com', count: 3 }
+    ],
+    allowlist: [], rules: [], cosmeticCss: ''
+  };
+
+  let extState = [
+    { id: 'x1', name: 'Dark Reader', version: '4.9.86', manifestVersion: 2, enabled: true, loaded: true,
+      description: 'Dark mode for every website.' },
+    { id: 'x2', name: 'uBlock Origin Lite', version: '1.56', manifestVersion: 3, enabled: true, loaded: false,
+      description: 'Content blocker.',
+      error: 'Service worker registration failed — MV3 background workers are not supported by this runtime.' }
+  ];
+
+  let dlState = [
+    { id: 'd1', filename: 'electron-v33.4.11-win32-x64.zip', state: 'completed',
+      received: 117440512, total: 117440512, url: 'https://github.com/electron/electron/releases/download/x.zip' },
+    { id: 'd2', filename: 'screenshot.png', state: 'progressing',
+      received: 420000, total: 900000, url: 'https://arena.ai/assets/screenshot.png' }
+  ];
+
+  let miniState = { video: null, playing: false };
+
   window.PREVIEW_MODE = true;
   window.arena = {
     settings: {
@@ -151,6 +203,103 @@
       }),
       openExternal: async () => {},
       onMenuAction: () => () => {}
+    },
+    adblock: {
+      get: async () => adblockState,
+      set: async (patch) => {
+        adblockState = { ...adblockState, ...patch };
+        emit('adblock', adblockState);
+        return adblockState;
+      },
+      resetStats: async () => {
+        adblockState = { ...adblockState, blocked: 0, since: Date.now(), top: [] };
+        emit('adblock', adblockState);
+        return adblockState;
+      },
+      onChanged: on('adblock')
+    },
+    history: {
+      list: async (q) => (q
+        ? historyItems.filter((h) => (h.title + h.url).toLowerCase().includes(String(q).toLowerCase()))
+        : historyItems),
+      clear: async () => { historyItems.length = 0; return []; },
+      remove: async (url) => {
+        const i = historyItems.findIndex((h) => h.url === url);
+        if (i >= 0) historyItems.splice(i, 1);
+        return true;
+      },
+      suggest: async (q) => historyItems
+        .filter((h) => (h.title + h.url).toLowerCase().includes(String(q).toLowerCase()))
+        .slice(0, 6)
+        .map((h) => ({ kind: 'history', title: h.title, url: h.url }))
+    },
+    bookmarks: {
+      list: async () => bookmarks,
+      add: async (p) => {
+        const item = { id: 'b' + Date.now(), ...p };
+        bookmarks = [item, ...bookmarks.filter((b) => b.url !== p.url)];
+        emit('bookmarks', bookmarks);
+        return item;
+      },
+      remove: async (id) => {
+        bookmarks = bookmarks.filter((b) => b.id !== id);
+        emit('bookmarks', bookmarks);
+        return true;
+      },
+      update: async () => ({}),
+      isBookmarked: async (url) => bookmarks.some((b) => b.url === url),
+      onChanged: on('bookmarks')
+    },
+    downloads: {
+      list: async () => dlState,
+      clear: async () => { dlState = dlState.filter((d) => d.state === 'progressing'); return dlState; },
+      open: async () => ({ ok: true }),
+      reveal: async () => ({ ok: true }),
+      folder: async () => '/home/you/Downloads',
+      onChanged: on('downloads')
+    },
+    extensions: {
+      list: async () => extState,
+      install: async () => ({ ok: false, canceled: true }),
+      folder: async () => '/home/you/.config/ArenaShell/extensions',
+      setEnabled: async (id, enabled) => {
+        extState = extState.map((e) => (e.id === id ? { ...e, enabled, loaded: enabled } : e));
+        emit('extensions', extState);
+        return { ok: true };
+      },
+      remove: async (id) => {
+        extState = extState.filter((e) => e.id !== id);
+        emit('extensions', extState);
+        return { ok: true };
+      },
+      onChanged: on('extensions')
+    },
+    mini: {
+      open: async (video) => {
+        miniState = { video, playing: true };
+        emit('mini', miniState);
+        return { ok: true };
+      },
+      close: async () => {
+        miniState = { video: null, playing: false };
+        emit('mini', miniState);
+        return true;
+      },
+      get: async () => miniState,
+      focusSource: async () => true,
+      setAlwaysOnTop: async () => true,
+      onState: on('mini')
+    },
+    youtube: {
+      get: async () => ({ enabled: true, popoutOnNavigate: true, defaultQuality: '' }),
+      set: async (patch) => patch,
+      onState: () => () => {}
+    },
+    browser: {
+      clearData: async () => true,
+      exportStore: async () => ({}),
+      onNavigate: on('navigate'),
+      onToast: on('toast')
     },
     layout: { onSidebarWidth: () => () => {} }
   };

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self';" />
+  <title>Arena Mini Player</title>
+  <link rel="stylesheet" href="mini-player.css" />
+</head>
+<body>
+  <div class="frame" id="frame">
+    <div class="drag-strip" id="dragStrip">
+      <span class="dot-live" id="liveDot" title="Playing"></span>
+      <span class="drag-title" id="dragTitle">Mini player</span>
+      <div class="drag-actions">
+        <button class="icon-btn" id="btnBack" title="Back to the video page">
+          <svg viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="icon-btn" id="btnClose" title="Close the mini player">
+          <svg viewBox="0 0 24 24"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <iframe id="player" allow="autoplay; encrypted-media; picture-in-picture"
+              allowfullscreen title="Video player"></iframe>
+      <div class="overlay" id="overlay">
+        <div class="overlay-inner">
+          <svg class="spinner" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2" fill="none" opacity=".2"/>
+            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span id="overlayText">Loading video…</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta" id="meta">
+      <div class="meta-title" id="videoTitle">—</div>
+      <div class="meta-row">
+        <span class="badge" id="qualityBadge" hidden></span>
+        <span class="hint" id="metaHint">Always on top · drag the bar to move</span>
+      </div>
+    </div>
+
+    <div class="resize-handle" id="resizeHandle" title="Resize"></div>
+  </div>
+
+  <script src="mini-player.js"></script>
+</body>
+</html>
