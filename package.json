@@ -1,0 +1,89 @@
+{
+  "name": "arena-shell",
+  "version": "1.0.0",
+  "description": "Arena Shell \u2014 a downloadable desktop shell that runs a start.bat, connects to web apps (like arena.ai/agent), and re-skins its whole interface with custom themes.",
+  "main": "electron/main.js",
+  "author": "denightlocator",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "preview": "node scripts/preview-server.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "test": "node test/main.test.cjs",
+    "screens": "node scripts/screenshot.js"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "ai.arena.shell",
+    "productName": "Arena Shell",
+    "copyright": "Copyright \u00a9 2026",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "electron/**/*",
+      "ui/**/*",
+      "assets/icon.png",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "start.bat",
+        "to": "start.bat"
+      },
+      {
+        "from": "start.sh",
+        "to": "start.sh"
+      }
+    ],
+    "win": {
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Arena-Shell-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Arena-Shell-Portable-${version}.${ext}"
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Network",
+      "target": [
+        "AppImage"
+      ],
+      "artifactName": "Arena-Shell-${version}.${ext}"
+    },
+    "mac": {
+      "icon": "assets/icon.png",
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg"
+      ]
+    }
+  }
+}

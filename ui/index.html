@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; script-src 'self'; connect-src 'self'; font-src 'self' data:;" />
+  <title>Arena Shell</title>
+  <link rel="stylesheet" href="shell.css" />
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- ── titlebar ─────────────────────────────────────────── -->
+    <header class="titlebar" id="titlebar">
+      <div class="titlebar-left">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7L12 2.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M12 8.2 16 10.5v4.9L12 17.7 8 15.4v-4.9L12 8.2Z" fill="currentColor" opacity=".75"/>
+            </svg>
+          </div>
+          <span class="brand-name">Arena Shell</span>
+        </div>
+
+        <div class="url-bar" id="urlBar">
+          <button class="nav-btn" id="btnBack" title="Back">
+            <svg viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="nav-btn" id="btnForward" title="Forward">
+            <svg viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="nav-btn" id="btnReload" title="Reload">
+            <svg viewBox="0 0 24 24"><path d="M18.6 12a6.6 6.6 0 1 1-2-4.7" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M18.9 4.2v4.4h-4.4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="url-input-wrap">
+            <span class="lock-icon" id="lockIcon" title="Secure connection">
+              <svg viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M8.6 10.5V8a3.4 3.4 0 0 1 6.8 0v2.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+            </span>
+            <input id="urlInput" class="url-input" spellcheck="false" placeholder="Enter a URL or search…" />
+            <button class="url-go" id="btnGo" title="Go">
+              <svg viewBox="0 0 24 24"><path d="M5 12h13M13 6.5 18.5 12 13 17.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="titlebar-right">
+        <button class="nav-btn" id="btnConsole" title="Script console (Ctrl+\`)">
+          <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M7.5 10.5 10 13l-2.5 2.5M12.5 15.5h4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="nav-btn" id="btnSettings" title="Settings (Ctrl+,)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l1.7-1.3-1.8-3.1-2 .8a7.6 7.6 0 0 0-2.6-1.5L14.4 3h-3.6l-.4 2.4a7.6 7.6 0 0 0-2.6 1.5l-2-.8-1.8 3.1L5.7 10.5a7.7 7.7 0 0 0 0 3L4 14.8l1.8 3.1 2-.8a7.6 7.6 0 0 0 2.6 1.5l.4 2.4h3.6l.4-2.4a7.6 7.6 0 0 0 2.6-1.5l2 .8 1.8-3.1-1.8-1.3Z" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="win-controls">
+          <button class="win-btn" id="btnMin" title="Minimize">
+            <svg viewBox="0 0 24 24"><path d="M6 12.5h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+          <button class="win-btn" id="btnMax" title="Maximize">
+            <svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.6" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+          </button>
+          <button class="win-btn win-btn-close" id="btnClose" title="Close">
+            <svg viewBox="0 0 24 24"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── body ──────────────────────────────────────────────── -->
+    <div class="body">
+
+      <!-- sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="side-head">
+          <span class="side-title">Connections</span>
+          <button class="mini-btn" id="btnNewConn" title="New connection">
+            <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <nav class="conn-list" id="connList"></nav>
+
+        <div class="side-gap"></div>
+
+        <div class="side-head side-head-sub">
+          <span class="side-title">Theme</span>
+        </div>
+        <div class="theme-list" id="themeList"></div>
+
+        <div class="side-gap"></div>
+
+        <button class="side-action" id="btnOpenSettings">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l1.7-1.3-1.8-3.1-2 .8a7.6 7.6 0 0 0-2.6-1.5L14.4 3h-3.6l-.4 2.4a7.6 7.6 0 0 0-2.6 1.5l-2-.8-1.8 3.1L5.7 10.5a7.7 7.7 0 0 0 0 3L4 14.8l1.8 3.1 2-.8a7.6 7.6 0 0 0 2.6 1.5l.4 2.4h3.6l.4-2.4a7.6 7.6 0 0 0 2.6-1.5l2 .8 1.8-3.1-1.8-1.3Z" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linejoin="round"/></svg>
+          <span>All settings</span>
+        </button>
+
+        <div class="side-foot">
+          <span class="dot" id="scriptDot"></span>
+          <span id="scriptLabel">start.bat idle</span>
+        </div>
+      </aside>
+
+      <!-- resizer -->
+      <div class="resizer" id="resizer"></div>
+
+      <!-- content -->
+      <main class="content" id="content">
+        <div class="view-stack">
+
+          <!-- web view -->
+          <div class="pane pane-web" id="paneWeb">
+            <div class="loading-bar" id="loadingBar"></div>
+            <webview id="webview" src="about:blank" allowpopups
+                     webpreferences="contextIsolation=yes,nodeIntegration=no"></webview>
+            <div class="web-error" id="webError" hidden>
+              <div class="web-error-inner">
+                <h2>Couldn't load that page</h2>
+                <p id="webErrorMsg">The site didn't respond.</p>
+                <div class="row-gap">
+                  <button class="btn btn-primary" id="btnRetry">Try again</button>
+                  <button class="btn" id="btnOpenBrowser">Open in browser</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- settings view -->
+          <div class="pane pane-settings" id="paneSettings" hidden>
+            <div class="settings-scroll">
+              <div class="settings-inner">
+                <div class="settings-head">
+                  <div>
+                    <h1>Settings</h1>
+                    <p class="muted">Customize the shell, the themes, and what runs at startup.</p>
+                  </div>
+                  <button class="btn" id="btnCloseSettings">Done</button>
+                </div>
+
+                <div class="tabs" id="settingsTabs">
+                  <button class="tab active" data-tab="appearance">Appearance</button>
+                  <button class="tab" data-tab="page">Web app</button>
+                  <button class="tab" data-tab="startup">Startup script</button>
+                  <button class="tab" data-tab="connections">Connections</button>
+                  <button class="tab" data-tab="advanced">Advanced</button>
+                </div>
+
+                <!-- appearance -->
+                <section class="tab-panel active" data-panel="appearance">
+                  <div class="card">
+                    <div class="card-head"><h3>Theme</h3><p>Click any look to apply it instantly.</p></div>
+                    <div class="theme-grid" id="themeGrid"></div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Colors &amp; type</h3><p>Overrides apply on top of the theme.</p></div>
+                    <div class="field-grid">
+                      <label class="field">
+                        <span>Accent color</span>
+                        <div class="row-gap">
+                          <input type="color" id="inpAccent" />
+                          <button class="btn btn-sm" id="btnAccentReset">Theme default</button>
+                        </div>
+                      </label>
+                      <label class="field">
+                        <span>UI font</span>
+                        <input type="text" id="inpFont" placeholder="Theme default — e.g. Inter, Segoe UI" />
+                      </label>
+                      <label class="field">
+                        <span>Monospace font</span>
+                        <input type="text" id="inpMono" placeholder="Theme default — e.g. JetBrains Mono" />
+                      </label>
+                      <label class="field">
+                        <span>Base font size <b id="lblFontSize">14px</b></span>
+                        <input type="range" id="inpFontSize" min="11" max="20" step="1" />
+                      </label>
+                      <label class="field">
+                        <span>Corner radius <b id="lblRadius">10px</b></span>
+                        <input type="range" id="inpRadius" min="0" max="22" step="1" />
+                      </label>
+                      <label class="field">
+                        <span>Interface scale <b id="lblScale">100%</b></span>
+                        <input type="range" id="inpScale" min="0.8" max="1.25" step="0.05" />
+                      </label>
+                      <label class="field">
+                        <span>Density</span>
+                        <select id="inpDensity">
+                          <option value="compact">Compact</option>
+                          <option value="cozy">Cozy</option>
+                          <option value="roomy">Roomy</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="field-grid toggles">
+                      <label class="switch-row"><input type="checkbox" id="inpAnimations" /><span class="switch"></span><span>Animations</span></label>
+                      <label class="switch-row"><input type="checkbox" id="inpSidebar" /><span class="switch"></span><span>Show sidebar</span></label>
+                      <label class="switch-row"><input type="checkbox" id="inpTransparency" /><span class="switch"></span><span>Translucent chrome</span></label>
+                      <label class="switch-row"><input type="checkbox" id="inpStatusbar" /><span class="switch"></span><span>Show status bar</span></label>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- web app -->
+                <section class="tab-panel" data-panel="page">
+                  <div class="card">
+                    <div class="card-head"><h3>Home page</h3><p>The address the shell opens on launch.</p></div>
+                    <div class="row-gap">
+                      <input type="text" id="inpHomeUrl" class="grow" spellcheck="false" placeholder="https://arena.ai/agent" />
+                      <button class="btn" id="btnApplyHome">Save</button>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Restyle the web app</h3><p>How hard the theme should push into the connected site.</p></div>
+                    <div class="segmented" id="segPageStyle">
+                      <button data-value="none">Off</button>
+                      <button data-value="subtle">Subtle</button>
+                      <button data-value="aggressive">Full re-skin</button>
+                    </div>
+                    <p class="hint">“Subtle” restyles scrollbars, selection and fonts. “Full re-skin” also forces backgrounds and text colors — useful for making a light site dark, but it can clip a few designs.</p>
+                    <label class="field">
+                      <span>Page zoom <b id="lblZoom">100%</b></span>
+                      <input type="range" id="inpZoom" min="0.5" max="1.75" step="0.05" />
+                    </label>
+                  </div>
+                </section>
+
+                <!-- startup -->
+                <section class="tab-panel" data-panel="startup">
+                  <div class="card">
+                    <div class="card-head"><h3>start.bat</h3><p>Runs when the app boots, exactly like double-clicking it.</p></div>
+                    <div class="script-path" id="scriptPathLabel">—</div>
+                    <div class="row-gap wrap">
+                      <button class="btn btn-primary" id="btnRunScript">Run now</button>
+                      <button class="btn" id="btnPickScript">Choose another script…</button>
+                      <button class="btn" id="btnRevealScript">Show in folder</button>
+                    </div>
+                    <label class="switch-row"><input type="checkbox" id="inpRunOnStartup" /><span class="switch"></span><span>Run automatically on app launch</span></label>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Script output</h3><p>Live stdout / stderr.</p></div>
+                    <pre class="console" id="settingsConsole">Waiting for the script…</pre>
+                  </div>
+                </section>
+
+                <!-- connections -->
+                <section class="tab-panel" data-panel="connections">
+                  <div class="card">
+                    <div class="card-head"><h3>Saved connections</h3><p>Pin the sites you switch between.</p></div>
+                    <div id="connEditor" class="conn-editor"></div>
+                    <div class="row-gap">
+                      <button class="btn" id="btnAddConn">Add connection</button>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- advanced -->
+                <section class="tab-panel" data-panel="advanced">
+                  <div class="card">
+                    <div class="card-head"><h3>Custom CSS</h3><p>Injected into the connected web app. Use it for tweaks the themes can’t express.</p></div>
+                    <textarea id="inpCustomCss" class="code-area" spellcheck="false" placeholder="/* e.g. hide a toolbar you never use */&#10;header { display: none !important; }"></textarea>
+                    <div class="row-gap">
+                      <button class="btn btn-primary" id="btnApplyCss">Apply CSS</button>
+                      <span class="hint" id="cssStatus"></span>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>Settings file</h3><p>Everything lives in one JSON file.</p></div>
+                    <div class="script-path" id="settingsFileLabel">—</div>
+                    <div class="row-gap wrap">
+                      <button class="btn" id="btnExport">Export</button>
+                      <button class="btn" id="btnImport">Import</button>
+                      <button class="btn btn-danger" id="btnReset">Reset everything</button>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>About</h3></div>
+                    <div class="about-grid" id="aboutGrid"></div>
+                  </div>
+                </section>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- console drawer -->
+          <div class="console-drawer" id="consoleDrawer" hidden>
+            <div class="console-head">
+              <span class="console-title">start.bat · console</span>
+              <div class="row-gap">
+                <button class="btn btn-sm" id="btnConsoleRun">Run</button>
+                <button class="btn btn-sm" id="btnConsoleClear">Clear</button>
+                <button class="mini-btn" id="btnConsoleClose" title="Close">
+                  <svg viewBox="0 0 24 24"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <pre class="console console-lg" id="drawerConsole"></pre>
+          </div>
+        </div>
+
+        <footer class="statusbar" id="statusbar">
+          <div class="status-left">
+            <span class="status-pill" id="statusConn">Arena Agent</span>
+            <span class="muted" id="statusUrl">about:blank</span>
+          </div>
+          <div class="status-right">
+            <span class="muted" id="statusTheme">Arena Shell theme</span>
+            <span class="dot" id="statusScriptDot"></span>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+    <!-- toasts -->
+    <div class="toasts" id="toasts"></div>
+
+    <!-- modal -->
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+      <div class="modal" id="modal">
+        <h2 id="modalTitle">Connection</h2>
+        <div class="field-grid">
+          <label class="field"><span>Name</span><input type="text" id="modalName" placeholder="My site" /></label>
+          <label class="field"><span>URL</span><input type="text" id="modalUrl" spellcheck="false" placeholder="https://example.com" /></label>
+        </div>
+        <div class="row-gap modal-actions">
+          <button class="btn" id="modalCancel">Cancel</button>
+          <button class="btn btn-primary" id="modalSave">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="themes.js"></script>
+  <script src="shell.js"></script>
+</body>
+</html>
