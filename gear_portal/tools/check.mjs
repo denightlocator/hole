@@ -11,7 +11,7 @@ const PARTICLE = ['dir1', 'dir2', 'pos1', 'pos2', 'texture', 'minLifeTime', 'max
   'manualEmitCount', 'gravity', 'colorGradients', 'velocityGradients', 'blendMode']
 const BOX = ['width', 'height', 'depth', 'diffuseColor', 'emissiveColor', 'hideDist']
 const TEXTURES = ['square_particle', 'glint']
-const SOUNDS = ['bigDrumSwish1', 'futureStrangePulse', 'zapAccent1', 'rpgKnifeSlice1']
+
 const NODES = ['TorsoNode', 'HeadMesh', 'ArmRightMesh', 'ArmLeftMesh', 'LegLeftMesh', 'LegRightMesh']
 const finite = (v) => (Array.isArray(v) ? v.every(finite) : typeof v === 'object' && v ? Object.values(v).every(finite) : typeof v !== 'number' || Number.isFinite(v))
 const fail = []
@@ -34,7 +34,7 @@ function game(opts = {}) {
     sendMessage: (id, m) => s.said.push(m),
     applyHealthChange: (id, n, by) => { s.hurt.push([id, n, by, s.now]) },
     applyImpulse: (id, x, y, z) => { need(finite([x, y, z]), 'bad impulse'); s.pushed.push([id, x, y, z]) },
-    broadcastSound: (name, vol, rate, o) => { need(SOUNDS.includes(name) && finite([vol, rate, o.playerIdOrPos]), 'sound ' + name); s.sounds.push(name) },
+    broadcastSound: (name, vol, rate, o) => { need(false, 'a sound was played: ' + name); s.sounds.push(name) },
     setLifeformScale: (id, v) => { need(id === 'p1' && v > 0 && v <= 1, 'bad scale'); s.scale.push([s.now, v]) },
     setPlayerOpacity: (id, v) => { need(id === 'p1' && v >= 0 && v <= 1, 'bad opacity'); s.opacity.push([s.now, v]) },
     setClientOptions: (id, o) => { need(id === 'p1', 'options for the wrong player'); Object.assign(s.options, o); s.optionLog.push([s.now, o]) },
@@ -168,7 +168,7 @@ check(firstLeft(leftAt) === 86 && firstLeft(leftAt + 8) === 0, 'the first portal
 check(closed === leftAt + 17 && s.meshes.size === 0 && s.run.held() === 0 && s.run.gateList.length === 0 && Object.keys(s.worn).length === 0, `the second portal closes right after the slash; no mesh is left ${((closed + 1) / 20).toFixed(1)} s after the cast`)
 check(s.peak <= 230, `${s.peak} meshes at the most (limit 400)`)
 check(run.worst <= 230, `at most ${run.worst} api calls in a tick`)
-check(SOUNDS.every((n) => s.sounds.includes(n)), 'sounds for the portal, coming out and the slash')
+check(s.sounds.length === 0 && !code.includes('broadcastSound'), 'it plays no sounds at all')
 
 console.log('Leaving early and edge cases')
 const early = game()
