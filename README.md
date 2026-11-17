@@ -1,6 +1,6 @@
 # Arena Shell
 
-A downloadable desktop app that **runs `start.bat` on launch**, then **connects to a website** (default: `https://arena.ai/agent`) in its own window — same UI, same session, no browser tabs — with **custom themes** that re-skin both the shell and the site it loads (Claude Code, ChatGPT, Claude Light, Midnight Mono).
+A one-file download: **`start.bat`** pulls the whole app from this repo and launches it. It connects to a website (default: `https://arena.ai/agent`) in its own window — same UI, same session, no browser tabs — with **custom themes** that re-skin both the shell and the site it loads (Claude Code, ChatGPT, Claude Light, Midnight Mono).
 
 ![Arena Shell](docs/screens/01-default-arena.png)
 
@@ -15,44 +15,76 @@ A downloadable desktop app that **runs `start.bat` on launch**, then **connects 
 
 ## Download & run
 
-### Option A — build the `.exe` once with GitHub Actions (recommended)
+### Yes — `start.bat` is the only file you need
 
-This machine's GitHub token can't create workflow files, so enable the
-one-click build first:
+Download **[`start.bat`](start.bat)** (right-click → Save link as). Put it anywhere — Desktop,
+a folder, a USB stick — and double-click it.
 
-1. On GitHub, open **Actions** → **New workflow** → **set up a workflow yourself**.
-2. Name it `build.yml` and paste the contents of [`docs/ci-build.yml`](docs/ci-build.yml). Commit.
-3. Go to **Actions** → **Build Arena Shell** → **Run workflow**.
-4. When it's green, open the run and download the **`arena-shell-windows`** artifact.
-5. Unzip and double-click:
-   - **`Arena-Shell-Portable-1.0.0.exe`** — no install, just runs.
-   - **`Arena-Shell-Setup-1.0.0.exe`** — normal installer (Start-menu entry, uninstaller).
+It then does everything else by itself:
 
-Once the workflow exists, tagging also publishes both `.exe` files as a release:
+| Step | What happens | Size |
+| --- | --- | --- |
+| 1 | Fetches the app source from GitHub (`codeload` zip, no git needed) | ~3 MB |
+| 2 | Fetches the Electron runtime matching `package.json` | ~110 MB, once |
+| 3 | Installs both into `%LOCALAPPDATA%\ArenaShell` | — |
+| 4 | Writes first-run settings (opens `https://arena.ai/agent`) | — |
+| 5 | Launches the app | — |
 
-```bash
-git tag v1.0.0 && git push origin v1.0.0
+Run it again any time. It asks GitHub whether the branch has new commits and
+**updates itself** if so — steps 2–5 are skipped because the runtime and the zip
+are cached in `%LOCALAPPDATA%\ArenaShellCache`, so an update takes a few seconds.
+
+**Uninstall:** delete `%LOCALAPPDATA%\ArenaShell` (and optionally `ArenaShellCache`).
+
+macOS / Linux: `bash start.sh` does the same thing.
+
+`start.bat` takes no arguments, but you can edit the top of the file:
+
+```bat
+set "ARENA_REPO=denightlocator/hole"
+set "ARENA_REF=arena/67ffee91-hole"   REM branch, tag, or commit sha
 ```
 
-### Option B — build it yourself
+If `bootstrap.ps1` isn't sitting next to `start.bat`, the launcher downloads it
+first — so `start.bat` really is enough on its own.
+
+> Behind a corporate proxy that inspects TLS, run once with
+> `set HTTPS_PROXY=http://host:port` and PowerShell 5.1+ will use it.
+
+### Prefer a normal installer instead?
+
+`dist:win` builds `Arena-Shell-Setup-1.0.0.exe` (installer) and
+`Arena-Shell-Portable-1.0.0.exe` (no install). That bundles everything, so there
+is no download step — at the cost of a much bigger file and no self-update.
+To build it on CI, paste
+[`docs/ci-build.yml`](docs/ci-build.yml) in as `.github/workflows/build.yml`
+(this sandbox's token can't create workflow files), then
+Actions → **Build Arena Shell** → **Run workflow**.
 
 ```bash
 npm install
-npm run dist:win     # -> dist/*.exe  (must run on Windows)
-npm start            # or just run it locally without packaging
+npm run dist:win        # -> dist/*.exe  (run on Windows)
+npm start              # or just run it in place
 ```
-
-Other platforms: `npm run dist:linux` (AppImage), or `npx electron-builder --mac`.
-
----
 
 ## What it does on launch
 
 1. Opens the shell window (theme applied instantly from your saved settings).
-2. Runs **`start.bat`** — the real file in the app folder, via `cmd.exe /c` — and streams its stdout/stderr into the in-app console.
+2. Runs **`app-start.bat`** — the in-app startup hook — via `cmd.exe /c`, streaming its stdout/stderr into the console.
 3. Loads your connected website in an isolated `<webview>` and injects the theme.
 
-`start.bat` is yours to edit. It's a normal batch file with commented sections, and it exports a few variables other scripts can use:
+There are two batch files, and the difference matters:
+
+| File | Runs | Purpose |
+| --- | --- | --- |
+| `start.bat` | You double-click it | **Launcher:** downloads + updates the app, then starts it |
+| `app-start.bat` | The app, on every boot | **Your hook:** start a local server, set env vars, run a proxy |
+
+The app refuses to run the launcher from inside itself (that would recurse),
+and `runScriptOnStartup` is seeded to `false` by the launcher since it already
+ran your setup path once.
+
+`app-start.bat` is yours to edit and exports a few variables other scripts can use:
 
 | Variable | Meaning |
 | --- | --- |
@@ -60,7 +92,7 @@ Other platforms: `npm run dist:linux` (AppImage), or `npx electron-builder --mac
 | `ARENA_SHELL_HOME` | folder the script was run from |
 | `ARENA_SHELL_HOME_URL` | the URL the shell is about to open |
 
-It will also auto-run `proxy.js` (if present, using `node`) and `helpers\boot.ps1` (if present). On macOS/Linux the equivalent is `start.sh`.
+It will also auto-run `proxy.js` (if present, using `node`) and `helpers\boot.ps1` (if present). On macOS/Linux the equivalents are `start.sh` / `app-start.sh`.
 
 Press **Ctrl+`** (or the terminal icon) any time to open the live script console, and **Ctrl+,** for settings.
 
@@ -133,8 +165,12 @@ Add an entry to `THEMES` in `ui/themes.js` — no build step:
 ## Project layout
 
 ```
-start.bat              <- the script the app runs (edit me)
-start.sh               <- macOS/Linux equivalent
+start.bat              <- THE ONLY FILE YOU NEED: downloads + launches
+start.sh               <- macOS/Linux launcher
+bootstrap.ps1          <- download/install/update logic behind start.bat
+bootstrap.sh           <- macOS/Linux version
+app-start.bat          <- runs inside the app on boot (edit me)
+app-start.sh           <- macOS/Linux equivalent
 electron/
   main.js              window, IPC, start-script runner, menu
   preload.js           narrow contextBridge API (no generic invoke)

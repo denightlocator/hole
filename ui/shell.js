@@ -421,12 +421,12 @@
       dot.className = `dot ${cls}`;
     }
     const label = state.running
-      ? 'start.bat running…'
+      ? 'app-start running…'
       : state.code === 0
-        ? 'start.bat done'
+        ? 'app-start done'
         : state.code == null
-          ? 'start.bat idle'
-          : `start.bat exited (${state.code})`;
+          ? 'app-start idle'
+          : `app-start exited (${state.code})`;
     $('scriptLabel').textContent = label;
     $('statusScriptDot').title = label;
   }

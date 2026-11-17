@@ -1,32 +1,29 @@
 #!/usr/bin/env bash
-# ============================================================
-#  Arena Shell :: start.sh  (macOS / Linux equivalent of start.bat)
-# ============================================================
-echo
-echo "   =========================================="
-echo "      A R E N A   S H E L L   |   start.sh"
-echo "   =========================================="
-echo
+# ============================================================================
+#  Arena Shell :: start.sh  (macOS / Linux launcher)
+#
+#  The only file you need. Downloads the app from GitHub and launches it.
+#  Run it again any time to update.
+# ============================================================================
+set -euo pipefail
 
-echo "   Date     : $(date)"
-echo "   User     : ${USER:-unknown}"
-echo "   Work dir : $(pwd)"
-echo
+REPO="${ARENA_REPO:-denightlocator/hole}"
+REF="${ARENA_REF:-arena/67ffee91-hole}"
 
-export ARENA_SHELL=1
-export ARENA_SHELL_HOME="$(pwd)"
-export ARENA_SHELL_HOME_URL="${ARENA_SHELL_HOME_URL:-https://arena.ai/agent}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BOOTSTRAP="$HERE/bootstrap.sh"
 
-if [ -f "$(dirname "$0")/proxy.js" ] && command -v node >/dev/null 2>&1; then
-  echo "   Found proxy.js - starting local proxy..."
-  (node "$(dirname "$0")/proxy.js" >/dev/null 2>&1 &)
+if [ ! -f "$BOOTSTRAP" ]; then
+  echo "   Fetching bootstrap.sh..."
+  tmp="$(mktemp -d)"
+  curl -fsSL "https://codeload.github.com/$REPO/zip/$REF" -o "$tmp/src.zip" \
+    || { echo "   [x] Could not download the repo."; exit 1; }
+  unzip -q "$tmp/src.zip" -d "$tmp"
+  found="$(find "$tmp" -name bootstrap.sh -type f | head -1)"
+  [ -n "$found" ] || { echo "   [x] bootstrap.sh not found in the archive."; exit 1; }
+  cp "$found" "$BOOTSTRAP"
+  rm -rf "$tmp"
+  echo "   bootstrap.sh fetched"
 fi
 
-if [ -f "$(dirname "$0")/helpers/boot.sh" ]; then
-  echo "   Found helpers/boot.sh - running it..."
-  bash "$(dirname "$0")/helpers/boot.sh"
-fi
-
-echo "   Ready. Handing control back to Arena Shell."
-echo
-exit 0
+ARENA_REPO="$REPO" ARENA_REF="$REF" exec bash "$BOOTSTRAP"

@@ -88,6 +88,13 @@ Module._load = function (request, parent, isMain) {
   ok('log contains banner', st.log.some((l) => /ARENA|A R E N A|start\.sh/i.test(l.line)));
   ok('logs streamed to renderer', sent.filter(([c]) => c === 'script:log').length > 0);
 
+  // 5b. the launcher must NEVER be runnable from inside the app (recursion)
+  await call('settings:set', { scriptPath: path.join(__dirname, '..', 'start.sh') });
+  const guarded = await call('script:run');
+  ok('refuses to run the launcher', guarded.ok === false, guarded.error);
+  ok('does not set running state', (await call('script:state')).state.running === false);
+  await call('settings:set', { scriptPath: '' });
+
   // 6. app info
   const info = await call('app:info', );
   ok('app info shape', info.version === '1.0.0' && info.platform);

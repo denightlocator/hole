@@ -1,0 +1,10 @@
+# Windows scripts must keep CRLF so cmd.exe parses them correctly,
+# even though the rest of the repo is LF.
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+*.sh            text eol=lf
+
+*.png           binary
+*.ico           binary
+*.jar           binary

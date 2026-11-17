@@ -30,6 +30,23 @@ const { SettingsStore } = require('./settings-store');
 const isDev = process.argv.includes('--dev');
 const isWindows = process.platform === 'win32';
 
+/**
+ * Read `--name=value` from argv. Everything after a bare `--` is app-specific
+ * (the launcher passes its options there), so search the whole tail.
+ */
+function argValue(name) {
+  const prefix = `--${name}=`;
+  for (const raw of process.argv) {
+    const arg = raw.replace(/^"+|"+$/g, '');
+    if (arg.startsWith(prefix)) return arg.slice(prefix.length);
+  }
+  return null;
+}
+
+// The launcher (start.bat -> bootstrap.ps1) tells us where it installed things.
+const installDir = argValue('install-dir');
+const settingsFileArg = argValue('settings-file');
+
 let mainWindow = null;
 let tray = null;
 let settings = null;
@@ -42,12 +59,24 @@ const MAX_LOG_LINES = 500;
 /* paths                                                               */
 /* ------------------------------------------------------------------ */
 
-/** Where start.bat lives: bundled resource, or the repo during development. */
+/**
+ * The in-app startup hook.
+ *
+ * NOTE: this is deliberately NOT start.bat / start.sh - those are the
+ * *launcher* (they download this app and then run it). Running the launcher
+ * from inside the app would recurse forever, so the app runs app-start.*
+ * instead, and refuses anything that looks like a launcher.
+ */
 function bundledScriptPath() {
-  const name = isWindows ? 'start.bat' : 'start.sh';
-  const candidates = app.isPackaged
-    ? [path.join(process.resourcesPath, name), path.join(path.dirname(app.getPath('exe')), name)]
-    : [path.join(__dirname, '..', name), path.join(process.cwd(), name)];
+  const name = isWindows ? 'app-start.bat' : 'app-start.sh';
+  const candidates = [
+    // launcher install: app/app-start.* lives next to the sources
+    installDir ? path.join(installDir, 'app', name) : null,
+    app.isPackaged ? path.join(process.resourcesPath, name) : null,
+    app.isPackaged ? path.join(path.dirname(app.getPath('exe')), name) : null,
+    path.join(__dirname, '..', name),
+    path.join(process.cwd(), name)
+  ].filter(Boolean);
   return candidates.find((p) => fs.existsSync(p)) || candidates[0];
 }
 
@@ -55,7 +84,7 @@ function iconPath() {
   const candidates = [
     path.join(__dirname, '..', 'assets', 'icon.png'),
     path.join(process.resourcesPath || '', 'assets', 'icon.png')
-  ];
+  ].filter(Boolean);
   return candidates.find((p) => fs.existsSync(p)) || undefined;
 }
 
@@ -85,6 +114,17 @@ function runStartScript({ onStartup = false } = {}) {
   if (!fs.existsSync(scriptPath)) {
     pushLog(`[shell] ${path.basename(scriptPath)} not found at ${scriptPath}`, 'err');
     return { ok: false, error: `${path.basename(scriptPath)} was not found.` };
+  }
+
+  // Guard: never let the in-app hook re-run the launcher (that would spawn
+  // another shell, which would spawn another launcher, forever).
+  const base = path.basename(scriptPath).toLowerCase();
+  if (/^start\.(bat|cmd|sh|ps1)$/.test(base)) {
+    pushLog('[shell] refusing to run the launcher from inside the app.', 'err');
+    return {
+      ok: false,
+      error: 'That is the launcher (start.bat), not the startup script. Use app-start.bat instead.'
+    };
   }
 
   const cwd = path.dirname(scriptPath);
@@ -260,9 +300,31 @@ function createWindow() {
 /* app lifecycle                                                       */
 /* ------------------------------------------------------------------ */
 
+// One shell at a time: relaunching the launcher should surface the running app.
+const gotLock = typeof app.requestSingleInstanceLock === 'function'
+  ? app.requestSingleInstanceLock()
+  : true;
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  });
+}
+
 app.whenReady().then(() => {
-  const settingsFile = path.join(app.getPath('userData'), 'settings.json');
+  // Launcher installs keep everything inside one folder so uninstalling is a
+  // single delete. Otherwise fall back to the normal per-user data folder.
+  const settingsFile = settingsFileArg
+    ? path.resolve(settingsFileArg)
+    : installDir
+      ? path.join(installDir, 'app', 'data', 'shell-settings.json')
+      : path.join(app.getPath('userData'), 'settings.json');
   settings = new SettingsStore(settingsFile);
+  if (isDev) console.log('[shell] settings file:', settingsFile);
 
   // Allow microphone/camera prompts from inside the connected web app.
   session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => {
@@ -420,6 +482,7 @@ ipcMain.handle('shell:open-external', (_e, url) => {
 });
 ipcMain.handle('app:info', () => ({
   version: app.getVersion(),
+  installDir: installDir || null,
   electron: process.versions.electron,
   chrome: process.versions.chrome,
   node: process.versions.node,

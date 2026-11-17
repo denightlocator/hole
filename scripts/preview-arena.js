@@ -34,7 +34,7 @@
     showTitlebarUrl: true,
     showStatusbar: true,
     runScriptOnStartup: true,
-    scriptPath: '/app/start.bat',
+    scriptPath: 'C:\\Program Files\\ArenaShell\\app\\app-start.bat',
     openDevTools: false
   };
 
@@ -127,7 +127,7 @@
       },
       stop: async () => ({ ok: true }),
       state: async () => ({ state: { running: false, code: 0 }, log: demoLog }),
-      path: async () => state.scriptPath || '/app/start.bat',
+      path: async () => state.scriptPath || 'C:\\Program Files\\ArenaShell\\app\\app-start.bat',
       pick: async () => ({ ok: false }),
       reveal: async () => ({ ok: true }),
       onLog: (cb) => { logCbs.push(cb); return () => {}; },

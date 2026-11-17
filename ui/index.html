@@ -15,9 +15,19 @@
       <div class="titlebar-left">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7L12 2.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-              <path d="M12 8.2 16 10.5v4.9L12 17.7 8 15.4v-4.9L12 8.2Z" fill="currentColor" opacity=".75"/>
+            <svg viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="15.2" fill="currentColor" opacity=".10"/>
+              <g stroke="currentColor" stroke-width="1.25" stroke-linecap="round" fill="none">
+                <ellipse cx="16" cy="16" rx="9.6" ry="4" transform="rotate(-32 16 16)"/>
+                <ellipse cx="16" cy="16" rx="9.6" ry="4" transform="rotate(32 16 16)"/>
+                <ellipse cx="16" cy="16" rx="9.6" ry="4" transform="rotate(90 16 16)"/>
+              </g>
+              <g fill="currentColor">
+                <circle cx="16" cy="16" r="1.5"/>
+                <circle cx="9.4" cy="9.4" r="1.75"/>
+                <circle cx="23.4" cy="21.3" r="1.75"/>
+                <circle cx="19.8" cy="7.4" r="1.75"/>
+              </g>
             </svg>
           </div>
           <span class="brand-name">Arena Shell</span>
@@ -97,7 +107,7 @@
 
         <div class="side-foot">
           <span class="dot" id="scriptDot"></span>
-          <span id="scriptLabel">start.bat idle</span>
+          <span id="scriptLabel">app-start idle</span>
         </div>
       </aside>
 
@@ -228,7 +238,7 @@
                 <!-- startup -->
                 <section class="tab-panel" data-panel="startup">
                   <div class="card">
-                    <div class="card-head"><h3>start.bat</h3><p>Runs when the app boots, exactly like double-clicking it.</p></div>
+                    <div class="card-head"><h3>app-start.bat</h3><p>Runs inside the app every time it boots. This is your hook for local servers, proxies and env vars.</p></div>
                     <div class="script-path" id="scriptPathLabel">—</div>
                     <div class="row-gap wrap">
                       <button class="btn btn-primary" id="btnRunScript">Run now</button>
@@ -289,7 +299,7 @@
           <!-- console drawer -->
           <div class="console-drawer" id="consoleDrawer" hidden>
             <div class="console-head">
-              <span class="console-title">start.bat · console</span>
+              <span class="console-title">app-start.bat · console</span>
               <div class="row-gap">
                 <button class="btn btn-sm" id="btnConsoleRun">Run</button>
                 <button class="btn btn-sm" id="btnConsoleClear">Clear</button>
