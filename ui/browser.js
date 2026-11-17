@@ -666,6 +666,147 @@
   }
 
   /* ==================================================================== */
+  /* re-skin                                                              */
+  /* ==================================================================== */
+
+  const RESKIN_ROLES = ['header', 'messages', 'composer', 'send', 'sidebar', 'newChat', 'status'];
+  let reskinProfiles = [];
+  let reskinSelected = null;
+  let reskinMap = {};
+
+  async function initReskin() {
+    const info = await api.reskin.profiles();
+    reskinProfiles = info.profiles || [];
+    reskinSelected = (await api.settings.get()).reskin?.profile || reskinProfiles[0]?.id || 'claude-code';
+    reskinMap = (await api.settings.get()).reskin?.map || {};
+
+    renderReskinProfiles();
+    renderReskinMap();
+
+    const state = await api.reskin.status();
+    paintReskinStatus(state);
+
+    $('btnReskinApply')?.addEventListener('click', async () => {
+      await api.settings.set({ reskin: { profile: reskinSelected, map: reskinMap, enabled: true } });
+      const result = await api.reskin.apply({ profile: reskinSelected, mapping: reskinMap });
+      paintReskinStatus(result);
+      if (result.ok) toast('Re-skin applied — the site\'s own controls still work');
+      else toast(result.error || 'Could not apply the re-skin', 'err');
+    });
+
+    $('btnReskinRemove')?.addEventListener('click', async () => {
+      await api.reskin.remove();
+      await api.settings.set({ reskin: { profile: reskinSelected, map: reskinMap, enabled: false } });
+      paintReskinStatus({ mounted: false });
+      toast('Original UI restored');
+    });
+
+    $('btnReskinAuto')?.addEventListener('click', async () => {
+      // Ask the page to auto-detect and report what it found.
+      const result = await api.reskin.apply({ profile: reskinSelected, mapping: {} });
+      const detected = {};
+      for (const slot of (result.slots || [])) {
+        if (slot.filled && slot.role) detected[slot.role] = '';
+      }
+      toast(result.ok
+        ? 'Auto-detected the page structure — check the mapping below'
+        : result.error || 'Auto-detect failed', result.ok ? 'ok' : 'err');
+      paintReskinStatus(result);
+    });
+
+    $('btnReskinResetMap')?.addEventListener('click', async () => {
+      reskinMap = {};
+      await api.settings.set({ reskin: { profile: reskinSelected, map: {}, enabled: false } });
+      renderReskinMap();
+      toast('Mapping cleared');
+    });
+  }
+
+  function renderReskinProfiles() {
+    const grid = $('reskinGrid');
+    if (!grid) return;
+    grid.textContent = '';
+    for (const p of reskinProfiles) {
+      const card = el('button', 'reskin-card');
+      card.classList.toggle('active', p.id === reskinSelected);
+
+      const swatch = el('div', 'reskin-swatch');
+      const main = el('div', 'rs-main');
+      main.append(el('div', 'rs-line'), el('div', 'rs-line'), el('div', 'rs-input'));
+      swatch.append(main, el('div', 'rs-side'));
+
+      card.append(swatch, el('div', 'reskin-card-name', p.name), el('div', 'reskin-card-desc', p.description));
+      card.addEventListener('click', () => {
+        reskinSelected = p.id;
+        renderReskinProfiles();
+      });
+      grid.appendChild(card);
+    }
+  }
+
+  function renderReskinMap() {
+    const list = $('reskinMap');
+    if (!list) return;
+    list.textContent = '';
+
+    for (const role of RESKIN_ROLES) {
+      const row = el('div', 'map-row');
+      row.append(el('span', 'map-role', role));
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.spellcheck = false;
+      input.placeholder = 'auto-detect';
+      input.value = reskinMap[role] || '';
+      input.addEventListener('change', () => {
+        const v = input.value.trim();
+        if (v) reskinMap[role] = v;
+        else delete reskinMap[role];
+      });
+
+      const pick = el('button', 'btn btn-sm', 'Pick');
+      pick.addEventListener('click', async () => {
+        toast('Click the element on the page… (Esc to cancel)');
+        const res = await api.reskin.pick(role);
+        if (res && res.ok && res.selector) {
+          reskinMap[role] = res.selector;
+          input.value = res.selector;
+          toast(`${role} → ${res.selector}`);
+        } else if (res && res.canceled) {
+          toast('Cancelled');
+        } else {
+          toast(res?.error || 'Could not pick that element', 'err');
+        }
+      });
+
+      const state = el('span', 'map-state', 'auto');
+      if (reskinMap[role]) {
+        state.textContent = 'set';
+        state.classList.add('ok');
+      }
+
+      row.append(input, pick, state);
+      list.appendChild(row);
+    }
+  }
+
+  function paintReskinStatus(status) {
+    const label = $('reskinStatus');
+    if (!label) return;
+    if (!status || !status.mounted) {
+      label.textContent = 'Not applied.';
+      return;
+    }
+    const missing = status.missing || [];
+    const filled = (status.slots || []).filter((s) => s.filled).length;
+    const inPlace = (status.inPlace || []).length;
+    const parts = [`Applied — ${filled} slots mapped`];
+    if (inPlace) parts.push(`${inPlace} left in place inside the site's own controls`);
+    if (missing.length) parts.push(`${missing.length} not found (${missing.join(', ')})`);
+    label.textContent = parts.join(', ') + '.';
+  }
+
+  /* ==================================================================== */
   /* wiring                                                               */
   /* ==================================================================== */
 
@@ -676,10 +817,14 @@
     document.querySelectorAll('.tab-panel').forEach((p) => {
       p.classList.toggle('active', p.dataset.panel === name);
     });
+    // The strip scrolls once there are more than a handful of tabs; keep the
+    // selected one in view instead of clipping its label.
+    if (tab.scrollIntoView) tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     if (name === 'history') renderHistory($('historySearch')?.value || '');
     if (name === 'downloads') api.downloads.list().then(renderDownloads);
     if (name === 'extensions') api.extensions.list().then(renderExtensions);
     if (name === 'shields') api.adblock.get().then(applyAdblockSummary);
+    if (name === 'reskin') api.reskin.status().then(paintReskinStatus);
   }
 
   function wire() {
@@ -764,7 +909,10 @@
 
   async function boot() {
     wire();
-    await Promise.all([loadBookmarks(), initAdblock(), initDownloads(), initHistory(), initExtensions(), initYoutube()]);
+    await Promise.all([
+      loadBookmarks(), initAdblock(), initDownloads(), initHistory(),
+      initExtensions(), initYoutube(), initReskin()
+    ]);
 
     // Seed the first tab from whatever the shell already navigated to.
     const startUrl = ctx.currentUrl() || ctx.settings().homeUrl;

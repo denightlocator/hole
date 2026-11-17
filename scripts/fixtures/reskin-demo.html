@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Arena Agent</title>
+<style>
+  /* A stand-in for a typical chat app: header, sidebar, message list, composer.
+     The re-skin engine does not use these classes — it finds elements by role. */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; display: flex; flex-direction: column;
+    background: #0b0d12; color: #e9ecf4;
+    font: 14px/1.55 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  header.app-top {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  header.app-top h1 { font-size: 14px; margin: 0; font-weight: 600; }
+  .top-actions { margin-left: auto; display: flex; gap: 8px; }
+  .top-actions button {
+    border: 1px solid rgba(255,255,255,.12); background: transparent; color: #b9c0d4;
+    border-radius: 7px; padding: 5px 10px; font: inherit; font-size: 12px; cursor: pointer;
+  }
+  .app-body { flex: 1; display: flex; min-height: 0; }
+  nav.sessions {
+    width: 210px; flex: 0 0 210px; border-right: 1px solid rgba(255,255,255,.08);
+    padding: 10px; overflow: auto;
+  }
+  nav.sessions .s-title { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #6e7490; padding: 4px 6px 8px; }
+  nav.sessions li { list-style: none; }
+  nav.sessions a {
+    display: block; padding: 6px 8px; border-radius: 7px; color: #b9c0d4; text-decoration: none; font-size: 12.5px;
+  }
+  nav.sessions a:hover { background: rgba(255,255,255,.06); }
+  main.chat { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #log { flex: 1; overflow: auto; padding: 22px; }
+  .turn { margin-bottom: 20px; }
+  .turn .who { font-size: 11px; color: #6e7490; margin-bottom: 5px; }
+  .turn .bubble { font-size: 13.5px; }
+  .turn pre {
+    background: #0a0c11; border: 1px solid rgba(255,255,255,.08); border-radius: 8px;
+    padding: 10px 12px; font: 12px/1.6 'JetBrains Mono', monospace; color: #b6c0d4; overflow-x: auto;
+  }
+  form.composer {
+    display: flex; gap: 10px; align-items: flex-end;
+    padding: 12px 18px 18px; border-top: 1px solid rgba(255,255,255,.08);
+  }
+  form.composer textarea {
+    flex: 1; min-height: 40px; max-height: 160px; resize: none;
+    background: #12151d; color: #e9ecf4; border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px; padding: 9px 12px; font: inherit; outline: none;
+  }
+  form.composer button[type="submit"] {
+    height: 40px; padding: 0 16px; border: 0; border-radius: 10px;
+    background: #7c6cf6; color: #fff; font: 600 13px inherit; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <header class="app-top">
+    <h1>Arena Agent</h1>
+    <span style="font-size:11px;color:#6e7490">agent · workspace</span>
+    <div class="top-actions">
+      <button type="button" id="new-chat">New session</button>
+      <button type="button">Share</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <nav class="sessions">
+      <div class="s-title">Sessions</div>
+      <ul>
+        <li><a href="#1">Refactor the settings panel</a></li>
+        <li><a href="#2">Wire the theme engine</a></li>
+        <li><a href="#3">Fix the download handler</a></li>
+        <li><a href="#4">Tab strip layout</a></li>
+        <li><a href="#5">Ad-block counters</a></li>
+        <li><a href="#6">Mini player dragging</a></li>
+        <li><a href="#7">Extension loader errors</a></li>
+      </ul>
+    </nav>
+
+    <main class="chat">
+      <div id="log" role="log">
+        <div class="turn">
+          <div class="who">You</div>
+          <div class="bubble">Can you replace the interface with something that looks like Claude Code, but keeps every function working?</div>
+        </div>
+        <div class="turn">
+          <div class="who">Arena Agent</div>
+          <div class="bubble">
+            <p>Yes — the engine moves the site's own elements into a new layout instead of rebuilding them. The composer, send button and message list below are the page's original nodes.</p>
+            <pre>engine.mount(profile, mapping)
+  → adopt(#composer, #send, #log)
+  → restyle, never re-implement</pre>
+            <p>Anything that can't be found stays out of the layout, and unmount() puts the page back exactly as it was.</p>
+          </div>
+        </div>
+      </div>
+
+      <form class="composer">
+        <textarea placeholder="Ask Arena Agent…"></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    // The demo app's own behaviour. Nothing here knows about the re-skin: the
+    // engine moves these same nodes, so these handlers keep firing afterwards.
+    const log = document.getElementById('log');
+    const form = document.querySelector('form.composer');
+    const input = form.querySelector('textarea');
+
+    window.__demoSubmits = 0;
+    window.__demoClicks = 0;
+
+    function addTurn(who, text) {
+      const turn = document.createElement('div');
+      turn.className = 'turn';
+      const name = document.createElement('div');
+      name.className = 'who';
+      name.textContent = who;
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      turn.append(name, bubble);
+      log.appendChild(turn);
+      log.scrollTop = log.scrollHeight;
+      return turn;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      window.__demoSubmits += 1;
+      addTurn('You', text);
+      input.value = '';
+      input.style.height = 'auto';
+      setTimeout(() => {
+        addTurn('Arena Agent',
+          'Still here — that reply came from the page\'s own submit handler, running ' +
+          'from inside the re-skinned composer.');
+      }, 380);
+    });
+
+    form.querySelector('button[type="submit"]').addEventListener('click', () => {
+      window.__demoClicks += 1;
+    });
+
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+    });
+
+    document.getElementById('new-chat').addEventListener('click', () => {
+      log.replaceChildren();
+      addTurn('Arena Agent', 'New session started by the page\'s own button.');
+    });
+  </script>
+</body>
+</html>

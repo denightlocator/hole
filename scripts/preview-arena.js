@@ -5,15 +5,21 @@
 (function () {
   'use strict';
 
-  const KEY = 'arena-shell-preview-settings';
+  // ?demo=reskin points the "webview" at the fake chat app used to show the
+  // re-skin engine; everything else stays on the plain demo page.
+  const RESKIN_DEMO = (() => {
+    try { return new URLSearchParams(location.search).get('demo') === 'reskin'; } catch { return false; }
+  })();
+  const DEMO_URL = RESKIN_DEMO ? '/reskin-demo' : '/demo';
+  const KEY = 'arena-shell-preview-settings' + (RESKIN_DEMO ? '-reskin' : '');
 
   const DEFAULTS = {
     version: 1,
-    homeUrl: '/demo',
+    homeUrl: DEMO_URL,
     connections: [
-      { id: 'arena-agent', name: 'Arena Agent', url: '/demo', icon: '◆' },
-      { id: 'demo-docs', name: 'Docs', url: '/demo', icon: 'D' },
-      { id: 'demo-local', name: 'Local project', url: '/demo', icon: 'L' }
+      { id: 'arena-agent', name: 'Arena Agent', url: DEMO_URL, icon: '◆' },
+      { id: 'demo-docs', name: 'Docs', url: DEMO_URL, icon: 'D' },
+      { id: 'demo-local', name: 'Local project', url: DEMO_URL, icon: 'L' }
     ],
     activeConnectionId: 'arena-agent',
     theme: 'arena',
@@ -35,6 +41,7 @@
     showStatusbar: true,
     runScriptOnStartup: true,
     scriptPath: 'C:\\Program Files\\ArenaShell\\app\\app-start.bat',
+    homeUrl: DEMO_URL,
     openDevTools: false
   };
 
@@ -289,6 +296,45 @@
       focusSource: async () => true,
       setAlwaysOnTop: async () => true,
       onState: on('mini')
+    },
+    reskin: {
+      profiles: async () => ({
+        profiles: [
+          { id: 'claude-code', name: 'Claude Code', description: 'Terminal-native transcript: monospace, prompt carets, terracotta accents.' },
+          { id: 'minimal', name: 'Minimal', description: 'A blank structural canvas: your messages, one input, nothing else.' }
+        ],
+        version: '1.0.0'
+      }),
+      apply: async ({ profile, mapping }) => {
+        const frame = document.getElementById('webview');
+        const win = frame && frame.contentWindow;
+        if (!win || !win.ArenaReskinEngine) return { ok: false, error: 'Demo frame not ready' };
+        const P = win.ArenaReskinProfiles.get(profile);
+        const old = win.document.getElementById('arena-reskin-style');
+        if (old) old.remove();
+        const style = win.document.createElement('style');
+        style.id = 'arena-reskin-style';
+        style.textContent = P.css;
+        win.document.head.appendChild(style);
+        if (win.__arenaReskin && win.__arenaReskin.mounted) win.__arenaReskin.unmount();
+        const engine = new win.ArenaReskinEngine.ReskinEngine({ doc: win.document, win });
+        const auto = engine.autoMap();
+        const result = engine.mount(P, { ...auto, ...(mapping || {}) });
+        win.__arenaReskin = engine;
+        win.document.documentElement.classList.add('arena-rs-active');
+        return { ok: result.ok, error: result.error || null, ...engine.status() };
+      },
+      remove: async () => {
+        const win = document.getElementById('webview')?.contentWindow;
+        if (win && win.__arenaReskin) win.__arenaReskin.unmount();
+        return { ok: true };
+      },
+      status: async () => {
+        const win = document.getElementById('webview')?.contentWindow;
+        if (!win || !win.__arenaReskin) return { mounted: false };
+        return win.__arenaReskin.status();
+      },
+      pick: async () => ({ ok: false, canceled: true })
     },
     youtube: {
       get: async () => ({ enabled: true, popoutOnNavigate: true, defaultQuality: '' }),

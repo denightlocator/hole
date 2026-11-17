@@ -128,6 +128,14 @@ contextBridge.exposeInMainWorld('arena', {
     }
   },
 
+  reskin: {
+    profiles: () => ipcRenderer.invoke('reskin:profiles'),
+    apply: (payload) => ipcRenderer.invoke('reskin:apply', payload),
+    remove: () => ipcRenderer.invoke('reskin:remove'),
+    status: () => ipcRenderer.invoke('reskin:status'),
+    pick: (role) => ipcRenderer.invoke('reskin:pick', role)
+  },
+
   youtube: {
     get: () => ipcRenderer.invoke('youtube:get'),
     set: (patch) => ipcRenderer.invoke('youtube:set', patch),

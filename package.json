@@ -13,12 +13,13 @@
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:linux": "electron-builder --linux",
-    "test": "node test/main.test.cjs && node test/launcher.test.cjs && node test/adblock.test.cjs && node test/store.test.cjs && node test/youtube.test.cjs && node test/extensions.test.cjs",
+    "test": "node test/main.test.cjs && node test/launcher.test.cjs && node test/adblock.test.cjs && node test/store.test.cjs && node test/youtube.test.cjs && node test/extensions.test.cjs && node test/reskin.test.cjs",
     "screens": "node scripts/screenshot.js"
   },
   "devDependencies": {
     "electron": "33.4.11",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "jsdom": "^26.1.0"
   },
   "build": {
     "appId": "ai.arena.shell",
@@ -31,6 +32,7 @@
     "files": [
       "electron/**/*",
       "ui/**/*",
+      "reskin/**/*",
       "assets/icon.png",
       "package.json"
     ],

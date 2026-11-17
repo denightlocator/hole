@@ -184,6 +184,7 @@
                   <button class="tab" data-tab="downloads">Downloads</button>
                   <button class="tab" data-tab="history">History</button>
                   <button class="tab" data-tab="youtube">YouTube</button>
+                  <button class="tab" data-tab="reskin">Re-skin UI</button>
                   <button class="tab" data-tab="advanced">Advanced</button>
                 </div>
 
@@ -434,6 +435,52 @@
                         <p class="hint" id="miniStatus">No mini player open.</p>
                       </div>
                     </div>
+                  </div>
+                </section>
+
+
+                <!-- re-skin -->
+                <section class="tab-panel" data-panel="reskin">
+                  <div class="card">
+                    <div class="card-head">
+                      <h3>Replace the site's interface</h3>
+                      <p>This moves the site's <em>own</em> elements into a different layout, so every button,
+                        form and shortcut keeps working. It changes the interface, not the functionality.</p>
+                    </div>
+
+                    <div class="reskin-grid" id="reskinGrid"></div>
+
+                    <div class="row-gap wrap" style="margin-top:16px">
+                      <button class="btn btn-primary" id="btnReskinApply">Apply to this page</button>
+                      <button class="btn" id="btnReskinRemove">Restore original UI</button>
+                      <span class="hint" id="reskinStatus">Not applied.</span>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head">
+                      <h3>Element mapping</h3>
+                      <p>If a slot is wrong or empty, click <b>Pick</b> and then click that element on the page.
+                        This is how the re-skin adapts to any site without hard-coded selectors.</p>
+                    </div>
+                    <div class="map-list" id="reskinMap"></div>
+                    <div class="row-gap wrap" style="margin-top:12px">
+                      <button class="btn" id="btnReskinAuto">Auto-detect all</button>
+                      <button class="btn" id="btnReskinResetMap">Clear mapping</button>
+                    </div>
+                    <p class="hint">Known roles: header · messages · composer · send · sidebar · newChat · status.
+                      Anything unmapped is simply left out of the new layout; nothing is invented.</p>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head"><h3>What this can and can't do</h3></div>
+                    <ul class="limits">
+                      <li><b>Can</b> — take over layout, order, typography, spacing and visual language.</li>
+                      <li><b>Can</b> — keep 100% of the site's behaviour, because the real DOM nodes are moved.</li>
+                      <li><b>Can't</b> — add features the site doesn't have.</li>
+                      <li><b>Can't</b> — restructure a site's internals; if a chat window is one giant canvas,
+                        there are no pieces to move and slots will report as missing.</li>
+                    </ul>
                   </div>
                 </section>
 

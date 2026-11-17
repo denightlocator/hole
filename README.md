@@ -8,6 +8,12 @@ It is a small browser built around a custom UI layer: **tabs, bookmarks, history
 
 ![Mini player](docs/screens/18-mini-player.png)
 
+**New — the interface itself can be replaced, not just recoloured:**
+the site's own layout becomes a Claude Code terminal while every button, form and
+shortcut keeps working. → [Replacing the interface](#replacing-the-interface-claude-code-re-skin)
+
+![Claude Code re-skin](docs/screens/21-reskin-claude-code.png)
+
 | Theme | Applied to the shell **and** the connected page |
 | --- | --- |
 | Claude Code | ![Claude Code](docs/screens/02-theme-claude-code.png) |
@@ -138,6 +144,49 @@ Per-site tweaks go in **Custom CSS**, injected on top. YouTube additionally gets
 its own hand-written UI layer (`electron/youtube.js`) — a quieter header, rounded
 player, Shorts hidden, and the pop-out button.
 
+### Replacing the interface (Claude Code re-skin)
+
+Changing colours is not the same as changing the interface. **`Settings → Re-skin UI`**
+replaces the layout of the site you load — a Claude Code terminal transcript, or a
+bare minimal canvas — while every control on the page keeps working.
+
+It is not a mock-up. The engine (`reskin/engine.js`) finds the site's *own*
+elements — the composer, the send button, the message list, the header, the
+session sidebar — and **moves those exact DOM nodes** into the new layout:
+
+```js
+engine.mount(profile, mapping)   // same nodes, new parents
+engine.unmount()                 // every node back where it was
+```
+
+Because they are the same nodes, nothing is re-implemented: event listeners,
+framework handlers, state and network calls all survive by construction. The
+tests assert this directly — after mounting, the composer is still the *same
+object*, its `submit` still fires, new messages appended by the app still get
+styled, and unmount restores the original markup.
+
+<img src="docs/screens/21-reskin-claude-code.png" width="820" alt="The site re-skinned as a Claude Code terminal">
+
+<img src="docs/screens/22-reskin-still-works.png" width="820" alt="Typing and sending from the re-skinned composer">
+
+**What the Claude Code profile does:** a 38px prompt bar (`> arena`, the site's
+own header inside it, `~/workspace`), a transcript with `>` / `⏺` gutters and
+lowercased speaker labels, a terminal-style composer with a `>` caret and the
+site's send button shrunk to a key, the site's session list in a right rail,
+and a 24px status line. Rail folds away below 900px.
+
+**Fitting an unfamiliar site.** Nothing is hard-coded to one app. `autoMap()`
+locates each role from behaviour rather than class names, and **Element mapping**
+in the panel lets you click **Pick** and then click the real element on the page —
+that selector is saved per role in your settings. Picking the composer and the
+send button inside one `<form>` adopts the whole form, so Enter-to-send keeps
+working.
+
+**Honest limits** (also shown in the panel): it can take over layout, order,
+typography and spacing; it cannot add features the site doesn't have, and it
+cannot restructure a site whose whole chat is a single `<canvas>`. Slots it
+can't find are omitted and listed — never faked.
+
 ## What it does on launch
 
 1. Opens the shell window (theme applied instantly from your saved settings).
@@ -257,6 +306,9 @@ electron/
   adblock.js           ad/tracker matcher + cosmetic rules
   extensions.js        unpacked/.zip/.crx extension manager
   youtube.js           URL parsing + injected YouTube UI
+reskin/
+  engine.js            moves the site's real DOM nodes into a new layout
+  profiles.js          Claude Code + minimal profiles (layout tree, map, CSS)
 ui/
   index.html           shell layout
   shell.css            chrome styles, entirely token-driven
@@ -266,14 +318,16 @@ ui/
   themes.js            theme tokens -> CSS variables + injected page CSS
 scripts/
   preview-server.js    run the UI in a normal browser (no Electron needed)
+  fixtures/            demo pages, incl. the fake chat app the re-skin demo uses
   screenshot.js        dev-only screenshot pass
-test/                  157 headless checks across 6 suites:
+test/                  202 headless checks across 7 suites:
   main.test.cjs        settings, IPC, script runner, recursion guard
   launcher.test.cjs    launcher -> app argument contract
   adblock.test.cjs     blocking decisions, allowlist, custom rules
   store.test.cjs       history/bookmarks/downloads persistence
   youtube.test.cjs     video-id parsing, embed URLs, injected script
   extensions.test.cjs  install from folder/zip, enable/disable, errors
+  reskin.test.cjs      re-skin moves real nodes, handlers survive, unmount restores
 docs/ci-build.yml       build recipe for the .exe (paste into Actions)
 ```
 
@@ -284,6 +338,7 @@ npm install
 npm start                 # run the real app
 npm test                  # headless checks: settings, IPC, script runner
 npm run preview           # http://localhost:4600 — UI in a browser, stubbed bridge
+                          # add ?demo=reskin to try the re-skin on a fake chat app
 ```
 
 `npm start` downloads the Electron binary on first run. If you're behind a corporate

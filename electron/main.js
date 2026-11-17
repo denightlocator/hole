@@ -33,6 +33,22 @@ const { AdBlocker } = require('./adblock');
 const { ExtensionManager } = require('./extensions');
 const youtube = require('./youtube');
 
+// Re-skin engine + profiles are plain scripts (no Node APIs) so they can also
+// run inside the page. Read once at startup and hand the source to the webview.
+const RESKIN_FILES = ['engine.js', 'profiles.js'];
+function readReskinSource() {
+  return RESKIN_FILES.map((file) => {
+    const full = path.join(__dirname, '..', 'reskin', file);
+    try {
+      return fs.readFileSync(full, 'utf8');
+    } catch (err) {
+      console.error(`[reskin] could not read ${file}:`, err.message);
+      return '';
+    }
+  }).join('\n;\n');
+}
+let reskinSource = null;
+
 const isDev = process.argv.includes('--dev');
 const isWindows = process.platform === 'win32';
 
@@ -978,6 +994,151 @@ ipcMain.handle('mini:resize-move', () => {
 ipcMain.handle('mini:resize-end', () => {
   miniResize = null;
   return true;
+});
+
+/* --- re-skin ---------------------------------------------------------- */
+
+ipcMain.handle('reskin:profiles', () => {
+  if (!reskinSource) reskinSource = readReskinSource();
+  // eslint-disable-next-line no-new-func
+  const api = new Function(`${reskinSource}; return { profiles: ArenaReskinProfiles, engine: ArenaReskinEngine };`)();
+  return { profiles: api.profiles.list(), source: reskinSource, version: api.engine.VERSION };
+});
+
+ipcMain.handle('reskin:apply', (_e, payload) => {
+  const webview = mainWindow && mainWindow.webContents;
+  if (!webview) return { ok: false, error: 'No window.' };
+  if (!reskinSource) reskinSource = readReskinSource();
+
+  const profile = (payload && payload.profile) || 'claude-code';
+  const mapping = (payload && payload.mapping) || {};
+
+  const script = `
+    (function () {
+      ${reskinSource};
+      var P = ArenaReskinProfiles.get(${JSON.stringify(profile)});
+      if (!P) { return { ok: false, error: 'Unknown profile: ${profile.replace(/'/g, "\\'")}' }; }
+      if (window.__arenaReskin && window.__arenaReskin.mounted) {
+        window.__arenaReskin.unmount();
+      }
+      // Remove any style tag from a previous run.
+      var old = document.getElementById('arena-reskin-style');
+      if (old) old.remove();
+
+      var style = document.createElement('style');
+      style.id = 'arena-reskin-style';
+      style.textContent = P.css;
+      document.head.appendChild(style);
+
+      var engine = new ArenaReskinEngine.ReskinEngine({ doc: document, win: window });
+      var mapping = ${JSON.stringify(mapping)};
+      var auto = engine.autoMap();
+      var merged = Object.assign({}, auto, mapping);
+
+      var result = engine.mount(P, merged);
+      window.__arenaReskin = engine;
+      document.documentElement.classList.add('arena-rs-active');
+      return Object.assign({ ok: result.ok, error: result.error || null }, engine.status());
+    })();
+  `;
+
+  return webview.executeJavaScript(script, true)
+    .then((result) => result)
+    .catch((err) => ({ ok: false, error: String(err.message || err) }));
+});
+
+ipcMain.handle('reskin:remove', () => {
+  if (!mainWindow) return { ok: false };
+  const script = `
+    (function () {
+      var removed = false;
+      if (window.__arenaReskin) {
+        try { window.__arenaReskin.unmount(); removed = true; } catch (e) {}
+        window.__arenaReskin = null;
+      }
+      var style = document.getElementById('arena-reskin-style');
+      if (style) { style.remove(); removed = true; }
+      document.documentElement.classList.remove('arena-rs-active');
+      return { ok: true, removed: removed };
+    })();
+  `;
+  return mainWindow.webContents.executeJavaScript(script, true)
+    .catch((err) => ({ ok: false, error: String(err.message || err) }));
+});
+
+ipcMain.handle('reskin:status', () => {
+  if (!mainWindow) return { mounted: false };
+  return mainWindow.webContents.executeJavaScript(`
+    (function () {
+      if (!window.__arenaReskin) return { mounted: false };
+      return window.__arenaReskin.status();
+    })();
+  `, true).catch(() => ({ mounted: false }));
+});
+
+ipcMain.handle('reskin:pick', async (_e, role) => {
+  // Ask the page which element the user clicked, so mapping is possible
+  // without knowing the site's markup in advance.
+  if (!mainWindow) return { ok: false };
+  const script = `
+    (function () {
+      return new Promise(function (resolve) {
+        var previous = document.body.style.cursor;
+        document.body.style.cursor = 'crosshair';
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:transparent';
+        document.body.appendChild(overlay);
+
+        function done(result) {
+          overlay.removeEventListener('click', onClick, true);
+          if (overlay.parentNode) overlay.parentNode.remove();
+          document.body.style.cursor = previous;
+          document.removeEventListener('keydown', onKey, true);
+          resolve(result);
+        }
+
+        function describe(el) {
+          if (!el || el.nodeType !== 1) return '';
+          if (el.id) return '#' + CSS.escape(el.id);
+          var parts = [];
+          var node = el;
+          var depth = 0;
+          while (node && node.nodeType === 1 && depth < 4) {
+            var part = node.tagName.toLowerCase();
+            if (node.id) { parts.unshift('#' + CSS.escape(node.id)); break; }
+            var parent = node.parentElement;
+            if (parent) {
+              var same = Array.prototype.filter.call(parent.children, function (c) {
+                return c.tagName === node.tagName;
+              });
+              if (same.length > 1) part += ':nth-of-type(' + (same.indexOf(node) + 1) + ')';
+            }
+            parts.unshift(part);
+            node = node.parentElement;
+            depth++;
+          }
+          return parts.join(' > ');
+        }
+
+        function onClick(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var el = document.elementFromPoint(e.clientX, e.clientY);
+          var ignore = el && el.closest && el.closest('.arena-reskin');
+          if (!ignore) done({ ok: true, selector: describe(el), role: ${JSON.stringify(role || '')} });
+        }
+
+        function onKey(e) {
+          if (e.key === 'Escape') done({ ok: false, canceled: true });
+        }
+
+        overlay.addEventListener('click', onClick, true);
+        document.addEventListener('keydown', onKey, true);
+      });
+    })();
+  `;
+  return mainWindow.webContents.executeJavaScript(script, true)
+    .catch((err) => ({ ok: false, error: String(err.message || err) }));
 });
 
 ipcMain.handle('youtube:get', () => browserStore.youtube);
