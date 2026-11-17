@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Hole — Demo Website (also an App)</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hole">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="One codebase that runs as a website and installs as an app.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body {
+    background: #111827; color: #f9fafb;
+    min-height: 100vh; min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+    text-align: center; -webkit-tap-highlight-color: transparent;
+  }
+  h1 { font-size: clamp(2rem, 8vw, 2.75rem); margin-bottom: 8px; letter-spacing: -0.02em; }
+  p { color: #9ca3af; max-width: 480px; line-height: 1.6; margin-bottom: 24px; }
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 16px; padding: 24px; max-width: 480px; width: 100%; }
+  .card h2 { font-size: 1.05rem; margin-bottom: 12px; text-align: left; }
+  .card li { text-align: left; color: #d1d5db; margin: 8px 0 8px 20px; line-height: 1.55; font-size: 0.95rem; }
+  .card b { color: #f9fafb; }
+  button {
+    background: #3b82f6; color: #fff; border: none; padding: 13px 24px; border-radius: 10px;
+    font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 16px; width: 100%;
+    transition: background 0.15s, transform 0.1s;
+  }
+  button:hover { background: #2563eb; }
+  button:active { transform: scale(0.98); }
+  #installBtn { display: none; }
+  .badge { display: inline-block; background: #065f46; color: #a7f3d0; padding: 5px 14px; border-radius: 999px; font-size: 0.78rem; margin-bottom: 16px; font-weight: 600; }
+  #status { margin-top: 16px; font-size: 0.85rem; color: #9ca3af; min-height: 1.2em; }
+  .check { color: #34d399; }
+  .miss { color: #f87171; }
+  footer { margin-top: 28px; font-size: 0.78rem; color: #4b5563; }
+</style>
+</head>
+<body>
+  <div class="badge" id="badge">● Website + installable app</div>
+  <h1>🕳️ Hole</h1>
+  <p id="tagline">This is one codebase. It runs in a browser as a website, and installs as an app — same UI, same stuff, no second build.</p>
+
+  <div class="card">
+    <h2 id="cardTitle">Install it</h2>
+    <ul id="howto">
+      <li><b>Desktop (Chrome / Edge):</b> click the install icon in the address bar, or use the button below.</li>
+      <li><b>iPhone (Safari):</b> Share → <b>Add to Home Screen</b>.</li>
+      <li><b>Android (Chrome):</b> ⋮ menu → <b>Install app</b>.</li>
+    </ul>
+    <button id="installBtn">📲 Install as app</button>
+    <div id="status"></div>
+  </div>
+
+  <footer>Reload this page after installing — it opens without an address bar.</footer>
+
+<script>
+  const btn = document.getElementById('installBtn');
+  const statusEl = document.getElementById('status');
+  const badge = document.getElementById('badge');
+  const cardTitle = document.getElementById('cardTitle');
+  const howto = document.getElementById('howto');
+  const tagline = document.getElementById('tagline');
+
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  function renderInstalled() {
+    badge.textContent = '● Running as an installed app';
+    badge.style.background = '#1e3a8a';
+    badge.style.color = '#bfdbfe';
+    cardTitle.textContent = 'Installed 🎉';
+    howto.innerHTML = '<li>You are viewing the installed app — notice there is no address bar.</li>' +
+                      '<li>The same <b>index.html</b> renders here and in the browser.</li>' +
+                      '<li>Try airplane mode: the service worker still serves this page.</li>';
+    btn.style.display = 'none';
+    statusEl.textContent = 'Display mode: standalone';
+    tagline.textContent = 'Same UI as the website — only the browser chrome is gone.';
+  }
+
+  if (isStandalone) renderInstalled();
+
+  // Chrome / Edge / Android install prompt
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!isStandalone) btn.style.display = 'block';
+  });
+
+  btn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    statusEl.textContent = outcome === 'accepted' ? 'Installed — open it from your app list.' : 'Install dismissed.';
+    deferredPrompt = null;
+    btn.style.display = 'none';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    renderInstalled();
+    statusEl.textContent = 'Installed successfully.';
+  });
+
+  // If no install event fired, tell the user how their platform works.
+  setTimeout(() => {
+    if (isStandalone || deferredPrompt) return;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isSafari = isIOS && !/crios|fxios/i.test(navigator.userAgent);
+    if (isSafari) {
+      statusEl.textContent = 'Safari: tap Share → Add to Home Screen.';
+    } else if (isIOS) {
+      statusEl.textContent = 'iOS: open this page in Safari to install it.';
+    } else if (!window.isSecureContext) {
+      statusEl.textContent = 'Installing needs HTTPS (or localhost).';
+    } else if (!('serviceWorker' in navigator)) {
+      statusEl.textContent = 'This browser has no service worker support.';
+    } else {
+      statusEl.textContent = 'Install prompt unavailable here — use your browser menu.';
+    }
+  }, 2500);
+
+  // Service worker: offline support
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch((err) => {
+        statusEl.textContent = 'Service worker failed: ' + err.message;
+      });
+    });
+  }
+</script>
+</body>
+</html>
