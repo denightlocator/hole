@@ -38,6 +38,26 @@
     openDevTools: false
   };
 
+  /**
+   * The real app injects CSS into the <webview> from the main world. A browser
+   * can't do that across an iframe boundary, so the preview forwards the same
+   * tokens and the demo page applies them itself. Same input, same output.
+   */
+  function mirrorThemeToPage() {
+    const frame = document.getElementById('webview');
+    if (!frame || !frame.contentWindow || !window.ArenaThemes) return;
+    frame.contentWindow.postMessage(
+      {
+        type: 'arena-theme',
+        tokens: window.ArenaThemes.tokens(state),
+        mode: state.pageStyling,
+        customCss: state.customCss || '',
+        zoom: state.pageZoom
+      },
+      '*'
+    );
+  }
+
   function load() {
     try {
       return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || '{}'));
@@ -67,6 +87,11 @@
     { stream: 'shell', line: '[shell] script finished successfully — handing control back to the shell.' }
   ];
 
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'arena-preview-ready') mirrorThemeToPage();
+  });
+  window.__mirrorThemeToPage = mirrorThemeToPage;
+
   window.PREVIEW_MODE = true;
   window.arena = {
     settings: {
@@ -76,12 +101,14 @@
         state = { ...state, ...patch };
         save();
         changedCbs.forEach((cb) => cb(state));
+        setTimeout(mirrorThemeToPage, 30);
         return state;
       },
       reset: async () => {
         state = { ...DEFAULTS };
         save();
         changedCbs.forEach((cb) => cb(state));
+        setTimeout(mirrorThemeToPage, 30);
         return state;
       },
       export: async () => ({ ok: true, path: 'arena-shell-settings.json' }),

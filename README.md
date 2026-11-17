@@ -4,19 +4,31 @@ A downloadable desktop app that **runs `start.bat` on launch**, then **connects 
 
 ![Arena Shell](docs/screens/01-default-arena.png)
 
+| Theme | Applied to the shell **and** the connected page |
+| --- | --- |
+| Claude Code | ![Claude Code](docs/screens/02-theme-claude-code.png) |
+| ChatGPT (full re-skin) | ![ChatGPT](docs/screens/03-theme-chatgpt-reskin.png) |
+| Claude Light (full re-skin) | ![Claude Light](docs/screens/04-theme-claude-light-reskin.png) |
+| Midnight Mono (full re-skin) | ![Midnight](docs/screens/05-theme-midnight-reskin.png) |
+
 ---
 
 ## Download & run
 
-### Option A — grab a prebuilt Windows `.exe` (recommended)
+### Option A — build the `.exe` once with GitHub Actions (recommended)
 
-1. Go to the **Actions** tab → **Build Arena Shell** → **Run workflow**.
-2. When it finishes, open the run and download the **`arena-shell-windows`** artifact.
-3. Unzip it and run:
-   - **`Arena-Shell-Portable-1.0.0.exe`** — no install, just double-click.
+This machine's GitHub token can't create workflow files, so enable the
+one-click build first:
+
+1. On GitHub, open **Actions** → **New workflow** → **set up a workflow yourself**.
+2. Name it `build.yml` and paste the contents of [`docs/ci-build.yml`](docs/ci-build.yml). Commit.
+3. Go to **Actions** → **Build Arena Shell** → **Run workflow**.
+4. When it's green, open the run and download the **`arena-shell-windows`** artifact.
+5. Unzip and double-click:
+   - **`Arena-Shell-Portable-1.0.0.exe`** — no install, just runs.
    - **`Arena-Shell-Setup-1.0.0.exe`** — normal installer (Start-menu entry, uninstaller).
 
-You can also tag a release and the workflow attaches both `.exe` files to it:
+Once the workflow exists, tagging also publishes both `.exe` files as a release:
 
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
@@ -26,7 +38,7 @@ git tag v1.0.0 && git push origin v1.0.0
 
 ```bash
 npm install
-npm run dist:win     # -> dist/*.exe   (run this on Windows)
+npm run dist:win     # -> dist/*.exe  (must run on Windows)
 npm start            # or just run it locally without packaging
 ```
 
@@ -136,7 +148,7 @@ scripts/
   preview-server.js    run the UI in a normal browser (no Electron needed)
   screenshot.js        dev-only screenshot pass
 test/main.test.cjs     headless checks for main-process behaviour
-.github/workflows/     builds the .exe on CI
+docs/ci-build.yml       build recipe for the .exe (paste into Actions)
 ```
 
 ## Developing

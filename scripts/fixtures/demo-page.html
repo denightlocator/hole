@@ -20,7 +20,7 @@
     flex-direction: column;
     background: var(--bg);
     color: var(--text);
-    font: 14px/1.55 'Inter', system-ui, -apple-system, sans-serif;
+    font: 14px/1.55 var(--ui-font, 'Inter', system-ui, -apple-system, sans-serif);
   }
   .top {
     display: flex; align-items: center; justify-content: space-between;
@@ -34,7 +34,9 @@
   }
   .badge {
     font-size: 11px; padding: 3px 9px; border-radius: 999px;
-    background: rgba(124,108,246,.16); color: #a99dff; border: 1px solid rgba(124,108,246,.3);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
   }
   .main { flex: 1; overflow: auto; display: flex; }
   .feed { flex: 1; max-width: 760px; margin: 0 auto; padding: 28px 22px 140px; }
@@ -50,8 +52,8 @@
   .bubble p { margin: 0 0 8px; }
   .code {
     font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px;
-    background: #0a0c11; border: 1px solid var(--line); border-radius: 8px;
-    padding: 10px 12px; color: #b6c0d4; white-space: pre-wrap;
+    background: color-mix(in srgb, var(--panel) 70%, #000); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; color: var(--muted); white-space: pre-wrap;
   }
   .composer-wrap { position: sticky; bottom: 0; padding: 0 22px 22px; }
   .composer {
@@ -103,5 +105,54 @@
     </div>
     <div class="hint">Demo page rendered inside the shell's webview</div>
   </div>
+<script>
+  // Stands in for the CSS the real shell injects into its <webview>.
+  const root = document.documentElement;
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.type !== 'arena-theme') return;
+    const t = d.tokens || {};
+    const mode = d.mode || 'subtle';
+
+    // always: fonts + accent, like the "subtle" level
+    if (t['font-ui']) root.style.setProperty('--ui-font', t['font-ui']);
+    if (t.accent) root.style.setProperty('--accent', t.accent);
+    root.style.setProperty('--ui-font', t['font-ui'] || 'Inter, system-ui, sans-serif');
+    document.body.style.fontFamily = t['font-ui'] || '';
+
+    if (mode === 'aggressive') {
+      const bg = t['bg-app'] || '#0b0d12';
+      const panel = t['bg-elev'] || '#12151d';
+      const text = t.text || '#e9ecf4';
+      const line = t.border || 'rgba(255,255,255,.08)';
+      root.style.setProperty('--bg', bg);
+      root.style.setProperty('--panel', panel);
+      root.style.setProperty('--text', text);
+      root.style.setProperty('--line', line);
+      root.style.setProperty('--muted', t['text-mute'] || '#8b93a7');
+      root.style.setProperty('--accent', t.accent || '#7c6cf6');
+      document.body.setAttribute('data-scheme', t['bg-app'] && isLight(t['bg-app']) ? 'light' : 'dark');
+    } else {
+      for (const k of ['--bg', '--panel', '--text', '--line', '--muted']) root.style.removeProperty(k);
+      document.body.removeAttribute('data-scheme');
+    }
+
+    if (d.customCss) {
+      let tag = document.getElementById('arena-custom');
+      if (!tag) { tag = document.createElement('style'); tag.id = 'arena-custom'; document.head.appendChild(tag); }
+      tag.textContent = d.customCss;
+    }
+    if (d.zoom) document.body.style.zoom = d.zoom;
+  });
+
+  function isLight(hex) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+    if (!m) return false;
+    const [r, g, b] = [1, 2, 3].map((i) => parseInt(m[i], 16));
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 140;
+  }
+
+  parent.postMessage({ type: 'arena-preview-ready' }, '*');
+</script>
 </body>
 </html>
