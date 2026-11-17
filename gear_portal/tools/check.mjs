@@ -72,7 +72,7 @@ function game(opts = {}) {
     deleteMeshEntity: (id) => { s.calls++; need(meshes.delete(id), 'deleted twice') },
   }
   s.g = {}
-  s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerClick;\n' + (opts.before || '') + '\n' + code + '\nreturn { tick, onPlayerChat, onPlayerClick, GATE_CFG, gateList, gatePlan, held: () => gateMeshes }')(s.api, s.g)
+  s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerClick;\n' + (opts.before || '') + '\n' + code + '\nreturn { tick, onPlayerChat, onPlayerClick, gateCfg, gateList, gatePlan, held: () => gateMeshes }')(s.api, s.g)
   return s
 }
 function play(s, ticks, each) {
@@ -94,7 +94,7 @@ check(code.length <= 512000 && !code.includes('//'), `world_code.js is ${code.le
 
 console.log('Aiming: the arrow appears at once')
 const s = game()
-check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!portal') === false && s.run.gateList.length === 1, '!portal starts it and is hidden from chat')
+check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!move1') === false && s.run.gateList.length === 1, '!portal starts it and is hidden from chat')
 // while aiming, the player turns to look along +X (to the right)
 const run = play(s, 120, (n) => { if (n === 30) s.look = [0.98, -0.2, 0] })
 check(s.errors.length === 0, 'every api call is well formed and every mesh is level (only turned left or right) ' + [...new Set(s.errors)].join('; '))
@@ -174,16 +174,16 @@ console.log('Leaving early and edge cases')
 const early = game()
 early.g.gearPortal('p1')
 play(early, 20)
-check(early.g.gearPortal('p1') === false && early.run.gateList.length === 1, '!portal again while aiming means "go now"')
+check(early.g.gearPortal('p1') === false && early.run.gateList.length === 1, '!move1 again while aiming means "go now"')
 const e2 = play(early, 8)
 check(e2.frames[0].phase === 'sink' && e2.frames[6].phase === 'leave' && e2.frames[6].player[2] > 6.4, 'the move goes off at once and the player lands 6 blocks ahead')
 const hard = game()
-hard.run.GATE_CFG.aimTime = 9
+hard.run.gateCfg.aimTime = 9
 hard.g.gearPortal('p1')
 const h2 = play(hard, 63)
 check(h2.frames[59].phase === 'aim' && h2.frames[60].phase === 'sink', 'the arrow never stays out longer than 3 s: even with aimTime set to 9, the move goes off on the 3 s mark')
 const stop = game()
-stop.run.GATE_CFG.aimCancels = true
+stop.run.gateCfg.aimCancels = true
 stop.g.gearPortal('p1')
 const s2 = play(stop, 63)
 check(s2.frames[61].meshes.length === 0 && stop.meshes.size === 0 && stop.run.gateList.length === 0 && stop.options.groundArrowPath === null, 'with aimCancels on, the 3 s limit takes the arrow away and drops the move instead')
@@ -205,7 +205,7 @@ check(w.frames[66].phase === 'leave' && Math.abs(w.frames[66].player[2] - 2.5) <
 const noAnim = game({ noAnim: true })
 noAnim.g.gearPortal('p1')
 play(noAnim, 140)
-check(noAnim.run.GATE_CFG.animate === false && /animation stopped/.test(noAnim.said[0]) && noAnim.meshes.size === 0 && noAnim.run.gateList.length === 0, 'if the game refuses the animation, the move still plays without it and says so once')
+check(noAnim.run.gateCfg.animate === false && /animation stopped/.test(noAnim.said[0]) && noAnim.meshes.size === 0 && noAnim.run.gateList.length === 0, 'if the game refuses the animation, the move still plays without it and says so once')
 const boom = game()
 boom.g.gearPortal('p1')
 play(boom, 20)

@@ -13,7 +13,7 @@ The picture is my own render of the test run, not a Bloxd screenshot. **The move
 ## How to use it
 
 1. Paste `world_code.js` (22k characters) into World Code.
-2. Type `!portal` in chat: the arrow appears. Turn to aim. Then click, or type `!portal` again, to do the move. (`gearPortal(playerId)` from your own code does the same: first call aims, second call goes.)
+2. Type `!move1` in chat: the arrow appears. Turn to aim. Then click, or type `!move1` again, to do the move. (`gearPortal(playerId)` from your own code does the same: first call aims, second call goes.)
 3. Optional: paste `code_block.js` into a code block. Clicking the block casts the move for the player who clicked. It needs the World Code, because a code block runs only once per click and this move has to run for several seconds.
 
 ## What happens
@@ -21,7 +21,7 @@ The picture is my own render of the test run, not a Bloxd screenshot. **The move
 | Step | What you see |
 |---|---|
 | Aim (3 s at most) | Three arrow heads on the floor in front of the player, there from the first tick, following where the player looks. Sparks mark the landing spot 6 blocks away. The caster also sees the game's own arrow strip. The player is visible and can walk; the arrow goes with them. |
-| Go | On a click, a second `!portal`, or by itself on the 3 s mark. The landing spot is fixed at this moment. |
+| Go | On a click, a second `!move1`, or by itself on the 3 s mark. The landing spot is fixed at this moment. |
 | 0 – 0.3 s | The first portal opens under the player's feet. The player crouches, leaps with arms up, and corkscrews down, shrinking and fading. |
 | 0.3 s | The player lands where the arrow pointed. The second portal opens there and the first one folds away. |
 | 0.3 – 0.7 s | A green band sweeps once round the player. Everything within 3 blocks takes 25 damage and is knocked away, straight away. The second portal folds away. |
@@ -40,11 +40,11 @@ The code is written without indentation or blank lines to take as little room as
 - **Arrow, 6 meshes**, plus the game's own arrow strip on the ground (only the caster sees that one).
 - **Node meshes, 2:** a green blade on each arm and nothing else — no block on the hand, no plate on the back. They are on while dropping in and during the slash.
 - **Particles:** green sparks rising from the portal, gold glints, grey steam puffs, a stream pulled down into the first portal, bursts on entering and leaving, sparks along the slash.
-- **Player animation:** a ready pose with the blade arm pointing ahead while aiming; crouch, leap with arms up, half-turn corkscrew down while the player shrinks into the portal; coming out the player grows back and then plays the supplied slash animation (`GATE_SLASH`, run over 2.1 s so the arms cross over in 399 ms, level with the sweep of the green band), which is replaced by a 0.2 s easing back to a normal stand when the band is done.
+- **Player animation:** a ready pose with the blade arm pointing ahead while aiming; crouch, leap with arms up, half-turn corkscrew down while the player shrinks into the portal; coming out the player grows back and then plays the supplied slash animation (`gateSlashKeys`, run over 2.1 s so the arms cross over in 399 ms, level with the sweep of the green band), which is replaced by a 0.2 s easing back to a normal stand when the band is done.
 
 At most 167 meshes exist at once. The only thing that ever lies on the floor is the gear clock portal itself; the 6 arrow heads are there only while aiming and are removed the instant the move goes off, and nothing at all is left once it is over.
 
-## Settings (`GATE_CFG` at the top)
+## Settings (`gateCfg` at the top)
 
 | Name | Default | Meaning |
 |---|---|---|
