@@ -7,6 +7,7 @@ import queue
 import re
 import uuid
 import threading
+import time
 import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox, ttk
@@ -127,9 +128,18 @@ class Desktop:
         for hint in ('Select a file to open a reading tab.', 'Ask Sprout in the chat on the right.', 'Follow training in Activity below.', 'Drag the dividers to resize any pane.'):
             label(home, hint, bg=BG, fg=MUTED, wraplength=205, justify='left').pack(anchor='w', pady=5)
         self.documents.bind('<<NotebookTabChanged>>', self.document_changed)
-        label(activity, '  OUTPUT   /   SESSION LOG', fg=MUTED, anchor='w', pady=7).pack(fill='x')
-        self.output = tk.Text(activity, height=6, width=1, bg='#0d0d0d', fg='#86efac', font=('Consolas', 9), relief='flat', padx=10, pady=8, state='disabled'); self.output.pack(fill='both', expand=True)
-        self.event('Local workspace opened.')
+        label(activity, '  ACTIVITY   /   Expand a run for details', fg=MUTED, anchor='w', pady=5).pack(fill='x')
+        self.progress = ttk.Progressbar(activity, mode='indeterminate', maximum=100)
+        self.progress.pack(fill='x')
+        style.configure('Steps.Treeview', background=BG, fieldbackground=BG, foreground=TEXT, rowheight=25)
+        self.output = ttk.Treeview(activity, show='tree', height=4, style='Steps.Treeview', selectmode='browse')
+        scroll = ttk.Scrollbar(activity, orient='vertical', command=self.output.yview)
+        scroll.pack(side='right', fill='y'); self.output.configure(yscrollcommand=scroll.set)
+        self.output.pack(fill='both', expand=True)
+        self.output.tag_configure('run', foreground=ACCENT, font=('Segoe UI', 10, 'bold'))
+        self.output.tag_configure('detail', foreground=MUTED)
+        self.output.insert('', 'end', text='Ready · waiting for a message or training session')
+        self.active_run = None
         label(pane, 'SESSION   /   FIELD JOURNAL', fg=MUTED).pack(anchor='w')
         label(pane, '✳  Sprout', fg=ACCENT, font=('Segoe UI', 18, 'bold')).pack(anchor='w', pady=(10,0))
         label(pane, '●  Local · Qwen2.5 1.5B', fg='#86efac').pack(anchor='w')
@@ -163,6 +173,7 @@ class Desktop:
             self.study_count = 0
             self.study_button.configure(text='■  Stop training', bg='#864c39')
             self.button.configure(state='disabled')
+            self.begin_run('Training', 'Starting…')
             self.event('Training started · local notebook only. Esc to stop.')
             self.study_step()
 
@@ -175,6 +186,7 @@ class Desktop:
                 self.stop_study(LIMIT_MESSAGE)
                 return
             if self.study_run is None:
+                self.event(f'Generating lesson {self.study_count + 1}…')
                 self.status.set(f'Studying · {self.study_count} notes written')
                 self.study_run = subprocess.Popen(
                     [sys.executable, str(Path(__file__).with_name('study.py')), str(EXPORTS)],
@@ -205,7 +217,8 @@ class Desktop:
                 if tmp.exists():
                     tmp.unlink()
             self.study_count += 1
-            self.event('Notebook · ' + note['topic'] + ' → ' + path.name)
+            self.event('Generated · ' + note['topic'])
+            self.event('Saved · ' + note['topic'] + ' → ' + path.name)
             self.update_files()
             if file_count(EXPORTS) >= FILE_LIMIT:
                 self.stop_study(LIMIT_MESSAGE)
@@ -213,8 +226,7 @@ class Desktop:
             self.status.set(f'{self.study_count} notes written · next pass in 5s')
             self.study_job = self.root.after(5000, self.study_step)
         except (OSError, ValueError, KeyError) as exc:
-            self.stop_study()
-            self.event('Training paused: ' + str(exc))
+            self.stop_study('Paused: ' + str(exc))
 
     def time_up(self):
         self.timer = None
@@ -236,6 +248,7 @@ class Desktop:
         self.button.configure(state='normal')
         self.status.set(reason)
         self.event(reason)
+        self.finish_run(f'Stopped · {self.study_count} notes saved')
 
     def close(self):
         if self.studying:
@@ -249,11 +262,31 @@ class Desktop:
         except OSError as exc:
             messagebox.showwarning('Cannot open folder', str(exc))
 
+    def begin_run(self, kind, phase):
+        self.run_kind = kind
+        self.run_start = time.monotonic()
+        self.active_run = self.output.insert('', 0, text=f'{kind}  ·  {phase}', open=False, tags=('run',))
+        self.output.see(self.active_run)
+        self.progress.start(18)
+        roots = self.output.get_children()
+        if len(roots) > 40:
+            self.output.delete(*roots[40:])
+
     def event(self, message):
-        self.output.configure(state='normal'); self.output.insert('end', '› ' + message + '\n'); 
-        if int(self.output.index('end-1c').split('.')[0]) > 150:
-            self.output.delete('1.0', '2.0')
-        self.output.see('end'); self.output.configure(state='disabled')
+        if self.active_run is None:
+            return
+        elapsed = int(time.monotonic() - self.run_start)
+        self.output.insert(self.active_run, 'end', text=f'{elapsed // 60}:{elapsed % 60:02}   {message}', tags=('detail',))
+        children = self.output.get_children(self.active_run)
+        if len(children) > 120:
+            self.output.delete(children[0])
+        self.output.item(self.active_run, text=f'{self.run_kind}  ·  {message}')
+
+    def finish_run(self, summary):
+        self.event(summary)
+        self.output.item(self.active_run, open=False)
+        self.progress.stop()
+        self.active_run = None
 
     def document_changed(self, event=None):
         home = self.documents.index('current') == 0
@@ -347,6 +380,8 @@ class Desktop:
             self.facts.append(fact)
         history, facts, online = self.chat[-8:], self.facts[:], self.online.get()
         profile = self.profile.get()
+        self.begin_run('Chat', 'Preparing…')
+        self.event(f'Context prepared · {len(history)} previous messages')
         self.event(profile + " · request started")
         self.online.set(False)
         self.chat.append(('YOU', text))
@@ -360,34 +395,38 @@ class Desktop:
         def work():
             try:
                 result = answer(text, facts, history, online, profile)
+                success = True
                 reply = '\n'.join(filter(None, (result['reply'], result['source'], result['note'])))
             except Exception as exc:
+                success = False
                 reply = 'Could not get a reply. Check that Ollama is running.\n' + str(exc)
-            self.results.put(reply)
+            self.results.put((success, reply))
 
         threading.Thread(target=work, daemon=True).start()
         self.root.after(100, self.poll)
 
     def poll(self):
         try:
-            reply = self.results.get_nowait()
+            success, reply = self.results.get_nowait()
         except queue.Empty:
             self.root.after(100, self.poll)
             return
-        if self.autosave.get():
+        self.event('Reply generated' if success else 'Model request failed')
+        if success and self.autosave.get():
             try:
                 names = export_blocks(reply, EXPORTS)
                 if names:
                     self.event(f'Saved {len(names)} file(s) to Explorer.')
                     reply += '\n\nSaved in ' + str(EXPORTS) + ':\n' + '\n'.join(names)
             except OSError as exc:
+                self.event('File save failed: ' + str(exc))
                 reply += '\nFile save failed: ' + str(exc)
         self.chat.append(('SPROUT', reply))
         self.chat = self.chat[-80:]
         self.busy = False
         self.status.set('Ready')
         self.study_button.configure(state='normal')
-        self.event('Response received.')
+        self.finish_run('Reply ready' if success else 'Request failed')
         self.button.configure(state='normal')
         self.save()
 
