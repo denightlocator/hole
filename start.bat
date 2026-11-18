@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
-set "SPROUT_HOME=%LOCALAPPDATA%\Sprout\desktop-v1"
+set "SPROUT_HOME=%LOCALAPPDATA%\Sprout\desktop-v2"
 for %%F in (run-sprout.bat server.py desktop.py) do if not exist "%SPROUT_HOME%\%%F" goto install
 goto launch
 

@@ -3,6 +3,7 @@ import json
 import os
 import queue
 import re
+import uuid
 import threading
 import tkinter as tk
 from pathlib import Path
@@ -12,6 +13,24 @@ from server import answer
 
 DATA = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'Sprout' / 'journal.json'
 PAPER, INK, MOSS = '#f8f7ef', '#21362e', '#305945'
+
+
+EXPORTS = DATA.parent / 'Files'
+FENCE = re.compile(r'^```([^`\n]*)\n(.*?)^```[ \t]*(?:\n|$)', re.M | re.S)
+EXT = {'python': 'py', 'javascript': 'js', 'json': 'json', 'markdown': 'md',
+       'html': 'html', 'css': 'css', 'csv': 'csv', 'text': 'txt', 'sql': 'sql'}
+
+
+def export_blocks(text, folder):
+    names = []
+    for match in FENCE.finditer(text):
+        folder.mkdir(parents=True, exist_ok=True)
+        language = match[1].strip().lower()
+        path = folder / ('sprout-' + uuid.uuid4().hex[:12] + '.' + EXT.get(language, 'txt'))
+        with path.open('x', encoding='utf-8') as out:
+            out.write(match[2])
+        names.append(path.name)
+    return names
 
 
 class Desktop:
@@ -42,6 +61,10 @@ class Desktop:
         self.log = ScrolledText(pane, wrap='word', width=1, height=4, bg=PAPER, fg=INK, relief='flat', font=('Segoe UI', 11))
         self.log.pack(fill='both', expand=True, pady=12)
         self.log.tag_config('label', foreground=MOSS, font=('Segoe UI', 10, 'bold'))
+        self.log.tag_config('code', background='#23362e', foreground='#e3efd4', font=('Consolas', 11), lmargin1=12, lmargin2=12)
+        self.log.tag_config('codehead', foreground=MOSS, font=('Consolas', 9, 'bold'), spacing1=8)
+        self.autosave = tk.BooleanVar(value=True)
+        tk.Checkbutton(pane, text='Auto-save reply blocks to Files', variable=self.autosave, bg=PAPER).pack(anchor='w')
         self.online = tk.BooleanVar()
         tk.Checkbutton(pane, text='Look up next message on Wikipedia', variable=self.online, bg=PAPER).pack(anchor='w')
         row = tk.Frame(pane, bg=PAPER)
@@ -62,7 +85,13 @@ class Desktop:
         self.log.delete('1.0', 'end')
         for who, text in self.chat or [('SPROUT', 'Tell me something to remember, or ask me a question.')]:
             self.log.insert('end', who + '\n', 'label')
-            self.log.insert('end', text + '\n\n')
+            pos = 0
+            for block in FENCE.finditer(text):
+                self.log.insert('end', text[pos:block.start()])
+                self.log.insert('end', '▣  ' + (block[1].strip() or 'text').upper() + '\n', 'codehead')
+                self.log.insert('end', block[2], 'code')
+                pos = block.end()
+            self.log.insert('end', text[pos:] + '\n\n')
         self.log.see('end')
         self.log.configure(state='disabled')
 
@@ -116,6 +145,13 @@ class Desktop:
         except queue.Empty:
             self.root.after(100, self.poll)
             return
+        if self.autosave.get():
+            try:
+                names = export_blocks(reply, EXPORTS)
+                if names:
+                    reply += '\n\nSaved in ' + str(EXPORTS) + ':\n' + '\n'.join(names)
+            except OSError as exc:
+                reply += '\nFile save failed: ' + str(exc)
         self.chat.append(('SPROUT', reply))
         self.chat = self.chat[-80:]
         self.busy = False

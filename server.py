@@ -22,7 +22,7 @@ def fetch_json(url, data=None, timeout=15):
 
 
 def answer(prompt, facts, history, online):
-    system = 'You are Sprout, a curious and thoughtful local AI companion. Give a direct, helpful reply. Be honest about uncertainty. User-provided memories: ' + json.dumps(facts[-80:])
+    system = 'You are Sprout, a curious and thoughtful local AI companion. Give a direct, helpful reply. For code or requested files, put each complete file in its own triple-backtick block with a language label (text for plain notes) and a closing fence on its own line. Be honest about uncertainty. User-provided memories: ' + json.dumps(facts[-80:])
     source = None
     note = None
     if online:
