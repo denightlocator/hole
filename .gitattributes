@@ -1,0 +1,3 @@
+# GitHub's Download raw file button must serve a Windows-ready batch file.
+/start.bat -text whitespace=cr-at-eol
+/src/*.cs text eol=lf
