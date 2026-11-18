@@ -9,7 +9,7 @@ import uuid
 import threading
 import tkinter as tk
 from pathlib import Path
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 from server import answer
 
@@ -23,9 +23,20 @@ EXT = {'python': 'py', 'javascript': 'js', 'json': 'json', 'markdown': 'md',
        'html': 'html', 'css': 'css', 'csv': 'csv', 'text': 'txt', 'sql': 'sql'}
 
 
+FILE_LIMIT = 100
+LIMIT_MESSAGE = '100-file limit reached. Move a file out of Sprout/Files to save more.'
+
+
+def file_count(folder):
+    return sum(p.is_file() or p.is_symlink() for p in folder.iterdir()) if folder.exists() else 0
+
+
 def export_blocks(text, folder):
     names = []
-    for match in FENCE.finditer(text):
+    blocks = list(FENCE.finditer(text))
+    if blocks and file_count(folder) + len(blocks) > FILE_LIMIT:
+        raise OSError("Not enough room under the 100-file limit; no blocks saved.")
+    for match in blocks:
         folder.mkdir(parents=True, exist_ok=True)
         language = match[1].strip().lower()
         path = folder / ('sprout-' + uuid.uuid4().hex[:12] + '.' + EXT.get(language, 'txt'))
@@ -68,37 +79,44 @@ class Desktop:
         self.study_count = 0
         self.study_button = tk.Button(top, text='▷  Start training', bg='#43594d', fg='#e1f7e9', padx=12, cursor='hand2', command=self.toggle_study)
         self.study_button.pack(side='right', padx=14)
+        self.timer = None
+        self.safe = tk.BooleanVar(value=True)
+        self.safe_check = tk.Checkbutton(top, text='Safe session · 15 min', variable=self.safe, bg=PANEL, fg=TEXT, selectcolor=BG)
+        self.safe_check.pack(side='right')
         root.protocol('WM_DELETE_WINDOW', self.close)
         root.bind('<Escape>', lambda _: self.stop_study() if self.studying else None)
         self.status = tk.StringVar(value='Ready')
         footer = tk.Frame(root, bg='#2e211d'); footer.pack(side='bottom', fill='x')
         label(footer, '  ✳  Sprout Studio    /    Local session', bg='#2e211d', fg=ACCENT).pack(side='left')
         tk.Label(footer, textvariable=self.status, bg='#2e211d', fg=TEXT).pack(side='right', padx=12)
-        rail = tk.Frame(root, bg=BG, padx=3); rail.pack(side='left', fill='y')
-        nav = tk.Frame(root, bg=PANEL, width=175); nav.pack(side='left', fill='y'); nav.pack_propagate(False)
-        self.views = {}
-        for title, icon in [('Explorer', '▤'), ('Memory', '◇')]:
-            view = tk.Frame(nav, bg=PANEL, padx=8, pady=12)
-            self.views[title] = view
-            label(view, title.upper(), fg=MUTED).pack(anchor='w')
-            tk.Button(rail, text=icon, fg=ACCENT, width=3, command=lambda t=title: self.show_view(t)).pack(pady=5)
-        explorer = self.views['Explorer']; label(explorer, '⌄  Sprout / Files', fg=ACCENT).pack(anchor='w', pady=10)
-        self.files = tk.Listbox(explorer, relief='flat', exportselection=False, font=('Consolas', 9)); self.files.pack(fill='both', expand=True)
+        style = ttk.Style(root)
+        style.theme_use('clam')
+        style.configure('TNotebook', background=BG, borderwidth=0)
+        style.configure('TNotebook.Tab', padding=(20, 9), foreground=MUTED, background=PANEL)
+        style.map('TNotebook.Tab', background=[('selected', '#49372e')], foreground=[('selected', '#ffcea8')])
+        tabs = ttk.Notebook(root); tabs.pack(fill='both', expand=True, padx=10, pady=8)
+        tabs.enable_traversal()
+        pane, library, memory, activity = [tk.Frame(tabs, bg=PANEL, padx=16, pady=12) for _ in range(4)]
+        for name, frame in zip(('Chat', 'Files', 'Memory', 'Activity'), (pane, library, memory, activity)):
+            tabs.add(frame, text=name)
+        explorer = tk.Frame(library, bg=PANEL); explorer.pack(side='left', fill='y', padx=(0,14))
+        self.capacity = label(explorer, 'Files', fg=ACCENT); self.capacity.pack(anchor='w', pady=8)
+        self.files = tk.Listbox(explorer, width=29, relief='flat', exportselection=False, font=('Consolas', 10)); self.files.pack(fill='both', expand=True)
         self.files.bind('<<ListboxSelect>>', self.preview_file)
-        memory = self.views['Memory']; self.mem = tk.Listbox(memory, relief='flat'); self.mem.pack(fill='both', expand=True)
-        tk.Button(memory, text='Forget selected', command=self.forget).pack(fill='x')
-        self.show_view('Explorer')
-        split = tk.PanedWindow(root, orient='horizontal', bg='#343434', sashwidth=5, bd=0); split.pack(fill='both', expand=True)
-        editor = tk.Frame(split, bg=BG); split.add(editor, minsize=220, stretch='always')
+        if sys.platform == 'win32':
+            tk.Button(explorer, text='Open files folder', command=self.open_folder).pack(fill='x', pady=6)
+        label(memory, 'Remembered facts', fg=ACCENT, font=('Segoe UI', 16)).pack(anchor='w', pady=8)
+        self.mem = tk.Listbox(memory, relief='flat'); self.mem.pack(fill='both', expand=True)
+        tk.Button(memory, text='Forget selected fact', command=self.forget).pack(anchor='w', pady=8)
+        editor = tk.Frame(library, bg=BG); editor.pack(fill='both', expand=True)
         self.tab = label(editor, '   ✦   workspace.md   ', fg=ACCENT, pady=8); self.tab.pack(anchor='w')
         self.preview = ScrolledText(editor, bg=BG, fg=TEXT, insertbackground=TEXT, relief='flat', font=('Consolas', 11), wrap='none', width=38, height=10, padx=12, pady=16)
         self.preview.pack(fill='both', expand=True)
         self.preview.tag_config('number', foreground='#676767')
         self.render_file('# Your local workbench\n\n01  Compose   →   Ask Sprout in the chat panel.\n02  Explore   →   Select a saved file to read it.\n03  Study     →   Start training to grow a coding notebook.\n\nTraining stays on this PC. Press Esc to stop.')
-        label(editor, '  OUTPUT   /   SESSION LOG', fg=MUTED, anchor='w', pady=7).pack(fill='x')
-        self.output = tk.Text(editor, height=6, width=1, bg='#0d0d0d', fg='#86efac', font=('Consolas', 9), relief='flat', padx=10, pady=8, state='disabled'); self.output.pack(fill='x')
+        label(activity, '  OUTPUT   /   SESSION LOG', fg=MUTED, anchor='w', pady=7).pack(fill='x')
+        self.output = tk.Text(activity, height=6, width=1, bg='#0d0d0d', fg='#86efac', font=('Consolas', 9), relief='flat', padx=10, pady=8, state='disabled'); self.output.pack(fill='both', expand=True)
         self.event('Local workspace opened.')
-        pane = tk.Frame(split, bg=PANEL, padx=13, pady=10); split.add(pane, minsize=305, stretch='always')
         label(pane, 'SESSION   /   FIELD JOURNAL', fg=MUTED).pack(anchor='w')
         label(pane, '✳  Sprout', fg=ACCENT, font=('Segoe UI', 18, 'bold')).pack(anchor='w', pady=(10,0))
         label(pane, '●  Local · Qwen2.5 1.5B', fg='#86efac').pack(anchor='w')
@@ -122,6 +140,12 @@ class Desktop:
         if self.studying:
             self.stop_study()
         elif not self.busy:
+            if file_count(EXPORTS) >= FILE_LIMIT:
+                self.status.set(LIMIT_MESSAGE)
+                return
+            self.safe_check.configure(state='disabled')
+            if self.safe.get():
+                self.timer = self.root.after(15 * 60 * 1000, self.time_up)
             self.studying = True
             self.study_count = 0
             self.study_button.configure(text='■  Stop training', bg='#864c39')
@@ -134,6 +158,9 @@ class Desktop:
         if not self.studying:
             return
         try:
+            if file_count(EXPORTS) >= FILE_LIMIT:
+                self.stop_study(LIMIT_MESSAGE)
+                return
             if self.study_run is None:
                 self.status.set(f'Studying · {self.study_count} notes written')
                 self.study_run = subprocess.Popen(
@@ -167,13 +194,24 @@ class Desktop:
             self.study_count += 1
             self.event('Notebook · ' + note['topic'] + ' → ' + path.name)
             self.update_files()
+            if file_count(EXPORTS) >= FILE_LIMIT:
+                self.stop_study(LIMIT_MESSAGE)
+                return
             self.status.set(f'{self.study_count} notes written · next pass in 5s')
             self.study_job = self.root.after(5000, self.study_step)
         except (OSError, ValueError, KeyError) as exc:
             self.stop_study()
             self.event('Training paused: ' + str(exc))
 
-    def stop_study(self):
+    def time_up(self):
+        self.timer = None
+        self.stop_study('15 minutes complete. Start a new session when ready.')
+
+    def stop_study(self, reason='Training stopped'):
+        if self.timer is not None:
+            self.root.after_cancel(self.timer)
+            self.timer = None
+        self.safe_check.configure(state='normal')
         self.studying = False
         if self.study_job is not None:
             self.root.after_cancel(self.study_job)
@@ -183,18 +221,20 @@ class Desktop:
             self.study_run = None
         self.study_button.configure(text='▷  Start training', bg='#43594d')
         self.button.configure(state='normal')
-        self.status.set('Training stopped')
-        self.event('Training stopped. Completed notes are kept.')
+        self.status.set(reason)
+        self.event(reason)
 
     def close(self):
         if self.studying:
             self.stop_study()
         self.root.destroy()
 
-    def show_view(self, title):
-        for view in self.views.values():
-            view.pack_forget()
-        self.views[title].pack(fill='both', expand=True)
+    def open_folder(self):
+        try:
+            EXPORTS.mkdir(parents=True, exist_ok=True)
+            os.startfile(EXPORTS)
+        except OSError as exc:
+            messagebox.showwarning('Cannot open folder', str(exc))
 
     def event(self, message):
         self.output.configure(state='normal'); self.output.insert('end', '› ' + message + '\n'); 
@@ -219,6 +259,7 @@ class Desktop:
                 self.render_file(str(exc))
 
     def update_files(self):
+        self.capacity.configure(text=f'Local files   {file_count(EXPORTS)} / {FILE_LIMIT}')
         self.files.delete(0, 'end')
         for path in sorted(EXPORTS.glob('sprout-*')):
             if path.is_file() and not path.is_symlink():

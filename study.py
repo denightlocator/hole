@@ -7,7 +7,7 @@ from server import fetch_json, MODEL
 TOPICS = ('clear variable names', 'boundary cases in unit tests', 'small pure functions',
           'readable error messages', 'choosing data structures', 'documenting assumptions',
           'resource cleanup', 'simplifying conditional logic')
-SLOTS = 96
+SLOTS = 100
 
 
 def recent(folder, limit=2):
