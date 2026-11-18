@@ -1,4 +1,4 @@
-// Stand-in game test for the night dragon. Run: node tools/check.mjs [--dump frames.json]
+// Stand-in game test for the Eternabeam dragon. Run: node tools/check.mjs [--dump frames.json]
 // It also runs code_block.js: the block builds the same dragon on a click.
 import fs from 'node:fs'
 import path from 'node:path'
@@ -53,7 +53,7 @@ function game() {
       need(meshes.delete(id), 'a mesh was deleted twice')
     },
   }
-  s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerClick;' + code + 'return { tick, onPlayerChat, nightList, nightPlan }')(s.api, (s.g = {}))
+  s.run = new Function('api', 'globalThis', 'var tick, onPlayerChat, onPlayerClick;' + code + 'return { tick, onPlayerChat, eternaList, eternaPlan }')(s.api, (s.g = {}))
   return s
 }
 
@@ -70,34 +70,34 @@ function play(s, ticks) {
   return { frames, worst }
 }
 
-const total = 155
+const total = 128
 const round = (v) => Math.round(v * 1000) / 1000
 
 console.log('Building it')
 const s = game()
-const tagOf = (m) => s.run.nightPlan[Number(m.id.slice(1)) - 1].tag
-check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!night') === false, '!night is hidden from chat and starts it')
-const run = play(s, 27)
+const tagOf = (m) => s.run.eternaPlan[Number(m.id.slice(1)) - 1].tag
+check(s.run.onPlayerChat('p1', 'hello') === undefined && s.run.onPlayerChat('p1', '!eternabeam') === false, '!eternabeam is hidden from chat and starts it')
+const run = play(s, 22)
 check(s.errors.length === 0, 'every api call is well formed and no mesh is ever tilted (' + [...new Set(s.errors)].join('; ') + ')')
-check(run.frames[26].length === total && run.frames[10].length > 0 && run.frames[10].length < total, `it builds itself in ${Math.ceil(total / 6)} ticks, six boxes a tick: ${run.frames[10].length} boxes after 11 ticks, ${run.frames[24].length} at the end`)
-const plan = s.run.nightPlan
+check(run.frames[21].length === total && run.frames[10].length > 0 && run.frames[10].length < total, `it builds itself in ${Math.ceil(total / 6)} ticks, six boxes a tick: ${run.frames[10].length} boxes after 11 ticks, ${run.frames[21].length} at the end`)
+const plan = s.run.eternaPlan
 check(plan.length === total && plan.every((part) => part.wide > 0 && part.tall > 0 && part.deep > 0), `${total} boxes`)
-check(plan.filter((p) => p.tag === "wing").length === 46 && plan.filter((p) => p.tag === 'tail').length === 31 && plan.filter((p) => p.tag === "head").length === 16, '46 move as wings, 31 as the tail and 16 as the head')
+check(plan.filter((p) => p.tag === "wing").length === 34 && plan.filter((p) => p.tag === 'tail').length === 34 && plan.filter((p) => p.tag === "head").length === 17, '34 move as the wings, 34 as the tail and 17 as the head')
 const cols = new Set(plan.map((p) => p.col))
-check(cols.size === 5, 'five colours: two navyblues, a lighter blue for the horns, red for the spikes and markings, and a hot pink glow')
+check(cols.size === 6, 'six colours: two navyblues, a lighter blue for the spine, two reds, and a hot pink glow for the core, the mouth and the eyes')
 
 console.log('Where it stands')
-const beast = run.frames[26]
+const beast = run.frames[21]
 const near = Math.min(...beast.map((m) => Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5)))
 const wide = Math.max(...beast.map((m) => Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5)))
 const tall = Math.max(...beast.map((m) => m.p[1] + m.o.height / 2)) - 10
 const long = Math.max(...beast.map((m) => m.p[2])) - Math.min(...beast.map((m) => m.p[2]))
-check(near > 2 && wide < 14 && tall > 3 && tall < 3.7 && long > 8.5 && long < 10, `it stands 7 blocks in front of the player: ${round(tall)} blocks tall, ${round(long)} blocks nose to tail tip, ${Math.round(near)} to ${Math.round(wide)} blocks away`)
+check(near > 2 && wide < 14 && tall > 3 && tall < 3.9 && long > 8.5 && long < 11, `it stands 7 blocks in front of the player: ${round(tall)} blocks tall, ${round(long)} blocks nose to tail tip, ${Math.round(near)} to ${Math.round(wide)} blocks away`)
 check(beast.every((m) => m.p[1] - m.o.height / 2 >= 9.98), 'no box sinks below the floor')
-const eyes = beast.filter((m) => m.o.emissiveColor.join() === '255,108,120')
+const eyes = beast.filter((m) => m.o.emissiveColor.join() === '255,120,132')
 check(eyes.length > 1 && Math.min(...eyes.map((m) => Math.hypot(m.p[0] - 0.5, m.p[2] - 0.5))) < 5, 'it faces the player: the hot glow is on the near side')
-const reds = beast.filter((m) => m.o.emissiveColor.join() === '236,36,64').length
-check(reds > 40 && reds < 110, `the red is spread all over it: ${reds} red boxes, on the snout, the ribs, the spikes, the claws and the wing spars`)
+const reds = beast.filter((m) => m.o.emissiveColor.join() === '222,42,62').length
+check(reds > 30 && reds < 90, `the red is spread all over it: ${reds} red boxes, on the snout, the ribs, the spikes, the claws and the wing spars`)
 const mirror = plan.every((p) => Math.abs(p.x) <= 0.01 || plan.some((q) => Math.abs(q.x + p.x) < 1e-9 && Math.abs(q.y - p.y) < 1e-9 && Math.abs(q.z - p.z) < 1e-9))
 check(mirror && plan.filter((p) => p.x > 0.01).length * 2 + plan.filter((p) => Math.abs(p.x) <= 0.01).length === total, 'it is left-right symmetric: every side piece has its twin')
 
@@ -106,7 +106,7 @@ const w = play(s, 90)
 const wingTip = 'm' + (plan.findIndex((p) => p.tag === 'wing' && p.idx >= 0.9) + 1)
 const tipOf = (frame) => frame.filter((m) => m.id === wingTip)[0].p[1]
 const wingRange = Math.max(...w.frames.map(tipOf)) - Math.min(...w.frames.map(tipOf))
-const tailPiece = (frame) => frame.filter((m) => tagOf(m) === 'tail' && m.o.depth === 0.5)[0]
+const tailPiece = (frame) => frame.filter((m) => tagOf(m) === 'tail')[2]
 const tailSpots = w.frames.map((f) => tailPiece(f).p)
 const tailRange = Math.max(Math.max(...tailSpots.map((p) => p[0])) - Math.min(...tailSpots.map((p) => p[0])), Math.max(...tailSpots.map((p) => p[2])) - Math.min(...tailSpots.map((p) => p[2])))
 const headYaw = w.frames.map((f) => f.filter((m) => tagOf(m) === 'head')[0].r)
@@ -115,14 +115,14 @@ check(w.worst <= 110, `at most ${w.worst} api calls in a tick while it moves`)
 check(s.meshes.size === total && s.said.length === 0, 'it stays silent and keeps all its boxes')
 
 console.log('Taking it away')
-s.run.onPlayerChat('p1', '!night')
+s.run.onPlayerChat('p1', '!eternabeam')
 const gone = play(s, 5)
-check(s.run.nightList.length === 0 && s.meshes.size === 0 && gone.frames[4].length === 0, 'a second !night takes every box away again')
+check(s.run.eternaList.length === 0 && s.meshes.size === 0 && gone.frames[4].length === 0, 'a second !eternabeam takes every box away again')
 const two = game()
-two.run.onPlayerChat('p1', '!night')
-two.run.onPlayerChat('p2', '!night')
-const both = play(two, 27)
-check(two.meshes.size === total * 2 && two.peak <= 400 && two.run.nightList.length === 2, `two players can each have one: ${two.meshes.size} boxes, still under the 400 limit`)
+two.run.onPlayerChat('p1', '!eternabeam')
+two.run.onPlayerChat('p2', '!eternabeam')
+const both = play(two, 22)
+check(two.meshes.size === total * 2 && two.peak <= 400 && two.run.eternaList.length === 2, `two players can each have one: ${two.meshes.size} boxes, still under the 400 limit`)
 
 console.log('The code block')
 {
@@ -161,7 +161,7 @@ if (args.includes('--dump')) {
   const out = { frames: [], start: [0.5, 10, 0.5] }
   const shot = (frame) => ({ meshes: frame.map((m) => ({ p: m.p.map(round), width: m.o.width, height: m.o.height, depth: m.o.depth, r: m.r, emissiveColor: m.o.emissiveColor })) })
   const again = game()
-  again.run.onPlayerChat('p1', '!night')
+  again.run.onPlayerChat('p1', '!eternabeam')
   const shots = play(again, 60).frames
   out.frames = [shot(shots[26]), shot(shots[33]), shot(shots[40]), shot(shots[58])]
   fs.writeFileSync(args[args.indexOf('--dump') + 1], JSON.stringify(out))

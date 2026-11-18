@@ -6,7 +6,7 @@ A dragon built out of 105 boxes, about 3 blocks tall with a 7-block wingspan. It
 
 The picture is my own render of the test run (four angles of the same pose), not a Bloxd screenshot. **The model has not been seen inside Bloxd yet**, so the colours and the way the boxes meet are still guesses.
 
-For the navy and red spiky dragon from the reference picture, see [night_dragon](../night_dragon/README.md).
+For the navy and red skeleton from the reference picture (Eternatus, Eternabeam), see [eternabeam](../eternabeam/README.md).
 
 ## Two ways to use it
 
