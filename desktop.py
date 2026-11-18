@@ -92,14 +92,20 @@ class Desktop:
         style = ttk.Style(root)
         style.theme_use('clam')
         style.configure('TNotebook', background=BG, borderwidth=0)
-        style.configure('TNotebook.Tab', padding=(20, 9), foreground=MUTED, background=PANEL)
+        style.configure('TNotebook.Tab', padding=(8, 7), foreground=MUTED, background=PANEL)
         style.map('TNotebook.Tab', background=[('selected', '#49372e')], foreground=[('selected', '#ffcea8')])
-        tabs = ttk.Notebook(root); tabs.pack(fill='both', expand=True, padx=10, pady=8)
-        tabs.enable_traversal()
-        pane, library, memory, activity = [tk.Frame(tabs, bg=PANEL, padx=16, pady=12) for _ in range(4)]
-        for name, frame in zip(('Chat', 'Files', 'Memory', 'Activity'), (pane, library, memory, activity)):
-            tabs.add(frame, text=name)
-        explorer = tk.Frame(library, bg=PANEL); explorer.pack(side='left', fill='y', padx=(0,14))
+        # Keep all three work surfaces visible; tabs change only their own pane.
+        split = tk.PanedWindow(root, orient='horizontal', bg='#373330', sashwidth=6, bd=0)
+        split.pack(fill='both', expand=True, padx=6, pady=6)
+        sidebar = ttk.Notebook(split, width=205); sidebar.enable_traversal()
+        explorer, memory = [tk.Frame(sidebar, bg=PANEL, padx=8, pady=6) for _ in range(2)]
+        sidebar.add(explorer, text='Files'); sidebar.add(memory, text='Memory')
+        split.add(sidebar, minsize=150, stretch='never')
+        middle = tk.PanedWindow(split, orient='vertical', bg='#373330', sashwidth=5, bd=0, width=490)
+        split.add(middle, minsize=225, stretch='always')
+        editor = tk.Frame(middle, bg=BG); middle.add(editor, minsize=140, stretch='always')
+        activity = tk.Frame(middle, bg=PANEL); middle.add(activity, minsize=75, stretch='never')
+        pane = tk.Frame(split, bg=PANEL, padx=12, pady=10); split.add(pane, minsize=290, stretch='always')
         self.capacity = label(explorer, 'Files', fg=ACCENT); self.capacity.pack(anchor='w', pady=8)
         self.files = tk.Listbox(explorer, width=29, relief='flat', exportselection=False, font=('Consolas', 10)); self.files.pack(fill='both', expand=True)
         self.files.bind('<<ListboxSelect>>', self.preview_file)
@@ -108,12 +114,19 @@ class Desktop:
         label(memory, 'Remembered facts', fg=ACCENT, font=('Segoe UI', 16)).pack(anchor='w', pady=8)
         self.mem = tk.Listbox(memory, relief='flat'); self.mem.pack(fill='both', expand=True)
         tk.Button(memory, text='Forget selected fact', command=self.forget).pack(anchor='w', pady=8)
-        editor = tk.Frame(library, bg=BG); editor.pack(fill='both', expand=True)
-        self.tab = label(editor, '   ✦   workspace.md   ', fg=ACCENT, pady=8); self.tab.pack(anchor='w')
-        self.preview = ScrolledText(editor, bg=BG, fg=TEXT, insertbackground=TEXT, relief='flat', font=('Consolas', 11), wrap='none', width=38, height=10, padx=12, pady=16)
-        self.preview.pack(fill='both', expand=True)
-        self.preview.tag_config('number', foreground='#676767')
-        self.render_file('# Your local workbench\n\n01  Compose   →   Ask Sprout in the chat panel.\n02  Explore   →   Select a saved file to read it.\n03  Study     →   Start training to grow a coding notebook.\n\nTraining stays on this PC. Press Esc to stop.')
+        head = tk.Frame(editor, bg=PANEL); head.pack(fill='x')
+        label(head, '   WORKBENCH', fg=ACCENT).pack(side='left')
+        self.close_tab = tk.Button(head, text='Close tab ×', command=self.close_document, state='disabled')
+        self.close_tab.pack(side='right')
+        self.documents = ttk.Notebook(editor, width=1); self.documents.pack(fill='both', expand=True)
+        self.documents.enable_traversal()
+        self.open_files = {}
+        home = tk.Frame(self.documents, bg=BG, padx=16, pady=18)
+        self.documents.add(home, text='Home')
+        label(home, 'Your workbench', bg=BG, font=('Segoe UI', 17, 'bold')).pack(anchor='w')
+        for hint in ('Select a file to open a reading tab.', 'Ask Sprout in the chat on the right.', 'Follow training in Activity below.', 'Drag the dividers to resize any pane.'):
+            label(home, hint, bg=BG, fg=MUTED, wraplength=205, justify='left').pack(anchor='w', pady=5)
+        self.documents.bind('<<NotebookTabChanged>>', self.document_changed)
         label(activity, '  OUTPUT   /   SESSION LOG', fg=MUTED, anchor='w', pady=7).pack(fill='x')
         self.output = tk.Text(activity, height=6, width=1, bg='#0d0d0d', fg='#86efac', font=('Consolas', 9), relief='flat', padx=10, pady=8, state='disabled'); self.output.pack(fill='both', expand=True)
         self.event('Local workspace opened.')
@@ -242,21 +255,45 @@ class Desktop:
             self.output.delete('1.0', '2.0')
         self.output.see('end'); self.output.configure(state='disabled')
 
-    def render_file(self, text):
-        self.preview.configure(state='normal'); self.preview.delete('1.0', 'end')
-        for n, line in enumerate(text.splitlines(), 1):
-            self.preview.insert('end', f'{n:>3}   ', 'number'); self.preview.insert('end', line + '\n')
-        self.preview.configure(state='disabled')
+    def document_changed(self, event=None):
+        home = self.documents.index('current') == 0
+        self.close_tab.configure(state='disabled' if home else 'normal')
+
+    def close_document(self):
+        current = self.documents.select()
+        for name, frame in list(self.open_files.items()):
+            if str(frame) == current:
+                self.documents.forget(frame)
+                frame.destroy()
+                del self.open_files[name]
+                break
 
     def preview_file(self, event=None):
-        sel = self.files.curselection()
-        if sel:
-            path = EXPORTS / self.files.get(sel[0]); self.tab.configure(text='  ▤  ' + path.name)
-            try:
-                with path.open(encoding='utf8', errors='replace') as f:
-                    self.render_file(f.read(64000))
-            except OSError as exc:
-                self.render_file(str(exc))
+        selection = self.files.curselection()
+        if not selection:
+            return
+        name = self.files.get(selection[0])
+        if name in self.open_files:
+            self.documents.select(self.open_files[name])
+            return
+        frame = tk.Frame(self.documents, bg=BG)
+        self.open_files[name] = frame
+        self.documents.add(frame, text=name[7:])
+        self.documents.select(frame)
+        tk.Label(frame, text=name, bg=BG, fg=ACCENT, anchor='w', padx=8).pack(fill='x')
+        view = ScrolledText(frame, wrap='word', width=1, height=1, bg=BG, fg=TEXT,
+                            relief='flat', font=('Consolas', 10), padx=8, pady=8)
+        view.pack(fill='both', expand=True)
+        view.tag_configure('number', foreground=MUTED)
+        try:
+            with (EXPORTS / name).open(encoding='utf8', errors='replace') as handle:
+                text = handle.read(64000)
+        except OSError as exc:
+            text = str(exc)
+        for n, line in enumerate(text.splitlines(), 1):
+            view.insert('end', f'{n:>3}  ', 'number')
+            view.insert('end', line + '\n')
+        view.configure(state='disabled')
 
     def update_files(self):
         self.capacity.configure(text=f'Local files   {file_count(EXPORTS)} / {FILE_LIMIT}')
