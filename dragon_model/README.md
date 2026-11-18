@@ -6,6 +6,8 @@ A dragon built out of 105 boxes, about 3 blocks tall with a 7-block wingspan. It
 
 The picture is my own render of the test run (four angles of the same pose), not a Bloxd screenshot. **The model has not been seen inside Bloxd yet**, so the colours and the way the boxes meet are still guesses.
 
+For the navy and red spiky dragon from the reference picture, see [night_dragon](../night_dragon/README.md).
+
 ## Two ways to use it
 
 1. **World Code** (`world_code.js`, 7k characters): paste it in, then type `!dragon` in chat. The dragon builds itself in front of you over about 0.9 s (six boxes a tick, so it grows rather than pops), then stands there moving. Type `!dragon` again and it is taken away. Each player gets their own, up to 4 at once, and `dragonShow(playerId)` does the same from your own code.
