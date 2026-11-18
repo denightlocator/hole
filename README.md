@@ -7,3 +7,6 @@ Sprout generates replies on your PC using recent conversation and saved memories
 Optional research: check **Look up next message on Wikipedia** before sending a topic. Only that message is sent to English Wikipedia; the local model gets the matching article introduction. The checkbox resets after each send. No Google account, cloud AI or API key is needed. This is an encyclopedia lookup, not a general web search.
 
 Other operating systems: install Python 3.8+ and Ollama, start Ollama, run `ollama pull qwen2.5:1.5b`, then `python3 server.py`. Open the launcher address, not `index.html` directly.
+
+## UI demos
+Open `demos/index.html` directly to try Studio (conversation-first) and Console (developer workspace). These standalone design studies use sample replies and do not change the installed app or run commands.
