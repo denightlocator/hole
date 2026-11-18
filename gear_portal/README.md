@@ -27,16 +27,14 @@ The picture is my own render of the test run, not a Bloxd screenshot. **The move
 | 0.3 – 0.7 s | A green band sweeps once round the player. Everything within 3 blocks takes 25 damage and is knocked away, straight away. The second portal folds away. |
 | 0.3 – 0.9 s | The body plays the slash animation sped up to the same 0.4 s the band takes: the 10 s animation is run in 2.1 s, so the arms cross over in its first 399 ms. Then the pose eases back to a normal stand in 0.2 s. |
 
-Set `aimTime` to 0 for no aiming step: one use, and the move goes off straight ahead. `aimLimit` is a hard cap of 3 s: the arrow never stays out longer, whatever `aimTime` says. With `aimCancels` set to true the 3 s limit takes the arrow away and drops the move instead of going off.
-
 A wall in the way shortens the teleport.
 
 ## Parts
 
-The code is written without indentation or blank lines to take as little room as possible (22,611 characters).
+The code is written without indentation or blank lines to take as little room as possible (21,267 characters).
 
 - **Two portals, 86 meshes each:** a clock face inside a big gear. Dark green face with a bright centre, 12 hour marks (the four main ones bigger and gold), a short hour hand and a long white minute hand that sweeps a full turn each second, a spoked wheel turning the other way, a gold rim with 12 gear teeth that turn slowly, and three small gears on the outside turning against each other. 28 of the 86 pieces move.
-- **Slash, 34 meshes:** 17 green pieces with a bright edge, each shown for 0.15 to 0.25 s. The band starts in front of the player and runs out to both sides at once, the two ends going round the back and stopping 26° apart, so a small free area is left behind the player. The spacing, size, height and depth of each piece are a little uneven on purpose (`slashJitter`), so it does not look machine-made.
+- **Slash, 34 meshes:** 17 green pieces with a bright edge, each shown for 0.15 to 0.25 s. The band starts in front of the player and runs out to both sides at once, the two ends going round the back and stopping 26° apart, so a small free area is left behind the player. The spacing, size, height and depth of each piece are a little uneven on purpose, so it does not look machine-made.
 - **Arrow, 6 meshes**, plus the game's own arrow strip on the ground (only the caster sees that one).
 - **Node meshes, 2:** a green blade on each arm and nothing else — no block on the hand, no plate on the back. They are on while dropping in and during the slash.
 - **Particles:** green sparks rising from the portal, gold glints, grey steam puffs, a stream pulled down into the first portal, bursts on entering and leaving, sparks along the slash.
@@ -44,34 +42,22 @@ The code is written without indentation or blank lines to take as little room as
 
 At most 167 meshes exist at once. The only thing that ever lies on the floor is the gear clock portal itself; the 6 arrow heads are there only while aiming and are removed the instant the move goes off, and nothing at all is left once it is over.
 
-## Settings (`gateCfg` at the top)
+## Settings
+
+There are only two, in `gateCfg` at the top of the file:
 
 | Name | Default | Meaning |
 |---|---|---|
-| `travel` | 6 | blocks teleported from the first portal to the second (15 at most) |
-| `aimTime` | 3 | seconds the arrow is shown before the move goes off by itself; 0 = no aiming |
-| `slashRadius` | 3 | reach of the slash |
-| `damage`, `knockback` | 25, 8 | what the slash does |
-| `hitPlayers` | true | false = only mobs are hit |
-| `clickFires` | true | a click while aiming does the move |
-| `shrink` | true | the player shrinks while going down and grows back coming out (uses `setLifeformScale`) |
-| `hidePlayer`, `holdPlayer` | true | invisible / held in place and safe for the moment inside the portal |
-| `animate`, `nodeMeshes`, `groundArrow` | true | switch a part off |
-| `slashPieces` | 18 | how many positions the band uses (17 pieces: the front one is shared) |
-| `slashGap` | 26 | free angle in degrees left behind the player at the end |
-| `slashJitter` | 1 | 1 = uneven spacing, height and length; 0 = a perfectly even ring |
-| `slashWay` | -1 | which way the two ends of the band go round the player |
-| `slashMs` | 2100 | length of the supplied slash animation in milliseconds (0.19 of it = 399 ms, the same as the band's 0.4 s sweep) |
-| `slashShare` | 0.19 | the part of it where the arms cross over (the rest is a hold) |
-| `aimLimit` | 3 | hard cap in seconds on how long the arrow stays out |
-| `aimCancels` | false | true = the cap cancels the move instead of going off |
-| `flip` | 1 | set to -1 if the player bends backwards instead of forwards |
+| `damage` | 25 | damage the slash does to everything within 3 blocks |
+| `knockback` | 8 | how hard it throws them |
+
+Everything else (6 block teleport, 3 s arrow, 3 block reach, mesh counts, colours, timings, the animation length) is fixed in the code.
 
 ## Not sure until it is tried in Bloxd
 
-- Whether the poses bend the right way (`flip` fixes forward/backward).
-- The slash animation is your schema with only its length changed (`slashMs` 2100 ms, `slashShare` 0.19). It is not clear how the game treats a shortened animation with keys at those fractions, so it may come out at a different speed than intended.
-- Whether `shrink` behaves: it changes the player's real size for a moment. If the player gets stuck or stays small, set `shrink` to false.
+- Whether the poses bend the right way (if they bend backwards, the x rotation of `gatePose` and `gateSlashKeys` would need flipping by hand).
+- The slash animation is your schema with only its length changed (2100 ms with the arms crossing at 0.19 of it). It is not clear how the game treats a shortened animation with keys at those fractions, so it may come out at a different speed than intended.
+- Whether the shrink behaves: it changes the player's real size for a moment. If the player gets stuck or stays small, the line `var gateCanShrink = true` can be set to false.
 - Where the three node meshes sit on the body.
 - The name tag probably stays visible while the player is hidden.
 - Nothing here plays a sound: the move is silent.

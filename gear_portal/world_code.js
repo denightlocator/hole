@@ -1,4 +1,7 @@
-var gateCfg = { chat: "!move1", travel: 6, aimTime: 3, aimLimit: 3, aimCancels: false, slashRadius: 3, damage: 25, knockback: 8, hitPlayers: true, animate: true, flip: 1, nodeMeshes: true, hidePlayer: true, shrink: true, slashWay: -1, slashPieces: 18, slashGap: 26, slashJitter: 1, slashMs: 2100, slashShare: 0.19, holdPlayer: true, clickFires: true, groundArrow: true, size: 1, hideDist: 100, maxCasts: 6, maxMeshes: 380, }
+var gateCfg = { damage: 25, knockback: 8 }
+var gateCanAnimate = true
+var gateCanShrink = true
+var gateCanWear = true
 var gateCol = { gold: [255, 205, 80], brass: [190, 130, 45], dark: [70, 45, 15], deep: [8, 70, 52], jade: [70, 235, 165], mint: [190, 255, 225], white: [255, 255, 255], steam: [215, 215, 205], }
 var gateTimes = { sink: 6, open: 6, spin: 8, settle: 4, close: 8 }
 var gateNodes = ["TorsoNode", "HeadMesh", "ArmRightMesh", "ArmLeftMesh", "LegLeftMesh", "LegRightMesh"]
@@ -32,11 +35,11 @@ for (var turn = 0; turn < 3; turn++) add(0, (turn * Math.PI) / 3, 0.44, 0.07, 0.
 add(0, 0, 0.14, 0.1, 0.14, 0.08, "jade", 0, gearX, gearZ) }
 return out })()
 function gateRad(deg) { return (deg * Math.PI) / 180 }
-function gateEmit(low, high, look) { api.playParticleEffect({ dir1: look.dir1 || [-1, -1, -1], dir2: look.dir2 || [1, 1, 1], pos1: low, pos2: high, texture: look.texture || "glint", minLifeTime: look.life, maxLifeTime: look.life * 1.6, minEmitPower: look.power || 0, maxEmitPower: (look.power || 0) * 2, minSize: look.size, maxSize: look.size * 1.5, manualEmitCount: look.count || 1, gravity: look.gravity || [0, 0, 0], colorGradients: [ { timeFraction: 0, minColor: gateCol[look.first].concat(1), maxColor: gateCol[look.first].concat(1) }, { timeFraction: 1, minColor: gateCol[look.last].concat(0), maxColor: gateCol[look.last].concat(0) }, ], velocityGradients: [ { timeFraction: 0, factor: 1, factor2: 1 }, { timeFraction: 1, factor: 0.2, factor2: 0.2 }, ], blendMode: 1, hideDist: gateCfg.hideDist, }) }
+function gateEmit(low, high, look) { api.playParticleEffect({ dir1: look.dir1 || [-1, -1, -1], dir2: look.dir2 || [1, 1, 1], pos1: low, pos2: high, texture: look.texture || "glint", minLifeTime: look.life, maxLifeTime: look.life * 1.6, minEmitPower: look.power || 0, maxEmitPower: (look.power || 0) * 2, minSize: look.size, maxSize: look.size * 1.5, manualEmitCount: look.count || 1, gravity: look.gravity || [0, 0, 0], colorGradients: [ { timeFraction: 0, minColor: gateCol[look.first].concat(1), maxColor: gateCol[look.first].concat(1) }, { timeFraction: 1, minColor: gateCol[look.last].concat(0), maxColor: gateCol[look.last].concat(0) }, ], velocityGradients: [ { timeFraction: 0, factor: 1, factor2: 1 }, { timeFraction: 1, factor: 0.2, factor2: 0.2 }, ], blendMode: 1, hideDist: 100, }) }
 function gateCloud(mid, halfWide, halfTall, look) { gateEmit([mid[0] - halfWide, mid[1] - halfTall, mid[2] - halfWide], [mid[0] + halfWide, mid[1] + halfTall, mid[2] + halfWide], look) }
-function gateBox(cast, wide, tall, deep, col) { if (gateMeshes >= gateCfg.maxMeshes) return null
-var scale = gateCfg.size
-var ident = api.attemptCreateMeshEntity("Box", { width: wide * scale, height: tall * scale, depth: deep * scale, diffuseColor: [0, 0, 0], emissiveColor: gateCol[col], hideDist: gateCfg.hideDist })
+function gateBox(cast, wide, tall, deep, col) { if (gateMeshes >= 380) return null
+var scale = 1
+var ident = api.attemptCreateMeshEntity("Box", { width: wide * scale, height: tall * scale, depth: deep * scale, diffuseColor: [0, 0, 0], emissiveColor: gateCol[col], hideDist: 100 })
 if (!ident) return null
 gateMeshes++
 cast.made.push(ident)
@@ -48,7 +51,7 @@ gateMeshes--
 var slot = cast.made.indexOf(ident)
 if (slot >= 0) cast.made.splice(slot, 1) })
 list.length = 0 }
-function gatePiece(cast, part, moment, first) { var scale = gateCfg.size
+function gatePiece(cast, part, moment, first) { var scale = 1
 var angle = part.piece.angle + part.piece.spin * moment
 var reach = part.piece.radius * scale
 gatePut(part.ident, part.mid[0] + part.piece.offX * scale + Math.sin(angle) * reach, part.mid[1] + part.piece.lift, part.mid[2] + part.piece.offZ * scale + Math.cos(angle) * reach, angle, first || part.piece.spin !== 0) }
@@ -58,40 +61,40 @@ var last = (upto[node] || [0, 0, 0]).slice()
 if (gateTurns.indexOf(node) >= 0) { first[1] += yawFrom || 0
 last[1] += yawUpto || 0 }
 if (!first.concat(last).some((value) => value)) return
-var turn = (rot) => [gateRad(rot[0] * gateCfg.flip), gateRad(rot[1]), gateRad(rot[2])]
+var turn = (rot) => [gateRad(rot[0]), gateRad(rot[1]), gateRad(rot[2])]
 nodes[node] = { timeline: [{ timeFraction: 0, rotation: turn(first) }, { timeFraction: 1, rotation: turn(last) }] } })
 return { animationDurationMs: ticks * 50, loop: false, nodeAnimations: nodes } }
-function gateAnimate(cast, from, upto, ticks, yawFrom, yawUpto) { if (!gateCfg.animate) return
+function gateAnimate(cast, from, upto, ticks, yawFrom, yawUpto) { if (!gateCanAnimate) return
 try { if (!from) return api.animateEntity(cast.owner, null, 0, 1)
-api.animateEntity(cast.owner, gateSchema(cast, from, upto, ticks, yawFrom, yawUpto), 0, 1) } catch (err) { gateCfg.animate = false
+api.animateEntity(cast.owner, gateSchema(cast, from, upto, ticks, yawFrom, yawUpto), 0, 1) } catch (err) { gateCanAnimate = false
 try { api.sendMessage(cast.owner, "Portal animation stopped: " + err, { color: "orange" }) } catch (other) {} } }
-function gateSlashMove(cast) { if (!gateCfg.animate) return
+function gateSlashMove(cast) { if (!gateCanAnimate) return
 var nodes = {}
 gateNodes.forEach((node) => { var keys = gateSlashKeys[node]
 if (!keys) return
-var turn = (rot) => [rot[0] * gateCfg.flip, rot[1], rot[2]]
-nodes[node] = { timeline: [{ timeFraction: 0, rotation: turn(keys[0]) }, { timeFraction: gateCfg.slashShare, rotation: turn(keys[1]) }] } })
-try { api.animateEntity(cast.owner, { animationDurationMs: gateCfg.slashMs, loop: false, nodeAnimations: nodes }, 0, 1) } catch (err) { gateCfg.animate = false } }
+var turn = (rot) => [rot[0], rot[1], rot[2]]
+nodes[node] = { timeline: [{ timeFraction: 0, rotation: turn(keys[0]) }, { timeFraction: 0.19, rotation: turn(keys[1]) }] } })
+try { api.animateEntity(cast.owner, { animationDurationMs: 2100, loop: false, nodeAnimations: nodes }, 0, 1) } catch (err) { gateCanAnimate = false } }
 function gateSlashEnd(cast) { var out = {}
 gateNodes.forEach((node) => { var keys = gateSlashKeys[node]
 if (!keys) return
-out[node] = [(keys[1][0] * 180) / Math.PI / gateCfg.flip, (keys[1][1] * 180) / Math.PI, (keys[1][2] * 180) / Math.PI] })
+out[node] = [(keys[1][0] * 180) / Math.PI, (keys[1][1] * 180) / Math.PI, (keys[1][2] * 180) / Math.PI] })
 return out }
-function gateWear(cast, worn) { if (!gateCfg.nodeMeshes || !worn === !cast.worn) return
+function gateWear(cast, worn) { if (!gateCanWear || !worn === !cast.worn) return
 cast.worn = worn
 try { gateWorn.forEach((row) => { if (!worn) return api.updateEntityNodeMeshAttachment(cast.owner, row[0], null)
-api.updateEntityNodeMeshAttachment(cast.owner, row[0], "Box", { width: row[1], height: row[2], depth: row[3], diffuseColor: [0, 0, 0], emissiveColor: gateCol[row[4]], hideDist: gateCfg.hideDist }, row[5], [0, 0, 0]) }) } catch (err) { gateCfg.nodeMeshes = false } }
-function gateSize(cast, amount) { if (!gateCfg.shrink) return
+api.updateEntityNodeMeshAttachment(cast.owner, row[0], "Box", { width: row[1], height: row[2], depth: row[3], diffuseColor: [0, 0, 0], emissiveColor: gateCol[row[4]], hideDist: 100 }, row[5], [0, 0, 0]) }) } catch (err) { gateCfg.nodeMeshes = false } }
+function gateSize(cast, amount) { if (!gateCanShrink) return
 try { api.setLifeformScale(cast.owner, amount)
-cast.small = amount !== 1 } catch (err) { gateCfg.shrink = false } }
+cast.small = amount !== 1 } catch (err) { gateCanShrink = false } }
 function gateHold(cast, held) { if (!held === !cast.held) return
 cast.held = held
-try { if (gateCfg.hidePlayer) api.setPlayerOpacity(cast.owner, held ? 0 : 1) } catch (err) {}
-try { if (gateCfg.holdPlayer) { if (held) api.setClientOptions(cast.owner, { speedMultiplier: 0, jumpAmount: 0, invincible: true })
+try { api.setPlayerOpacity(cast.owner, held ? 0 : 1) } catch (err) {}
+try { if (held) api.setClientOptions(cast.owner, { speedMultiplier: 0, jumpAmount: 0, invincible: true })
 else { api.setClientOptionToDefault(cast.owner, "speedMultiplier")
 api.setClientOptionToDefault(cast.owner, "jumpAmount")
-api.setClientOptionToDefault(cast.owner, "invincible") } } } catch (err) {}
-try { if (gateCfg.groundArrow && !held) api.setClientOptions(cast.owner, { groundArrowPath: null }) } catch (err) {} }
+api.setClientOptionToDefault(cast.owner, "invincible") } } catch (err) {}
+try { if (!held) api.setClientOptions(cast.owner, { groundArrowPath: null }) } catch (err) {} }
 function gateClear(where) { try { return !api.getBlockSolidity(Math.floor(where[0]), Math.floor(where[1] + 0.2), Math.floor(where[2])) && !api.getBlockSolidity(Math.floor(where[0]), Math.floor(where[1] + 1.2), Math.floor(where[2])) } catch (err) { return true } }
 function gateReach(from, face, far) { var best = [from[0], from[1], from[2]]
 var steps = Math.max(1, Math.ceil(far * 2))
@@ -102,7 +105,7 @@ return best }
 function gateFacing(playerId, fallback) { var seen = api.getPlayerFacingInfo(playerId).dir
 var flat = Math.hypot(seen[0], seen[2])
 return flat > 0.001 ? [seen[0] / flat, seen[2] / flat] : fallback }
-function gateArrow(cast, moment) { var scale = gateCfg.size
+function gateArrow(cast, moment) { var scale = 1
 var angle = Math.atan2(cast.aim[0], cast.aim[1])
 for (var num = 0; num < 3; num++) { var far = (1.95 + num * 0.5 + ((moment % 10) / 10) * 0.5) * scale
 var tipX = cast.centre[0] + cast.aim[0] * far
@@ -111,9 +114,9 @@ for (var side = 0; side < 2; side++) { var back = angle + Math.PI + (side ? 0.6 
 var slot = num * 2 + side
 if (!cast.arrow[slot]) cast.arrow[slot] = gateBox(cast, 0.08, 0.04, 0.5, num === 2 ? "mint" : "jade")
 if (cast.arrow[slot]) gatePut(cast.arrow[slot], tipX + Math.sin(back) * 0.25 * scale, cast.centre[1] + 0.07, tipZ + Math.cos(back) * 0.25 * scale, back, true) } }
-if (gateCfg.groundArrow && moment % 4 === 0) { try { api.setClientOptions(cast.owner, { groundArrowPath: { target: [cast.out[0], cast.out[1], cast.out[2]], colour: "#46eba5" } }) } catch (err) { gateCfg.groundArrow = false } } }
-function gateHarm(cast) { var ids = api.getMobIds().concat(gateCfg.hitPlayers ? api.getPlayerIds() : [])
-var reach = gateCfg.slashRadius * gateCfg.size
+if (moment % 4 === 0) { try { api.setClientOptions(cast.owner, { groundArrowPath: { target: [cast.out[0], cast.out[1], cast.out[2]], colour: "#46eba5" } }) } catch (err) {} } }
+function gateHarm(cast) { var ids = api.getMobIds().concat(api.getPlayerIds())
+var reach = 3
 for (var idx = 0; idx < ids.length; idx++) { var ident = ids[idx]
 if (ident === cast.owner || cast.hurt[ident]) continue
 var where = api.getPosition(ident)
@@ -130,26 +133,26 @@ if (push) api.applyImpulse(ident, away[0] * push, push * 0.5, away[1] * push)
 gateCloud([where[0], where[1] + 1, where[2]], 0.3, 0.4, { life: 0.3, size: 0.2, count: 10, power: 3, first: "white", last: "jade" }) } }
 function gateWobble(seed) { var raw = Math.sin(seed * 12.9898 + 78.233) * 43758.5453
 return raw - Math.floor(raw) }
-function gateSlashPlan(cast) { var count = gateCfg.slashPieces
-var way = gateCfg.slashWay < 0 ? -1 : 1
+function gateSlashPlan(cast) { var count = 18
+var way = -1
 var front = gateFacing(cast.owner, cast.aim)
 var start = Math.atan2(front[0], front[1])
-var half = Math.PI - (gateCfg.slashGap * Math.PI) / 360
+var half = Math.PI - (26 * Math.PI) / 360
 var sides = Math.max(2, Math.round(count / 2))
 var plan = []
 for (var side = 0; side < 2; side++) { for (var num = 0; num < sides; num++) { if (side && !num) continue
 var share = sides > 1 ? num / (sides - 1) : 0
-if (gateCfg.slashJitter && num && num < sides - 1) share = Math.min(0.97, Math.max(0.03, share + (gateWobble(side * 13 + num + 3) - 0.5) * 0.08))
-var loose = gateCfg.slashJitter ? gateWobble(side * 29 + num + 41) : 0.5
-plan.push({ share: share, side: side, born: Math.min(5, Math.floor(share * 6)), reach: gateCfg.slashRadius * 0.86 + (loose - 0.5) * 0.14, rise: 0.95 + (gateCfg.slashJitter ? (gateWobble(side * 31 + num + 17) - 0.5) * 0.18 : 0), deep: 0.55 + (gateCfg.slashJitter ? (gateWobble(side * 37 + num + 71) - 0.5) * 0.1 : 0), gone: 3 + Math.round((gateCfg.slashJitter ? gateWobble(side * 43 + num + 61) : 0.5) * 2), angle: start + way * (side ? 1 : -1) * share * half, }) } }
+if (num && num < sides - 1) share = Math.min(0.97, Math.max(0.03, share + (gateWobble(side * 13 + num + 3) - 0.5) * 0.08))
+var loose = gateWobble(side * 29 + num + 41)
+plan.push({ share: share, side: side, born: Math.min(5, Math.floor(share * 6)), reach: 3 * 0.86 + (loose - 0.5) * 0.14, rise: 0.95 + (gateWobble(side * 31 + num + 17) - 0.5) * 0.18, deep: 0.55 + (gateCfg.slashJitter ? (gateWobble(side * 37 + num + 71) - 0.5) * 0.1 : 0), gone: 3 + Math.round((gateCfg.slashJitter ? gateWobble(side * 43 + num + 61) : 0.5) * 2), angle: start + way * (side ? 1 : -1) * share * half, }) } }
 plan.forEach((piece) => { var near = Math.PI * 2
 plan.forEach((other) => { if (other === piece) return
 var apart = Math.abs(Math.atan2(Math.sin(other.angle - piece.angle), Math.cos(other.angle - piece.angle)))
 if (apart < near) near = apart })
 piece.step = Math.max(0.05, near) })
 return plan }
-function gateSlash(cast, age) { var scale = gateCfg.size
-var way = gateCfg.slashWay < 0 ? -1 : 1
+function gateSlash(cast, age) { var scale = 1
+var way = -1
 if (!cast.slashPlan) cast.slashPlan = gateSlashPlan(cast)
 cast.slashPlan.forEach((piece) => { if (piece.born !== age) return
 var reach = piece.reach * scale
@@ -163,7 +166,7 @@ cast.slash.push({ gone: age + piece.gone, ids: [outer, inner].filter((made) => m
 if (piece.share < 0.98) { gateCloud([cast.out[0] + Math.sin(piece.angle) * reach, tall, cast.out[2] + Math.cos(piece.angle) * reach], 0.3, 0.1, { life: 0.3, size: 0.14, count: 8, power: 4, dir1: [way * Math.cos(piece.angle) - 0.3, -0.1, -way * Math.sin(piece.angle) - 0.3], dir2: [way * Math.cos(piece.angle) + 0.3, 0.3, -way * Math.sin(piece.angle) + 0.3], first: "white", last: "jade" }) } })
 for (var idx = cast.slash.length - 1; idx >= 0; idx--) { if (cast.slash[idx].gone <= age) { gateDrop(cast, cast.slash[idx].ids)
 cast.slash.splice(idx, 1) } } }
-function gateRun(cast, gate, moment) { var scale = gateCfg.size
+function gateRun(cast, gate, moment) { var scale = 1
 var mid = gate.mid
 if (gate.shut) { if (!gate.parts.length) return
 var take = Math.ceil(gatePlan.length / gateTimes.close)
@@ -182,20 +185,17 @@ if (moment % 2 === 0) gateCloud([mid[0], mid[1] + 0.3, mid[2]], 1.1 * scale, 0.2
 if (moment % 5 === 0) gateCloud([mid[0], mid[1] + 0.2, mid[2]], 1.5 * scale, 0.1, { life: 0.5, size: 0.16, count: 2, power: 0.3, first: "white", last: "gold" })
 if (moment % 7 === 0) gateCloud([mid[0] + Math.sin(moment) * 1.5 * scale, mid[1] + 0.2, mid[2] + Math.cos(moment) * 1.5 * scale], 0.1, 0.1, { texture: "square_particle", life: 0.8, size: 0.3, count: 3, power: 0.6, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.4, 0.2], first: "steam", last: "steam" }) }
 function gateStep(cast) { var moment = cast.moment
-var scale = gateCfg.size
+var scale = 1
 if (cast.phase === "aim") { var here = api.getPosition(cast.owner)
 cast.centre = [here[0], here[1], here[2]]
 cast.aim = gateFacing(cast.owner, cast.aim)
-cast.out = gateReach(cast.centre, cast.aim, Math.min(15, gateCfg.travel))
+cast.out = gateReach(cast.centre, cast.aim, 6)
 gateArrow(cast, moment)
 if (moment === 0) gateAnimate(cast, gatePose.rest, gatePose.ready, 4)
 else if (moment % 20 === 4) gateAnimate(cast, gatePose.ready, gatePose.ready, 20)
 if (moment % 3 === 0) gateCloud([cast.out[0], cast.out[1] + 0.15, cast.out[2]], 0.7 * scale, 0.05, { life: 0.3, size: 0.12, count: 6, power: 0.3, dir1: [-0.2, 1, -0.2], dir2: [0.2, 1.5, 0.2], first: "mint", last: "jade" })
-var aimTicks = Math.round(Math.min(gateCfg.aimTime, gateCfg.aimLimit) * 20)
+var aimTicks = 60
 if (moment < aimTicks && !cast.wantOut) return false
-if (gateCfg.aimCancels && !cast.wantOut) { gateDrop(cast, cast.arrow.filter((made) => made))
-cast.arrow.length = 0
-return true }
 cast.phase = "sink"
 cast.fired = moment
 cast.gates.push({ mid: cast.centre, parts: [], next: 0, each: Math.ceil(gatePlan.length / gateTimes.open), shut: false })
@@ -209,8 +209,8 @@ if (cast.phase === "sink" && since >= 2) gateSize(cast, 1 - 0.16 * (since - 1))
 cast.gates.forEach((gate) => gateRun(cast, gate, moment))
 if (cast.phase === "sink") { var high = 1.8 * (1 - (since + 1) / gateTimes.sink)
 gateCloud([mid[0], mid[1] + high * 0.5 + 0.1, mid[2]], 0.3, high * 0.5 + 0.1, { life: 0.35, size: 0.14, count: 8, power: 1.2, dir1: [-0.3, -1.5, -0.3], dir2: [0.3, -0.8, 0.3], first: "mint", last: "gold" })
-if (gateCfg.holdPlayer) api.setPosition(cast.owner, mid[0], mid[1], mid[2])
-if (gateCfg.hidePlayer && since === gateTimes.sink - 3) { try { api.setPlayerOpacity(cast.owner, 0.5) } catch (err) {} }
+api.setPosition(cast.owner, mid[0], mid[1], mid[2])
+if (since === gateTimes.sink - 3) { try { api.setPlayerOpacity(cast.owner, 0.5) } catch (err) {} }
 if (since >= gateTimes.sink - 1) { cast.phase = "inside"
 gateWear(cast, false)
 gateAnimate(cast, null)
@@ -240,14 +240,14 @@ if (age === 2) gateSize(cast, 1)
 if (age >= 1 && age <= gateTimes.spin) gateHarm(cast)
 if (age >= 1) gateSlash(cast, age - 1)
 var landed = gateTimes.spin + 1
-var holdEnd = Math.max(landed, Math.round((gateCfg.slashMs * gateCfg.slashShare) / 50))
+var holdEnd = Math.max(landed, Math.round((2100 * 0.19) / 50))
 if (age === holdEnd && cast.gates[1]) cast.gates[1].shut = true
 if (age === holdEnd) gateAnimate(cast, gateSlashEnd(cast), gatePose.rest, gateTimes.settle)
 return age >= holdEnd + gateTimes.settle && !cast.gates.some((gate) => gate.parts.length) }
 function gateEnd(cast) { if (cast.small) gateSize(cast, 1)
 try { gateHold(cast, false) } catch (err) {}
-if (cast.phase === "sink" && gateCfg.hidePlayer) { try { api.setPlayerOpacity(cast.owner, 1) } catch (err) {} }
-if (cast.phase === "aim" && gateCfg.groundArrow) { try { api.setClientOptions(cast.owner, { groundArrowPath: null }) } catch (err) {} }
+if (cast.phase === "sink") { try { api.setPlayerOpacity(cast.owner, 1) } catch (err) {} }
+if (cast.phase === "aim") { try { api.setClientOptions(cast.owner, { groundArrowPath: null }) } catch (err) {} }
 gateWear(cast, false)
 gateAnimate(cast, null)
 gateDrop(cast, cast.made.slice()) }
@@ -260,7 +260,7 @@ gateList.splice(idx, 1) } } }
 function gearPortal(playerId) { var mine = gateList.filter((cast) => cast.owner === playerId)[0]
 if (mine) { if (mine.phase === "aim") mine.wantOut = true
 return false }
-if (gateList.length >= gateCfg.maxCasts) { api.sendMessage(playerId, "Too many portals are open.", { color: "orange" })
+if (gateList.length >= 6) { api.sendMessage(playerId, "Too many portals are open.", { color: "orange" })
 return false }
 var where = api.getPosition(playerId)
 var face = gateFacing(playerId, [0, 1])
@@ -272,9 +272,9 @@ var gateOldTick = typeof tick === "function" ? tick : null
 tick = (msec) => { if (gateOldTick) gateOldTick(msec)
 gateTick() }
 var gateOldChat = typeof onPlayerChat === "function" ? onPlayerChat : null
-onPlayerChat = (playerId, message) => { if (gateCfg.chat && message.trim().toLowerCase() === gateCfg.chat) return gearPortal(playerId), false
+onPlayerChat = (playerId, message) => { if (message.trim().toLowerCase() === "!move1") return gearPortal(playerId), false
 if (gateOldChat) return gateOldChat(playerId, message) }
 var gateOldClick = typeof onPlayerClick === "function" ? onPlayerClick : null
-onPlayerClick = (playerId, wasAlt, spotX, spotY, spotZ, block, target) => { if (gateCfg.clickFires) { var mine = gateList.filter((cast) => cast.owner === playerId && cast.phase === "aim")[0]
+onPlayerClick = (playerId, wasAlt, spotX, spotY, spotZ, block, target) => { { var mine = gateList.filter((cast) => cast.owner === playerId && cast.phase === "aim")[0]
 if (mine) mine.wantOut = true }
 if (gateOldClick) return gateOldClick(playerId, wasAlt, spotX, spotY, spotZ, block, target) }
