@@ -4,7 +4,7 @@
 > [Dragon Claw](dragon_claw/README.md) (folder `dragon_claw/`),
 > [Astral Circle](astral_circle/README.md) (folder `astral_circle/`),
 > [Hologram](hologram/README.md) (folder `hologram/`) and
-> [DH](dh/README.md) (folder `dh/`) [FR](fr/README.md) (folder `fr/`) [Gear Portal](gear_portal/README.md) (folder `gear_portal/`) [Excalibur](excalibur/README.md) (folder `excalibur/`) and [Bomb](bomb/README.md) (folder `bomb/`). A code block that removes every mesh is in
+> [DH](dh/README.md) (folder `dh/`) [FR](fr/README.md) (folder `fr/`) [Gear Portal](gear_portal/README.md) (folder `gear_portal/`) [Excalibur](excalibur/README.md) (folder `excalibur/`), [Bomb](bomb/README.md) (folder `bomb/`) and a [Dragon Model](dragon_model/README.md) (folder `dragon_model/`). A code block that removes every mesh is in
 > [mesh_clear/](mesh_clear/README.md). Each move has
 > its own folder with its own paste file, checks and pictures.
 
