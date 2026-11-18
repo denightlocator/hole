@@ -13,6 +13,7 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 from server import answer
+from study import relevant
 
 DATA = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'Sprout' / 'journal.json'
 BG, PANEL, TEXT, MUTED, ACCENT = '#141414', '#1c1c1c', '#e8e6e3', '#a6a3a0', '#e39979'
@@ -217,14 +218,15 @@ class Desktop:
                 if tmp.exists():
                     tmp.unlink()
             self.study_count += 1
+            self.event(f"Reviewed {note['reviewed']} earlier cards on this topic")
             self.event('Generated · ' + note['topic'])
             self.event('Saved · ' + note['topic'] + ' → ' + path.name)
             self.update_files()
             if file_count(EXPORTS) >= FILE_LIMIT:
                 self.stop_study(LIMIT_MESSAGE)
                 return
-            self.status.set(f'{self.study_count} notes written · next pass in 5s')
-            self.study_job = self.root.after(5000, self.study_step)
+            self.status.set(f'{self.study_count} notes written · next pass in 1s')
+            self.study_job = self.root.after(1000, self.study_step)
         except (OSError, ValueError, KeyError) as exc:
             self.stop_study('Paused: ' + str(exc))
 
@@ -394,9 +396,12 @@ class Desktop:
 
         def work():
             try:
-                result = answer(text, facts, history, online, profile)
+                cards = relevant(EXPORTS, text)
+                result = answer(text, facts, history, online, profile, cards)
                 success = True
                 reply = '\n'.join(filter(None, (result['reply'], result['source'], result['note'])))
+                if cards:
+                    reply += '\n\nNotebook context: ' + ', '.join(card.split(':', 1)[0] for card in cards)
             except Exception as exc:
                 success = False
                 reply = 'Could not get a reply. Check that Ollama is running.\n' + str(exc)
