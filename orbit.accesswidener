@@ -1,0 +1,15 @@
+accessWidener v2 named
+
+# StorageESP draws through walls: it needs a RenderLayer whose RenderPipeline has NO_DEPTH_TEST.
+# Vanilla keeps RenderLayer.of(...), RenderPipelines.register(...) and the shared line snippet
+# package-private, so widen just those three members.
+accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
+accessible method net/minecraft/client/gl/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+accessible field net/minecraft/client/gl/RenderPipelines RENDERTYPE_LINES_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+
+# Fullbright needs a gamma above the 1.0 cap the slider validator enforces, so it writes the
+# backing field instead of going through setValue(). The field is non-final (setValue reassigns it).
+accessible field net/minecraft/client/option/SimpleOption value Ljava/lang/Object;
+
+# No Fog flips the one static switch the whole fog pipeline reads. It is private static.
+accessible field net/minecraft/client/render/fog/FogRenderer fogEnabled Z

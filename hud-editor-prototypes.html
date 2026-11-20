@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orbit - HUD editor prototypes</title>
+</head>
+<body style="margin:0;background:#07080d;color:#e8ebf5;font-family:ui-sans-serif,system-ui,'Segoe UI',Roboto,sans-serif;">
+
+<div style="max-width:1180px;margin:0 auto;padding:34px 26px 60px;">
+
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;">
+    <div style="font-size:13px;letter-spacing:.34em;color:#7ef0d0;font-weight:700;">ORBIT</div>
+    <div style="font-size:12px;color:#5c6480;letter-spacing:.18em;">HUD EDITOR / THREE LAYOUTS</div>
+  </div>
+  <h1 style="margin:0 0 8px;font-size:27px;font-weight:650;letter-spacing:-.02em;">Same elements, three ways to place them</h1>
+  <p style="margin:0 0 26px;color:#8b93ad;font-size:14px;max-width:760px;line-height:1.6;">
+    Every HUD element is a separate toggle. The editor is opened from the ClickGUI and also with a
+    keybind, because you want to move things while you can actually see the game.
+  </p>
+
+  <!-- element inventory -->
+  <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:30px;">
+    <span style="font-size:11px;padding:5px 10px;border-radius:999px;background:#12172a;border:1px solid #232b47;color:#9fe8d6;">FPS</span>
+    <span style="font-size:11px;padding:5px 10px;border-radius:999px;background:#12172a;border:1px solid #232b47;color:#9fe8d6;">Ping</span>
+    <span style="font-size:11px;padding:5px 10px;border-radius:999px;background:#12172a;border:1px solid #232b47;color:#9fe8d6;">Coordinates</span>
+    <span style="font-size:11px;padding:5px 10px;border-radius:999px;background:#12172a;border:1px solid #232b47;color:#9fe8d6;">Music card</span>
+    <span style="font-size:11px;padding:5px 10px;border-radius:999px;background:#12172a;border:1px solid #232b47;color:#9fe8d6;">Lyric line</span>
+    <span style="font-size:11px;padding:5px 10px;border-radius:999px;background:#12172a;border:1px solid #232b47;color:#9fe8d6;">Watermark</span>
+    <span style="font-size:11px;padding:5px 10px;border-radius:999px;background:#12172a;border:1px solid #232b47;color:#9fe8d6;">Server / TPS</span>
+  </div>
+
+  <!-- ================= VARIANT A ================= -->
+  <div style="margin-bottom:46px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="width:26px;height:26px;border-radius:8px;background:#7ef0d0;color:#06231c;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;">A</div>
+      <div style="font-size:17px;font-weight:600;">Rail + canvas</div>
+      <div style="font-size:12px;color:#5c6480;">drag anything, list on the left</div>
+    </div>
+
+    <div style="border-radius:16px;overflow:hidden;border:1px solid #1d2338;background:#0b0e17;box-shadow:0 20px 50px -24px #000;">
+      <div style="display:flex;height:360px;">
+
+        <!-- rail -->
+        <div style="width:212px;background:#0d111c;border-right:1px solid #1a2033;padding:14px 12px;">
+          <div style="font-size:10px;letter-spacing:.2em;color:#5c6480;margin-bottom:11px;">ELEMENTS</div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <!-- row: on -->
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:#141b2e;">
+              <div style="width:16px;height:16px;border-radius:5px;background:#7ef0d0;box-shadow:0 0 0 1px #7ef0d0 inset;"></div>
+              <div style="flex:1;font-size:12.5px;">FPS</div>
+              <div style="font-size:10px;color:#5c6480;">↗</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;">
+              <div style="width:16px;height:16px;border-radius:5px;background:#7ef0d0;"></div>
+              <div style="flex:1;font-size:12.5px;">Ping</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;">
+              <div style="width:16px;height:16px;border-radius:5px;background:#1a2030;border:1.5px solid #2c3552;"></div>
+              <div style="flex:1;font-size:12.5px;color:#6b7391;">Coordinates</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:#141b2e;">
+              <div style="width:16px;height:16px;border-radius:5px;background:#7ef0d0;"></div>
+              <div style="flex:1;font-size:12.5px;">Music card</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:#141b2e;">
+              <div style="width:16px;height:16px;border-radius:5px;background:#7ef0d0;"></div>
+              <div style="flex:1;font-size:12.5px;">Lyric line</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:#141b2e;">
+              <div style="width:16px;height:16px;border-radius:5px;background:#7ef0d0;"></div>
+              <div style="flex:1;font-size:12.5px;">Watermark</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;font-size:10px;letter-spacing:.2em;color:#5c6480;margin-bottom:8px;">SNAP</div>
+          <div style="display:flex;gap:5px;">
+            <div style="font-size:10.5px;padding:4px 9px;border-radius:999px;background:#7ef0d0;color:#06231c;font-weight:600;">8 px</div>
+            <div style="font-size:10.5px;padding:4px 9px;border-radius:999px;background:#171e31;color:#8b93ad;border:1px solid #232b47;">4</div>
+            <div style="font-size:10.5px;padding:4px 9px;border-radius:999px;background:#171e31;color:#8b93ad;border:1px solid #232b47;">off</div>
+          </div>
+        </div>
+
+        <!-- canvas -->
+        <div style="flex:1;position:relative;background:linear-gradient(#1b2b4a,#3d5a7a 58%,#5c7f6a 58%,#3f5a49);">
+          <!-- grid -->
+          <div style="position:absolute;inset:0;background-image:linear-gradient(#ffffff0a 1px,transparent 1px),linear-gradient(90deg,#ffffff0a 1px,transparent 1px);background-size:24px 24px;"></div>
+
+          <!-- FPS widget, selected -->
+          <div style="position:absolute;left:26px;top:24px;padding:6px 10px;border-radius:7px;background:#0b0e17d9;border:1.5px solid #7ef0d0;font-family:ui-monospace,monospace;font-size:12px;color:#7ef0d0;box-shadow:0 0 0 3px #7ef0d022;">
+            FPS 241
+            <div style="position:absolute;right:-5px;top:-5px;width:9px;height:9px;background:#7ef0d0;border-radius:3px;"></div>
+            <div style="position:absolute;left:-5px;bottom:-5px;width:9px;height:9px;background:#7ef0d0;border-radius:3px;"></div>
+          </div>
+          <div style="position:absolute;left:26px;top:58px;padding:6px 10px;border-radius:7px;background:#0b0e17b3;font-family:ui-monospace,monospace;font-size:12px;color:#c9d3ea;border:1px solid #ffffff14;">
+            PING 38 ms
+          </div>
+          <!-- music card -->
+          <div style="position:absolute;left:26px;top:96px;width:168px;padding:9px 10px;border-radius:9px;background:#0b0e17d9;border:1px solid #ffffff14;">
+            <div style="font-size:11.5px;color:#e8ebf5;">All the Things She Said</div>
+            <div style="font-size:10px;color:#6b7391;margin-top:1px;">t.A.T.u.</div>
+            <div style="height:3px;border-radius:2px;background:#ffffff1a;margin-top:7px;"><div style="width:46%;height:3px;border-radius:2px;background:#7ef0d0;"></div></div>
+          </div>
+          <!-- lyric -->
+          <div style="position:absolute;left:50%;bottom:64px;transform:translateX(-50%);font-size:13px;color:#fff;text-shadow:0 2px 6px #000;background:#00000066;padding:4px 12px;border-radius:6px;white-space:nowrap;">Runnin' through my head</div>
+          <!-- watermark -->
+          <div style="position:absolute;right:24px;top:22px;font-size:12px;letter-spacing:.24em;font-weight:700;color:#7ef0d0cc;">ORBIT</div>
+
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:7px 12px;font-size:10.5px;color:#8b93ad;background:#0b0e17cc;border-top:1px solid #1a2033;display:flex;justify-content:space-between;">
+            <span>drag to move · shift for free placement · right-click resets</span>
+            <span style="color:#7ef0d0;">Esc to close</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="margin:11px 0 0;font-size:12.5px;color:#8b93ad;line-height:1.55;">
+      <b style="color:#c9d3ea;">Best for:</b> many elements. Toggles and placement are in one place, the
+      rail doubles as the "what do I have on" list, and the grid makes alignment trivial.
+    </p>
+  </div>
+
+  <!-- ================= VARIANT B ================= -->
+  <div style="margin-bottom:46px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="width:26px;height:26px;border-radius:8px;background:#9db4ff;color:#0a1230;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;">B</div>
+      <div style="font-size:17px;font-weight:600;">Direct manipulation</div>
+      <div style="font-size:12px;color:#5c6480;">grab on screen, edit in a popover</div>
+    </div>
+
+    <div style="border-radius:16px;overflow:hidden;border:1px solid #1d2338;background:#0b0e17;box-shadow:0 20px 50px -24px #000;position:relative;height:330px;">
+      <div style="position:absolute;inset:0;background:linear-gradient(#1b2b4a,#3d5a7a 60%,#5c7f6a 60%,#3f5a49);"></div>
+
+      <div style="position:absolute;left:24px;top:22px;padding:6px 10px;border-radius:7px;background:#0b0e17d9;font-family:ui-monospace,monospace;font-size:12px;color:#7ef0d0;border:1px solid #ffffff14;">FPS 241</div>
+      <div style="position:absolute;left:24px;top:56px;padding:6px 10px;border-radius:7px;background:#0b0e17d9;border:1.5px dashed #9db4ff;font-family:ui-monospace,monospace;font-size:12px;color:#c9d3ea;">
+        PING 38 ms
+        <div style="position:absolute;right:-26px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:6px;background:#9db4ff;display:flex;align-items:center;justify-content:center;font-size:9px;color:#0a1230;font-weight:800;">✥</div>
+      </div>
+
+      <!-- popover -->
+      <div style="position:absolute;left:186px;top:44px;width:196px;border-radius:11px;background:#0d111c;border:1px solid #2a3352;box-shadow:0 18px 40px -14px #000;padding:11px 12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+          <div style="font-size:12.5px;font-weight:600;">Ping</div>
+          <div style="font-size:10px;color:#5c6480;">HUD</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:7px;background:#141b2e;margin-bottom:6px;">
+          <span style="font-size:11.5px;color:#c9d3ea;">Visible</span>
+          <div style="width:26px;height:14px;border-radius:999px;background:#9db4ff;position:relative;"><div style="position:absolute;right:2px;top:2px;width:10px;height:10px;border-radius:999px;background:#0a1230;"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:7px;background:#141b2e;margin-bottom:6px;">
+          <span style="font-size:11.5px;color:#c9d3ea;">Show "ms"</span>
+          <div style="width:26px;height:14px;border-radius:999px;background:#2a3352;position:relative;"><div style="position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:999px;background:#8b93ad;"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:7px;background:#141b2e;">
+          <span style="font-size:11.5px;color:#c9d3ea;">Anchor</span>
+          <span style="font-size:10.5px;color:#9db4ff;">top-left</span>
+        </div>
+      </div>
+
+      <div style="position:absolute;left:50%;bottom:56px;transform:translateX(-50%);font-size:13px;color:#fff;text-shadow:0 2px 6px #000;background:#00000066;padding:4px 12px;border-radius:6px;white-space:nowrap;">Runnin' through my head</div>
+      <div style="position:absolute;right:22px;top:20px;font-size:12px;letter-spacing:.24em;font-weight:700;color:#7ef0d0cc;">ORBIT</div>
+
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:7px 12px;font-size:10.5px;color:#8b93ad;background:#0b0e17cc;border-top:1px solid #1a2033;display:flex;justify-content:space-between;">
+        <span>click to select · drag handle to move · click empty space to deselect</span>
+        <span style="color:#9db4ff;">Esc to close</span>
+      </div>
+    </div>
+    <p style="margin:11px 0 0;font-size:12.5px;color:#8b93ad;line-height:1.55;">
+      <b style="color:#c9d3ea;">Best for:</b> speed. Nothing is hidden behind a list — you see exactly what
+      you're moving. Costs screen space to the popover, and a hidden element can't be found this way,
+      so it needs a separate "show hidden" mode.
+    </p>
+  </div>
+
+  <!-- ================= VARIANT C ================= -->
+  <div style="margin-bottom:36px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="width:26px;height:26px;border-radius:8px;background:#f5c26b;color:#2a1c04;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;">C</div>
+      <div style="font-size:17px;font-weight:600;">Anchor zones</div>
+      <div style="font-size:12px;color:#5c6480;">pick a corner, stack automatically</div>
+    </div>
+
+    <div style="border-radius:16px;overflow:hidden;border:1px solid #1d2338;background:#0b0e17;">
+      <div style="display:flex;height:300px;">
+        <div style="flex:1;position:relative;background:linear-gradient(#1b2b4a,#3d5a7a 60%,#5c7f6a 60%,#3f5a49);">
+          <!-- zone outlines -->
+          <div style="position:absolute;left:14px;top:14px;width:180px;height:110px;border:1.5px dashed #f5c26b66;border-radius:10px;"></div>
+          <div style="position:absolute;right:14px;top:14px;width:150px;height:74px;border:1.5px dashed #ffffff26;border-radius:10px;"></div>
+          <div style="position:absolute;left:14px;bottom:14px;width:190px;height:70px;border:1.5px dashed #ffffff26;border-radius:10px;"></div>
+          <div style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:300px;height:52px;border:1.5px dashed #ffffff26;border-radius:10px;"></div>
+
+          <div style="position:absolute;left:26px;top:24px;padding:6px 10px;border-radius:7px;background:#0b0e17d9;font-family:ui-monospace,monospace;font-size:12px;color:#7ef0d0;border:1px solid #ffffff14;">FPS 241</div>
+          <div style="position:absolute;left:26px;top:58px;padding:6px 10px;border-radius:7px;background:#0b0e17d9;font-family:ui-monospace,monospace;font-size:12px;color:#c9d3ea;border:1px solid #ffffff14;">PING 38 ms</div>
+          <div style="position:absolute;left:26px;top:92px;font-family:ui-monospace,monospace;font-size:11.5px;color:#9fb0d0;">-128 64 204</div>
+
+          <div style="position:absolute;right:22px;top:20px;font-size:12px;letter-spacing:.24em;font-weight:700;color:#7ef0d0cc;">ORBIT</div>
+          <div style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);font-size:13px;color:#fff;text-shadow:0 2px 6px #000;white-space:nowrap;">Runnin' through my head</div>
+        </div>
+      </div>
+      <div style="padding:9px 12px;font-size:10.5px;color:#8b93ad;background:#0d111c;border-top:1px solid #1a2033;">
+        zones: top-left · top-right · bottom-left · bottom-centre — elements stack in the order you list them
+      </div>
+    </div>
+    <p style="margin:11px 0 0;font-size:12.5px;color:#8b93ad;line-height:1.55;">
+      <b style="color:#c9d3ea;">Best for:</b> never lining anything up by hand, and it survives resolution
+      changes untouched. Costs the freedom to put something mid-screen, which for the lyric line you
+      already want anyway.
+    </p>
+  </div>
+
+  <div style="margin-top:34px;padding:16px 18px;border-radius:12px;background:#0d111c;border:1px solid #1d2338;">
+    <div style="font-size:11px;letter-spacing:.2em;color:#5c6480;margin-bottom:9px;">WHAT I'D BUILD</div>
+    <div style="font-size:13px;color:#a9b2c9;line-height:1.65;">
+      A, with B's popover for per-element options — the rail is the only place a disabled element can be
+      found again, and that matters more than the extra click. FPS and Ping ship as two separate
+      elements (not one "stats" block) so either can be turned off alone.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orbit - title screen with panel</title>
+</head>
+<body style="margin:0;background:#05070e;font-family:ui-sans-serif,system-ui,'Segoe UI',Roboto,sans-serif;">
+
+<div style="max-width:1180px;margin:0 auto;padding:26px 22px 50px;">
+  <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:4px;">
+    <div style="font-size:12px;letter-spacing:.34em;color:#b07cff;font-weight:700;">ORBIT</div>
+    <div style="font-size:11px;color:#5c6480;letter-spacing:.18em;">TITLE SCREEN — NEW RIGHT COLUMN</div>
+  </div>
+  <p style="margin:0 0 16px;font-size:13px;color:#8b93ad;max-width:740px;line-height:1.6;">
+    Everything on the right is new, and every card has its own toggle on the Title Screen module.
+    Nothing on the left moved.
+  </p>
+
+  <!-- the screen -->
+  <div style="position:relative;border-radius:14px;overflow:hidden;border:1px solid #1d2338;height:520px;
+              background:
+                radial-gradient(1px 1px at 12% 18%,#fff8,transparent),
+                radial-gradient(1px 1px at 26% 62%,#fff6,transparent),
+                radial-gradient(1px 1px at 41% 30%,#fff7,transparent),
+                radial-gradient(1px 1px at 58% 78%,#fff5,transparent),
+                radial-gradient(1px 1px at 74% 22%,#fff9,transparent),
+                radial-gradient(1px 1px at 88% 55%,#fff7,transparent),
+                radial-gradient(1px 1px at 34% 84%,#fff5,transparent),
+                radial-gradient(1px 1px at 66% 44%,#fff6,transparent),
+                radial-gradient(circle at 62% 33%,#b07cff22 0%,transparent 22%),
+                radial-gradient(circle at 62% 33%,#ffffffcc 0.5px,transparent 1.5px),
+                linear-gradient(160deg,#080a15,#0b1024 55%,#0a0f1f);
+              box-shadow:0 24px 60px -30px #000;">
+
+    <!-- wordmark -->
+    <div style="position:absolute;left:6%;top:17%;">
+      <div style="font-size:34px;font-weight:800;letter-spacing:.03em;color:#fff;
+                  text-shadow:0 0 26px #b07cff55,0 2px 4px #000;line-height:1;">ORBIT</div>
+      <div style="height:1px;width:46px;background:linear-gradient(90deg,#b07cff,transparent);margin-top:5px;"></div>
+      <div style="font-size:9px;letter-spacing:.42em;color:#9aa1b8;margin-top:5px;">C L I E N T</div>
+    </div>
+
+    <!-- left buttons -->
+    <div style="position:absolute;left:6%;top:44%;display:flex;flex-direction:column;gap:4px;">
+      <div style="width:120px;height:17px;border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;display:flex;align-items:center;padding-left:10px;font-size:11px;color:#e4e1ec;">Singleplayer</div>
+      <div style="width:120px;height:17px;border-radius:5px;background:#b07cff1f;border:1px solid #b07cff99;display:flex;align-items:center;padding-left:10px;font-size:11px;color:#e4e1ec;">
+        <span style="width:1px;height:7px;background:#b07cff;margin-right:9px;display:inline-block;"></span>Multiplayer</div>
+      <div style="width:120px;height:17px;border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;display:flex;align-items:center;padding-left:10px;font-size:11px;color:#e4e1ec;">Mods</div>
+      <div style="width:120px;height:17px;border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;display:flex;align-items:center;padding-left:10px;font-size:11px;color:#e4e1ec;">Realms</div>
+    </div>
+    <div style="position:absolute;left:6%;top:83%;display:flex;gap:4px;">
+      <div style="width:57px;height:15px;border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;display:flex;align-items:center;justify-content:center;font-size:10px;color:#cfcbe0;">Options</div>
+      <div style="width:59px;height:15px;border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;display:flex;align-items:center;justify-content:center;font-size:10px;color:#cfcbe0;">Quit</div>
+    </div>
+    <div style="position:absolute;left:6%;bottom:14px;font-size:10px;color:#5c6480;">Orbit 0.1.0 · Fabric</div>
+
+    <!-- ============ NEW RIGHT COLUMN ============ -->
+    <div style="position:absolute;right:22px;top:calc(17% - 6px);width:178px;">
+
+      <!-- account card -->
+      <div style="border-radius:9px;background:#12152bcc;border:1px solid #2a2f4a;padding:7px 10px 9px;margin-bottom:9px;">
+        <div style="font-size:8px;letter-spacing:.28em;color:#5c6480;margin-bottom:4px;">P L A Y E R</div>
+        <div style="height:1px;background:linear-gradient(90deg,#b07cff55,transparent);margin-bottom:6px;"></div>
+        <div style="position:relative;">
+          <div style="font-size:11.5px;color:#e8ebf5;">Steve</div>
+          <div style="position:absolute;right:0;top:3px;width:5px;height:5px;border-radius:3px;background:#b07cff;"></div>
+        </div>
+        <div style="font-size:10px;color:#8b93ad;margin-top:2px;">signed in</div>
+      </div>
+
+      <!-- client card -->
+      <div style="border-radius:9px;background:#12152bcc;border:1px solid #2a2f4a;padding:7px 10px 9px;margin-bottom:9px;">
+        <div style="font-size:8px;letter-spacing:.28em;color:#5c6480;margin-bottom:4px;">C L I E N T</div>
+        <div style="height:1px;background:linear-gradient(90deg,#b07cff55,transparent);margin-bottom:6px;"></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;line-height:1.55;">
+          <span style="color:#8b93ad;">Version</span><span style="color:#e8ebf5;">0.1.0</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;line-height:1.55;">
+          <span style="color:#8b93ad;">Minecraft</span><span style="color:#e8ebf5;">1.21.11</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;line-height:1.55;">
+          <span style="color:#8b93ad;">Modules</span><span style="color:#e8ebf5;">7 / 33</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;line-height:1.55;">
+          <span style="color:#8b93ad;">Theme</span><span style="color:#e8ebf5;">Deep Field</span></div>
+      </div>
+
+      <!-- quick actions -->
+      <div style="border-radius:9px;background:#12152bcc;border:1px solid #2a2f4a;padding:7px 10px 10px;margin-bottom:9px;">
+        <div style="font-size:8px;letter-spacing:.28em;color:#5c6480;margin-bottom:4px;">Q U I C K</div>
+        <div style="height:1px;background:linear-gradient(90deg,#b07cff55,transparent);margin-bottom:8px;"></div>
+        <div style="border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;height:15px;display:flex;align-items:center;padding-left:10px;font-size:11px;color:#e4e1ec;margin-bottom:4px;">
+          <span style="width:1px;height:7px;background:#8b93ad;margin-right:9px;"></span>Open Menu</div>
+        <div style="border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;height:15px;display:flex;align-items:center;padding-left:10px;font-size:11px;color:#e4e1ec;margin-bottom:4px;">
+          <span style="width:1px;height:7px;background:#8b93ad;margin-right:9px;"></span>HUD Editor</div>
+        <div style="border-radius:5px;background:#ffffff2e;border:1px solid #ffffff38;height:15px;display:flex;align-items:center;padding-left:10px;font-size:11px;color:#e4e1ec;">
+          <span style="width:1px;height:7px;background:#8b93ad;margin-right:9px;"></span>Mods</div>
+      </div>
+
+      <div style="font-size:9.5px;color:#5c6480;padding-left:2px;">Right Shift&nbsp; ·&nbsp; open menu</div>
+    </div>
+
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+    <div style="flex:1;min-width:250px;border-radius:10px;background:#0d111c;border:1px solid #1d2338;padding:12px 14px;">
+      <div style="font-size:10px;letter-spacing:.2em;color:#5c6480;margin-bottom:6px;">NEW TOGGLES</div>
+      <div style="font-size:12px;color:#a9b2c9;line-height:1.7;">
+        Account Card · Client Card · Quick Actions · Keybind Hint
+      </div>
+    </div>
+    <div style="flex:1;min-width:250px;border-radius:10px;background:#0d111c;border:1px solid #1d2338;padding:12px 14px;">
+      <div style="font-size:10px;letter-spacing:.2em;color:#5c6480;margin-bottom:6px;">SAFETY</div>
+      <div style="font-size:12px;color:#a9b2c9;line-height:1.7;">
+        Hidden below 560 px wide, so it can never overlap the left column.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Orbit - performance modules</title>
+<style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ body{min-height:100vh;background:#07080e;font-family:"Segoe UI",system-ui,sans-serif;color:#e8e6ef;
+      display:flex;align-items:center;justify-content:center;padding:24px}
+ #app{display:flex;gap:22px;align-items:flex-start}
+ /* ── mock of the Orbit GUI inspector ─────────────────────────────── */
+ #gui{width:560px;background:linear-gradient(165deg,#141020,#0b0912);border-radius:16px;overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 90px rgba(0,0,0,.7)}
+ #top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;
+      border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.015)}
+ #top .name{font-weight:800;letter-spacing:.06em;font-size:14px}
+ #top .cat{font-size:10px;letter-spacing:.16em;color:#8b879c;text-transform:uppercase}
+ #body{display:flex;height:430px}
+ #rail{width:150px;padding:10px;border-right:1px solid rgba(255,255,255,.06);overflow-y:auto}
+ .railhead{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#6f6b80;margin:10px 6px 6px}
+ .mod{padding:6px 9px;border-radius:8px;font-size:11.5px;color:#b8b4c6;margin-bottom:2px;display:flex;
+      align-items:center;justify-content:space-between;cursor:pointer}
+ .mod.active{background:rgba(127,168,255,.16);color:#fff}
+ .mod .dot{width:6px;height:6px;border-radius:50%;background:#3a3a46}
+ .mod.on .dot{background:#5ad07a;box-shadow:0 0 6px rgba(90,208,122,.8)}
+ #insp{flex:1;padding:16px 18px;overflow-y:auto}
+ #insp h3{font-size:15px;margin-bottom:3px}
+ #insp .desc{font-size:11px;color:#8b879c;margin-bottom:14px;line-height:1.55}
+ .set{display:flex;align-items:center;justify-content:space-between;padding:7px 0;
+      border-bottom:1px solid rgba(255,255,255,.045);font-size:12px;color:#cfcbdd}
+ .set:last-child{border:0}
+ .sw{width:34px;height:16px;border-radius:9px;background:rgba(255,255,255,.12);position:relative;transition:.15s}
+ .sw i{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:.15s}
+ .sw.on{background:#5aa9ff}
+ .sw.on i{left:20px}
+ .seg{display:flex;gap:3px;background:rgba(255,255,255,.05);padding:2px;border-radius:7px}
+ .seg span{padding:3px 7px;border-radius:5px;font-size:10.5px;color:#9a96a8}
+ .seg span.on{background:rgba(127,168,255,.3);color:#fff}
+ .val{color:#8f8aa0;font-size:11px;font-variant-numeric:tabular-nums}
+ .reset{margin-top:12px;font-size:10.5px;color:#6f6b80}
+ /* ── the explanation panel ───────────────────────────────────────── */
+ #side{width:430px;font-size:12.5px;line-height:1.62;color:#b6b2c4}
+ #side h2{font-size:15px;color:#fff;margin-bottom:10px;letter-spacing:.01em}
+ #side h5{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7c789; margin:16px 0 7px}
+ .item{display:flex;gap:9px;margin-bottom:7px}
+ .item .t{color:#fff;font-size:12px;min-width:104px}
+ .tag{display:inline-block;font-size:9.5px;padding:2px 6px;border-radius:5px;margin-left:6px;
+      background:rgba(90,208,122,.16);color:#7ee09a;letter-spacing:.04em}
+ .tag.med{background:rgba(232,162,60,.16);color:#f0b45f}
+ .tag.risk{background:rgba(255,90,90,.16);color:#ff8f8f}
+ .warn{margin-top:14px;padding:10px 12px;border-radius:9px;background:rgba(232,162,60,.09);
+       border:1px solid rgba(232,162,60,.25);color:#e6c48f;font-size:11.5px;line-height:1.55}
+</style></head><body>
+<div id="app">
+  <div id="gui">
+    <div id="top"><div class="name">ORBIT</div><div class="cat">Performance</div></div>
+    <div id="body">
+      <div id="rail">
+        <div class="railhead">Performance</div>
+        <div class="mod on active"><span>FPS Boost</span><span class="dot"></span></div>
+        <div class="mod on"><span>Entity Culling</span><span class="dot"></span></div>
+        <div class="mod"><span>Particle Limit</span><span class="dot"></span></div>
+        <div class="mod"><span>Render Distance</span><span class="dot"></span></div>
+        <div class="railhead">Render</div>
+        <div class="mod on"><span>Player Tracking</span><span class="dot"></span></div>
+        <div class="mod"><span>Mob ESP</span><span class="dot"></span></div>
+        <div class="mod"><span>Item ESP</span><span class="dot"></span></div>
+      </div>
+      <div id="insp">
+        <h3>FPS Boost</h3>
+        <div class="desc">One switch for the cheap wins. Each item below can also be enabled on its own.</div>
+        <div class="set"><span>Clouds</span><div class="sw on"><i></i></div></div>
+        <div class="set"><span>Weather</span><div class="sw on"><i></i></div></div>
+        <div class="set"><span>Entity Distance</span><span class="val">100%</span></div>
+        <div class="set"><span>Hide Nametags</span><div class="sw"><i></i></div></div>
+        <div class="set"><span>Hide Shadows</span><div class="sw on"><i></i></div></div>
+        <div class="set"><span>Hide Grass &amp; Flowers</span><div class="sw on"><i></i></div></div>
+        <div class="set"><span>Hide Block Breaking</span><div class="sw"><i></i></div></div>
+        <div class="set"><span>Simple Particles</span><div class="seg"><span>Off</span><span class="on">50%</span><span>All</span></div></div>
+        <div class="set"><span>Quality</span><div class="seg"><span class="on">Fast</span><span>Fancy</span></div></div>
+        <div class="reset">Reset to defaults</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="side">
+    <h2>What each module would do</h2>
+    <div class="item"><span class="t">Clouds</span><span>Hide vanilla clouds. <span class="tag">big win in sky-heavy scenes</span></span></div>
+    <div class="item"><span class="t">Weather</span><span>Stop rain/snow rendering and its sound. <span class="tag">cheap</span></span></div>
+    <div class="item"><span class="t">Entity Distance</span><span>Shrink the entity render distance to a % of vanilla. <span class="tag med">most of the gain</span></span></div>
+    <div class="item"><span class="t">Hide Shadows</span><span>Disable entity shadow blobs. <span class="tag">cheap</span></span></div>
+    <div class="item"><span class="t">Hide Grass</span><span>Skip tall-grass/flower block rendering. <span class="tag">helps in fields</span></span></div>
+    <div class="item"><span class="t">Particles</span><span>Throttle or drop particles. <span class="tag">big win in fights</span></span></div>
+    <div class="item"><span class="t">Entity Culling</span><span>Skip drawing entities behind you / out of frustum. <span class="tag">moderate</span></span></div>
+    <div class="item"><span class="t">Particle Limit</span><span>Hard cap on simultaneous particles. <span class="tag">cheap</span></span></div>
+    <div class="item"><span class="t">Render Distance</span><span>Force a chunk distance regardless of vanilla setting. <span class="tag risk">can hurt more than help</span></span></div>
+    <div class="warn">
+      Everything above is client-side only and reversible — nothing is sent to the server, so no
+      anticheat exposure. The real wins are <b>clouds, entity distance and particles</b>;
+      the rest is a few frames each.
+    </div>
+  </div>
+</div>
+</body></html>

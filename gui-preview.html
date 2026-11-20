@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orbit — new GUI look (live theme preview)</title>
+<style>
+  :root{
+    --h: 275;
+    --s: 62%;
+    --b: 100%;
+    --accent: hsl(var(--h) var(--s) var(--b));
+    --accent2: hsl(calc(var(--h) + 32) var(--s) var(--b));
+    --panel-opacity: .88;
+    --text:#f1eff7;
+    --muted:#a09aad;
+    --faint:#6c6679;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",Inter,system-ui,sans-serif;
+    background:radial-gradient(120% 90% at 50% 0%, #23283d, #0a0910 70%);
+    color:var(--text);padding:30px 24px 60px;line-height:1.45;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+  h1{font-size:21px;font-weight:650}
+  h1 b{color:var(--accent)}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;max-width:780px}
+  .stage{
+    position:relative;margin-top:22px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.08);
+    background:radial-gradient(120% 90% at 50% 0%, #7d90c4 0%, #4e5f8e 40%, #262c44 70%, #14161f 100%);
+    box-shadow:0 30px 70px -35px #000;
+  }
+  .world .hill{position:absolute;bottom:0;left:-5%;width:110%;height:50%;
+    background:linear-gradient(#3e6b46,#22412c);clip-path:polygon(0 46%,12% 30%,26% 44%,40% 22%,56% 40%,72% 26%,88% 38%,100% 24%,100% 100%,0 100%)}
+  .world .hill2{position:absolute;bottom:0;left:-5%;width:110%;height:36%;
+    background:linear-gradient(#2c5138,#182e20);clip-path:polygon(0 58%,16% 40%,34% 56%,52% 34%,70% 52%,86% 36%,100% 50%,100% 100%,0 100%)}
+  .world .grid{position:absolute;inset:0;opacity:.18;background-image:
+    linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:48px 48px}
+  .crosshair{position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);opacity:.8}
+  .crosshair:before,.crosshair:after{content:"";position:absolute;background:#fff;box-shadow:0 0 2px #000}
+  .crosshair:before{left:6px;top:0;width:2px;height:14px}
+  .crosshair:after{top:6px;left:0;height:2px;width:14px}
+
+  /* ── window ── */
+  .win{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:82%;height:80%;border-radius:13px;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,
+      color-mix(in srgb, #14121c 90%, var(--accent)) ,
+      color-mix(in srgb, #0b0a10 92%, var(--accent)));
+    background-color:rgba(10,9,16,var(--panel-opacity));
+    border:1px solid rgba(255,255,255,.13);
+    box-shadow:0 40px 90px -30px #000, 0 0 0 1px rgba(255,255,255,.04), 0 0 26px -6px color-mix(in srgb, var(--accent) 45%, transparent);
+    overflow:hidden;
+  }
+  .win:before{ /* accent hairline */
+    content:"";position:absolute;left:14%;right:14%;top:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:.85;
+  }
+  .titlebar{height:26px;display:flex;align-items:center;gap:8px;padding:0 12px;flex:0 0 auto}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .name{font-weight:650;letter-spacing:.2px;font-size:12.5px}
+  .ver{color:var(--faint);font-size:11px}
+  .spacer{flex:1}
+  .chip{font-size:10.5px;color:var(--muted);border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.045);border-radius:6px;padding:3px 9px;cursor:pointer}
+  .chip:hover{background:rgba(255,255,255,.1);color:#fff}
+  .chip.kbd{color:var(--faint);cursor:default;letter-spacing:.06em}
+  .body{flex:1;display:flex;min-height:0}
+
+  /* rail */
+  .rail{width:94px;flex:0 0 auto;padding:7px 4px;display:flex;flex-direction:column;gap:2px;
+    background:rgba(0,0,0,.24);border-right:1px solid rgba(255,255,255,.05)}
+  .cat{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;color:var(--muted);
+    font-size:11.5px;cursor:pointer;border:1px solid transparent;position:relative}
+  .cat:hover{background:rgba(255,255,255,.06);color:#fff}
+  .cat.active{color:#fff;border-color:color-mix(in srgb,var(--accent) 40%, transparent);
+    background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 24%, transparent),color-mix(in srgb,var(--accent2) 9%, transparent))}
+  .cat.active:before{content:"";position:absolute;left:3px;top:6px;bottom:6px;width:2px;border-radius:1px;background:var(--accent)}
+  .cat .n{margin-left:auto;font-size:10px;color:var(--faint)}
+  .cat.active .n{color:var(--accent)}
+  .ic{width:8px;height:8px;background:currentColor;border-radius:1px;opacity:.85}
+
+  /* list */
+  .list{flex:1;padding:8px;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .search{height:20px;border-radius:6px;border:1px solid rgba(255,255,255,.1);
+    background:rgba(255,255,255,.045);display:flex;align-items:center;padding:0 9px;
+    color:var(--faint);font-size:11px}
+  .search.focus{border-color:color-mix(in srgb,var(--accent) 55%, transparent);
+    background:color-mix(in srgb,var(--accent) 8%, transparent)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;overflow:hidden}
+  .card{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;font-size:11.5px;
+    color:var(--muted);background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);cursor:pointer}
+  .card:hover{background:rgba(255,255,255,.08);color:#fff}
+  .card.on{color:#fff;border-color:color-mix(in srgb,var(--accent) 45%, transparent);
+    background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 26%, transparent),color-mix(in srgb,var(--accent2) 9%, transparent));
+    box-shadow:0 0 16px -6px var(--accent)}
+  .card.sel{box-shadow:inset 2px 0 0 var(--accent),0 0 16px -6px var(--accent)}
+  .card .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* switch */
+  .sw{width:20px;height:11px;border-radius:6px;flex:0 0 auto;position:relative;background:#23202e;
+    border:1px solid rgba(255,255,255,.09);transition:.15s}
+  .sw:after{content:"";position:absolute;top:1px;left:1px;width:8px;height:7px;border-radius:4px;background:var(--faint);transition:.15s}
+  .on .sw{background:linear-gradient(90deg,var(--accent),var(--accent2));border-color:transparent;
+    box-shadow:0 0 10px -3px var(--accent)}
+  .on .sw:after{left:10px;background:#17131f}
+
+  /* inspector */
+  .insp{width:158px;flex:0 0 auto;margin:6px 7px 7px 0;border-radius:7px;
+    background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);padding:10px;overflow:hidden}
+  .insp h4{font-size:12px;font-weight:600;color:var(--accent)}
+  .hair{height:1px;width:26px;margin:5px 0 7px;
+    background:linear-gradient(90deg,var(--accent),transparent)}
+  .desc{font-size:10px;color:var(--faint);line-height:1.35;margin-bottom:9px}
+  .set{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+  .set b{color:var(--accent);font-weight:500;font-size:10.5px}
+  .track{height:3px;border-radius:2px;background:#23202e;position:relative;margin-bottom:10px}
+  .track i{position:absolute;inset:0 auto 0 0;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  .track u{position:absolute;top:-3px;width:4px;height:9px;border-radius:2px;background:#f1eff7;transform:translateX(-2px)}
+  .seg{display:flex;gap:3px;margin:3px 0 10px}
+  .seg span{flex:1;text-align:center;font-size:10px;padding:3px 0;border-radius:4px;
+    background:rgba(255,255,255,.045);color:var(--faint);cursor:pointer}
+  .seg span.sel{color:#fff;border:1px solid color-mix(in srgb,var(--accent) 45%, transparent);
+    background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 30%, transparent),color-mix(in srgb,var(--accent2) 15%, transparent))}
+  .colorrow{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)}
+  .swatch{width:10px;height:10px;border-radius:3px;border:1px solid rgba(255,255,255,.2)}
+
+  /* theme editor */
+  .theme{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:330px;border-radius:11px;
+    background:rgba(12,10,18,.97);border:1px solid color-mix(in srgb,var(--accent) 40%, transparent);
+    box-shadow:0 40px 90px -20px #000, 0 0 28px -8px var(--accent);padding:14px;
+    backdrop-filter:blur(10px);
+  }
+  .theme h3{font-size:12.5px;font-weight:650;display:flex;align-items:center;gap:6px}
+  .theme h3 em{font-style:normal;color:var(--faint);font-weight:400;font-size:10.5px}
+  .x{margin-left:auto;width:14px;height:14px;border-radius:5px;display:grid;place-items:center;
+    font-size:9px;color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);cursor:pointer}
+  .presets{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:11px 0 12px}
+  .preset{height:20px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+    font-size:9.5px;color:var(--muted);display:flex;align-items:flex-end;justify-content:center;
+    padding-bottom:3px;cursor:pointer;position:relative;overflow:hidden}
+  .preset:before{content:"";position:absolute;left:1px;right:1px;bottom:1px;height:3px;border-radius:1px;
+    background:linear-gradient(90deg,var(--p1),var(--p2))}
+  .preset.active{color:#fff;border-color:color-mix(in srgb,var(--accent) 45%, transparent);background:rgba(255,255,255,.09)}
+  .row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+  .row b{color:var(--accent);font-weight:500;font-size:10.5px}
+  input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;outline:none;margin-bottom:10px;
+    background:#23202e}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;
+    background:#f1eff7;cursor:pointer;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%, transparent)}
+  .hue-slider{background:linear-gradient(90deg,#f55,#fd5,#5f5,#5ff,#55f,#f5f,#f55)}
+  .toggles{display:flex;gap:6px;margin-top:2px}
+  .tog{flex:1;height:18px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+    display:flex;align-items:center;justify-content:space-between;padding:0 6px 0 8px;font-size:10.5px;color:var(--muted);cursor:pointer}
+  .tog.on{color:#fff;border-color:color-mix(in srgb,var(--accent) 45%, transparent);background:color-mix(in srgb,var(--accent) 18%, transparent)}
+  .notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px;font-size:12.5px;color:var(--muted)}
+  .notes div{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:11px 13px}
+  .notes b{color:var(--text);display:block;margin-bottom:4px;font-size:12px}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--accent)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:11.5px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Orbit — the new look <b>·</b> live theme preview</h1>
+  <p class="sub">Same layout you picked (prototype A), re-skinned: 11px rounded window, gradient accent hairline, gradient cards, softer borders, glass-y panels — plus the new <b>Theme</b> editor (titlebar button). Drag the hue slider below to see every surface re-tint.</p>
+
+  <div class="stage">
+    <div class="world"><div class="hill2"></div><div class="hill"></div><div class="grid"></div></div>
+    <div class="crosshair"></div>
+
+    <div class="win">
+      <div class="titlebar">
+        <span class="dot"></span><span class="name">Orbit</span><span class="ver">0.1.0</span>
+        <span class="spacer"></span>
+        <span class="chip">Theme</span>
+        <span class="chip kbd">RSHIFT</span>
+      </div>
+      <div class="body">
+        <div class="rail">
+          <div class="cat active"><i class="ic"></i>Combat<span class="n">2</span></div>
+          <div class="cat"><i class="ic"></i>Movement<span class="n">1</span></div>
+          <div class="cat"><i class="ic"></i>Render<span class="n">3</span></div>
+          <div class="cat"><i class="ic"></i>Player<span class="n">2</span></div>
+          <div class="cat"><i class="ic"></i>Misc<span class="n">1</span></div>
+          <div class="cat"><i class="ic"></i>Hud<span class="n">0</span></div>
+        </div>
+        <div class="list">
+          <div class="search">⌕ Search modules</div>
+          <div class="grid">
+            <div class="card on sel"><span class="lbl">Storage ESP</span><span class="sw"></span></div>
+            <div class="card on"><span class="lbl">Freecam</span><span class="sw"></span></div>
+            <div class="card on"><span class="lbl">Sprint</span><span class="sw"></span></div>
+            <div class="card"><span class="lbl">Fullbright</span><span class="sw"></span></div>
+            <div class="card"><span class="lbl">AutoTool</span><span class="sw"></span></div>
+            <div class="card on"><span class="lbl">AntiAfk</span><span class="sw"></span></div>
+          </div>
+        </div>
+        <div class="insp">
+          <h4>Storage ESP</h4>
+          <div class="hair"></div>
+          <div class="desc">Highlights loaded chests, barrels and shulker boxes through walls.</div>
+          <div class="set"><span>Chest Color</span><b>#FFA53B</b></div>
+          <div class="track"><i style="width:62%"></i><u style="left:62%"></u></div>
+          <div class="set"><span>Range</span><b>48m</b></div>
+          <div class="track"><i style="width:33%"></i><u style="left:33%"></u></div>
+          <div class="set"><span>Gradient Boxes</span><span class="sw on" style="background:linear-gradient(90deg,var(--accent),var(--accent2))"></span></div>
+          <div style="height:8px"></div>
+          <div class="set"><span>Line Origin</span></div>
+          <div class="seg"><span>Feet</span><span>Eyes</span><span class="sel">Cursor</span></div>
+          <div class="set"><span>Line Width</span><b>1.5</b></div>
+          <div class="track"><i style="width:18%"></i><u style="left:18%"></u></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme">
+      <h3>Theme <em id="presetName">Orbit</em><span class="x">x</span></h3>
+      <div class="presets" id="presets"></div>
+      <div class="row"><span>Hue</span><b id="hueVal">275°</b></div>
+      <input class="hue-slider" type="range" min="0" max="360" value="275" id="hue">
+      <div class="row"><span>Saturation</span><b id="satVal">62%</b></div>
+      <input type="range" min="0" max="100" value="62" id="sat">
+      <div class="row"><span>Brightness</span><b id="briVal">100%</b></div>
+      <input type="range" min="20" max="100" value="100" id="bri">
+      <div class="row"><span>Panel Opacity</span><b id="opVal">88%</b></div>
+      <input type="range" min="50" max="100" value="88" id="op">
+      <div class="toggles">
+        <div class="tog on" id="togGrad">Gradient <span class="sw on"></span></div>
+        <div class="tog" id="togRain">Rainbow <span class="sw"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:hsl(275 62% 100%)"></i>accent</span>
+    <span><i style="background:hsl(307 62% 100%)"></i>accent +32° (gradients)</span>
+    <span><i style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)"></i>card</span>
+    <span><i style="background:#FFA53B"></i>Storage ESP colours are their own HSB settings</span>
+  </div>
+
+  <div class="notes">
+    <div><b>Less blocky</b>11px window radius, 6px cards/rail pills, 3px slider tracks, pill switches, 1px translucent borders instead of hard black outlines, and a soft accent glow behind active cards.</div>
+    <div><b>Themes</b>8 presets (Orbit, Cyan, Sunset, Mint, Gold, Rose, Ice, Mono) + Hue/Saturation/Brightness/Panel-opacity sliders, a Gradient toggle and a Rainbow mode. Saved under <code>"theme"</code> in <code>orbit.json</code>.</div>
+    <div><b>Colour settings</b>New <code>ColorSetting</code> type — H/S/B sliders per colour, used by Storage ESP for chest/barrel/shulker colours. Also persisted.</div>
+    <div><b>Storage ESP</b>Line origin <code>Cursor</code>: tracers start at the crosshair's hit point and reach to each box, with a gradient from the theme accent to the storage's own colour. Gradient box edges too.</div>
+  </div>
+</div>
+
+<script>
+  const presets = [
+    ["Orbit",275,62,100],["Cyan",187,68,96],["Sunset",18,72,100],["Mint",158,62,92],
+    ["Gold",42,72,100],["Rose",338,70,100],["Ice",210,45,100],["Mono",250,4,96]
+  ];
+  const root = document.documentElement;
+  const presetBox = document.getElementById('presets');
+  let active = "Orbit";
+
+  function hsl(h,s,b){ return `hsl(${h} ${s}% ${b}%)`; }
+
+  function apply(h,s,b,op){
+    root.style.setProperty('--h',h);
+    root.style.setProperty('--s',s+'%');
+    root.style.setProperty('--b',b+'%');
+    if(op!=null) root.style.setProperty('--panel-opacity',op/100);
+    document.getElementById('hueVal').textContent = Math.round(h)+'°';
+    document.getElementById('satVal').textContent = Math.round(s)+'%';
+    document.getElementById('briVal').textContent = Math.round(b)+'%';
+    if(op!=null) document.getElementById('opVal').textContent = Math.round(op)+'%';
+    document.getElementById('presetName').textContent = active;
+  }
+
+  presets.forEach(([name,h,s,b])=>{
+    const el = document.createElement('div');
+    el.className = 'preset' + (name==='Orbit'?' active':'');
+    el.style.setProperty('--p1', hsl(h,s,b));
+    el.style.setProperty('--p2', hsl(h+32,s,b));
+    el.textContent = name;
+    el.onclick = ()=>{
+      active = name;
+      document.getElementById('hue').value = h;
+      document.getElementById('sat').value = s;
+      document.getElementById('bri').value = b;
+      document.querySelectorAll('.preset').forEach(p=>p.classList.remove('active'));
+      el.classList.add('active');
+      apply(h,s,b);
+    };
+    presetBox.appendChild(el);
+  });
+
+  const hue = document.getElementById('hue');
+  const sat = document.getElementById('sat');
+  const bri = document.getElementById('bri');
+  const op  = document.getElementById('op');
+
+  function custom(){
+    active = presets.some(([n,h,s,b])=>+hue.value===h && +sat.value===s && +bri.value===b)
+      ? presets.find(([n,h,s,b])=>+hue.value===h && +sat.value===s && +bri.value===b)[0] : "Custom";
+    document.querySelectorAll('.preset').forEach(p=>p.classList.toggle('active', p.textContent===active));
+    apply(+hue.value,+sat.value,+bri.value);
+  }
+  hue.oninput = custom; sat.oninput = custom; bri.oninput = custom;
+  op.oninput = ()=>apply(+hue.value,+sat.value,+bri.value,+op.value);
+
+  document.getElementById('togGrad').onclick = e => e.currentTarget.classList.toggle('on');
+  document.getElementById('togRain').onclick = e => e.currentTarget.classList.toggle('on');
+
+  apply(275,62,100,88);
+</script>
+</body>
+</html>

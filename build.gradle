@@ -1,0 +1,68 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/orbit.accesswidener")
+}
+
+configurations {
+    embed
+    compileOnly.extendsFrom(embed)
+}
+
+repositories {
+    mavenCentral()
+    maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // MP3 decoding for the music player. Vanilla only decodes Ogg Vorbis, so an MP3/radio stream
+    // needs a decoder of our own. JLayer is LGPL. It is shaded into the mod jar rather than nested
+    // in META-INF/jars, because Fabric only puts *mods* from there on the classpath.
+    compileOnly "javazoom:jlayer:1.0.1"
+    embed "javazoom:jlayer:1.0.1"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+}
+
+jar {
+    from('LICENSE') {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
+    // shade JLayer into the jar so MP3 decoding needs no separate install
+    from {
+        configurations.embed.collect { zipTree(it) }
+    } {
+        exclude 'META-INF/MANIFEST.MF', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}

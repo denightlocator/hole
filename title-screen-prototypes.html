@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orbit — title screen prototypes (black hole)</title>
+<style>
+  :root{
+    --accent:#b57bff;
+    --accent2:#ffb347;
+    --text:#f1eff7;
+    --muted:#a09aad;
+    --faint:#6c6679;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",Inter,system-ui,sans-serif;background:#07060b;color:var(--text);
+    padding:30px 24px 70px;line-height:1.45;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:22px;font-weight:650;letter-spacing:-.2px}
+  h1 b{color:var(--accent)}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;max-width:800px}
+  .ctrlbar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:16px;
+    background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted)}
+  .ctrlbar label{display:flex;align-items:center;gap:8px}
+  input[type=range]{-webkit-appearance:none;width:120px;height:3px;border-radius:2px;background:#2a2536;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;
+    background:#f1eff7;cursor:pointer;box-shadow:0 0 0 3px rgba(181,123,255,.3)}
+  .toggle{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+  .toggle i{width:22px;height:12px;border-radius:7px;background:#2a2536;position:relative;transition:.15s}
+  .toggle i:after{content:"";position:absolute;top:1px;left:1px;width:10px;height:10px;border-radius:50%;background:var(--faint);transition:.15s}
+  .toggle.on i{background:rgba(181,123,255,.4)}
+  .toggle.on i:after{left:11px;background:var(--accent)}
+
+  .proto{margin-top:34px}
+  .head{display:flex;align-items:baseline;gap:12px;margin-bottom:11px;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#0c0a11;
+    background:var(--accent);padding:3px 8px;border-radius:4px}
+  .head h2{font-size:16px;font-weight:600}
+  .head p{color:var(--muted);font-size:12.5px}
+
+  .stage{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.09);background:#000;box-shadow:0 30px 80px -40px #000;
+    contain:paint}
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .vignette{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 55%,transparent 30%,rgba(0,0,0,.55) 78%,rgba(0,0,0,.85) 100%)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>")}
+
+  /* ── overlay UI ── */
+  .ui{position:absolute;inset:0}
+  .brand{font-weight:800;letter-spacing:.22em;color:#fff;
+    text-shadow:0 0 26px rgba(181,123,255,.55),0 2px 10px rgba(0,0,0,.9)}
+  .brand small{display:block;font-weight:500;letter-spacing:.42em;font-size:9px;color:var(--muted);margin-top:4px}
+  .splash{position:absolute;color:#ffe184;font-weight:700;font-size:11px;letter-spacing:.02em;
+    text-shadow:0 2px 8px #000;transform:rotate(-8deg);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(-8deg) scale(1.05)}}
+  .btn{display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;
+    border-radius:8px;font-size:12.5px;font-weight:550;color:var(--text);
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.11);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
+  .btn:hover{background:rgba(181,123,255,.17);border-color:rgba(181,123,255,.55);
+    transform:translateY(-1px);box-shadow:0 8px 26px -12px var(--accent)}
+  .btn:active{transform:translateY(0)}
+  .btn.accent{background:linear-gradient(180deg,rgba(181,123,255,.28),rgba(181,123,255,.12));
+    border-color:rgba(181,123,255,.6);box-shadow:0 10px 30px -16px var(--accent)}
+  .btn .k{font-size:9.5px;color:var(--faint);letter-spacing:.08em}
+  .btn:hover .k{color:var(--accent)}
+
+  /* A — event horizon, centered */
+  #A .brand{position:absolute;left:50%;top:9%;transform:translateX(-50%);text-align:center;font-size:38px}
+  #A .splash{left:calc(50% + 108px);top:19%}
+  #A .stack{position:absolute;left:50%;top:47%;transform:translateX(-50%);
+    display:flex;flex-direction:column;gap:8px;width:260px}
+  #A .btn{height:34px}
+  #A .foot{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);display:flex;gap:8px}
+  #A .foot .btn{height:26px;padding:0 14px;font-size:11px}
+  #A .meta{position:absolute;left:14px;bottom:10px;font-size:9.5px;color:var(--faint);line-height:1.5}
+  #A .mods{position:absolute;right:14px;bottom:10px;display:flex;align-items:center;gap:6px;
+    font-size:10px;color:var(--muted);cursor:pointer;padding:5px 9px;border-radius:7px;
+    border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+  #A .mods:hover{color:#fff;border-color:rgba(181,123,255,.5)}
+
+  /* B — deep field, left aligned */
+  #B .brand{position:absolute;left:6%;top:16%;font-size:34px;line-height:1}
+  #B .brand small{margin-top:8px}
+  #B .splash{left:7%;top:34%}
+  #B .stack{position:absolute;left:6%;top:44%;display:flex;flex-direction:column;gap:7px;width:236px}
+  #B .btn{height:32px;justify-content:flex-start;padding:0 14px}
+  #B .btn .bar{width:2px;height:14px;border-radius:1px;background:var(--faint);transition:.16s}
+  #B .btn:hover .bar{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  #B .foot{position:absolute;left:6%;bottom:12%;display:flex;gap:7px}
+  #B .foot .btn{height:26px;padding:0 12px;font-size:11px;justify-content:center}
+  #B .meta{position:absolute;right:14px;bottom:10px;text-align:right;font-size:9.5px;color:var(--faint);line-height:1.5}
+
+  /* C — minimal ring, tiled buttons */
+  #C .brand{position:absolute;left:50%;top:12%;transform:translateX(-50%);text-align:center;font-size:30px;letter-spacing:.34em}
+  #C .splash{left:calc(50% + 96px);top:24%;font-size:10px}
+  #C .grid{position:absolute;left:50%;top:38%;transform:translateX(-50%);
+    display:grid;grid-template-columns:1fr 1fr;gap:7px;width:340px}
+  #C .btn{height:44px;flex-direction:column;gap:2px;font-size:11.5px}
+  #C .btn em{font-style:normal;font-size:9px;color:var(--faint);letter-spacing:.06em}
+  #C .btn:hover em{color:var(--accent)}
+  #C .wide{grid-column:span 2;height:30px;flex-direction:row;gap:8px}
+  #C .foot{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);display:flex;gap:7px}
+  #C .foot .btn{height:24px;padding:0 14px;font-size:10.5px;flex-direction:row}
+  #C .meta{position:absolute;left:14px;bottom:10px;font-size:9.5px;color:var(--faint)}
+
+  .notes{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:13px;font-size:12.5px;color:var(--muted)}
+  .notes div{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:11px 13px}
+  .notes b{color:var(--text);display:block;margin-bottom:4px;font-size:12px}
+  .impl{margin-top:26px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+    border-radius:11px;padding:16px 18px;font-size:12.5px;color:var(--muted)}
+  .impl h3{font-size:13.5px;color:var(--text);margin-bottom:9px}
+  .impl code{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--accent);
+    background:rgba(181,123,255,.1);padding:1px 5px;border-radius:4px}
+  .impl li{margin:5px 0 5px 16px}
+  @media(max-width:820px){.notes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Orbit <b>/</b> title screen — black hole prototypes</h1>
+  <p class="sub">Three takes on replacing the vanilla title screen. Everything here is live: the disk spins, the starfield drifts, and buttons react to hover. Placeholder wordmark — tell me if it should stay "Minecraft" or become Orbit.</p>
+
+  <div class="ctrlbar">
+    <label>Disk spin <input type="range" id="speed" min="0" max="200" value="100"></label>
+    <label>Star drift <input type="range" id="drift" min="0" max="200" value="100"></label>
+    <label class="toggle on" id="motionToggle"><i></i> animation on</label>
+    <span style="color:var(--faint)">— "off" shows what reduced-motion / low-end users would get</span>
+  </div>
+
+  <!-- ══════════ A ══════════ -->
+  <section class="proto" id="A">
+    <div class="head"><span class="tag">A</span><h2>Event Horizon</h2><p>Vanilla layout, cinematic hole behind it. Safest swap.</p></div>
+    <div class="stage" data-variant="center">
+      <canvas></canvas>
+      <div class="vignette"></div><div class="grain"></div>
+      <div class="ui">
+        <div class="brand">ORBIT<small>CLIENT 0.1.0</small></div>
+        <div class="splash">now with 100% more gravity</div>
+        <div class="stack">
+          <div class="btn accent">Singleplayer</div>
+          <div class="btn">Multiplayer</div>
+          <div class="btn">Realms</div>
+          <div class="btn">Mods <span class="k">3</span></div>
+        </div>
+        <div class="foot">
+          <div class="btn">Options</div>
+          <div class="btn">Quit</div>
+        </div>
+        <div class="meta">Orbit 0.1.0 · Fabric 1.21.11<br>Java 21 · OpenGL 4.6</div>
+        <div class="mods">◈ 3 mods loaded</div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Why it works</b>Same button positions as vanilla, so muscle memory and controller/arrow-key navigation keep working. The hole is centred and fully visible — the frame reads instantly as "space".</div>
+      <div><b>Trade-offs</b>Most conventional; the hole competes with the buttons for attention. Needs the disk dimmed/blurred behind the button stack.</div>
+    </div>
+  </section>
+
+  <!-- ══════════ B ══════════ -->
+  <section class="proto" id="B">
+    <div class="head"><span class="tag">B</span><h2>Deep Field</h2><p>Hole pushed right, text left. Editorial / cinematic.</p></div>
+    <div class="stage" data-variant="right">
+      <canvas></canvas>
+      <div class="vignette"></div><div class="grain"></div>
+      <div class="ui">
+        <div class="brand">ORBIT<small>CLIENT · 1.21.11</small></div>
+        <div class="splash">event horizon simulator</div>
+        <div class="stack">
+          <div class="btn"><span class="bar"></span>Singleplayer</div>
+          <div class="btn accent"><span class="bar"></span>Multiplayer</div>
+          <div class="btn"><span class="bar"></span>Mods <span class="k">3</span></div>
+          <div class="btn"><span class="bar"></span>Realms</div>
+        </div>
+        <div class="foot">
+          <div class="btn">Options</div>
+          <div class="btn">Quit</div>
+        </div>
+        <div class="meta">Orbit 0.1.0<br>Fabric · Java 21</div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Why it works</b>Composition does the work: nothing overlaps the hole, buttons sit in clean negative space, and the left-aligned stack feels like a launcher rather than a game menu.</div>
+      <div><b>Trade-offs</b>Leaves the left third busy and the right third empty on ultra-wide screens. Button hover accent needs to stay subtle at this size.</div>
+    </div>
+  </section>
+
+  <!-- ══════════ C ══════════ -->
+  <section class="proto" id="C">
+    <div class="head"><span class="tag">C</span><h2>Minimal Ring</h2><p>Hole mostly out of frame, tiled menu. Most "modern launcher".</p></div>
+    <div class="stage" data-variant="low">
+      <canvas></canvas>
+      <div class="vignette"></div><div class="grain"></div>
+      <div class="ui">
+        <div class="brand">ORBIT</div>
+        <div class="splash">mind the singularity</div>
+        <div class="grid">
+          <div class="btn accent">Singleplayer<em>continue</em></div>
+          <div class="btn">Multiplayer<em>servers</em></div>
+          <div class="btn">Mods<em>3 loaded</em></div>
+          <div class="btn">Realms<em>offline</em></div>
+          <div class="btn wide">Options <span class="k">F1</span></div>
+        </div>
+        <div class="foot">
+          <div class="btn">Quit</div>
+          <div class="btn">Switch account</div>
+        </div>
+        <div class="meta">Orbit 0.1.0 · Fabric 1.21.11</div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Why it works</b>The hole becomes atmosphere instead of an object — you mostly see the glow and the ring arc. Tiles fit more options without a wall of full-width buttons.</div>
+      <div><b>Trade-offs</b>Furthest from vanilla; needs custom keyboard/controller navigation, and the 2×2 grid is harder to scan than a list for some players.</div>
+    </div>
+  </section>
+
+  <div class="impl">
+    <h3>How this lands in the mod (Fabric 1.21.11)</h3>
+    <ul>
+      <li><b>Screen swap:</b> mixin <code>TitleScreen</code> (or cancel it and set our own <code>Screen</code>) so Orbit's title screen replaces vanilla. Vanilla widgets are recreated as custom <code>ButtonWidget</code> subclasses with our own <code>renderWidget</code>.</li>
+      <li><b>Background:</b> no shader needed — draw it per frame with <code>DrawContext</code>: a black disc, a stack of rotating ellipse arcs for the disk (additive-ish alpha), a bright photon ring, and 2–3 warped arcs above/below for the lensing. A pre-baked 256×256 noise sprite reused with offsets covers the starfield cheaply.</li>
+      <li><b>Perf:</b> ~40 arc segments per frame is nothing, but I'd cap the animation to the title screen only, and skip it entirely when the window is unfocused or the "animation" toggle is off.</li>
+      <li><b>Buttons:</b> real widgets, not painted pixels — keyboard focus, narration and the existing vanilla sound events keep working.</li>
+      <li><b>Splash text:</b> keep vanilla's splash mechanic (random line from <code>splashes.txt</code>, which already supports wrapping) so it rotates as usual, just restyled and rotated.</li>
+      <li><b>Config:</b> <code>Title Screen</code> module with a variant choice, animation on/off, spin speed, and show/hide logo — all saved in <code>orbit.json</code> like everything else.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   Shared black hole renderer. Each stage gets its own canvas +
+   variant config. Pure 2D canvas, no assets.
+   ───────────────────────────────────────────────────────────── */
+const stages = [...document.querySelectorAll('.stage')];
+let motionOn = true, spin = 1.0, driftSpeed = 1.0;
+
+function makeStars(w, h, n) {
+  const stars = [];
+  for (let i = 0; i < n; i++) {
+    stars.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      z: 0.25 + Math.random() * 0.75,          // parallax depth
+      r: Math.random() < 0.9 ? Math.random() * 0.9 + 0.25 : Math.random() * 1.5 + 0.9,
+      hue: Math.random() < 0.15 ? 205 + Math.random() * 40 : (Math.random() < 0.2 ? 30 : 0),
+      tw: Math.random() * Math.PI * 2
+    });
+  }
+  return stars;
+}
+
+function initStage(stage) {
+  const canvas = stage.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  const variant = stage.dataset.variant;
+
+  const cfg = {
+    // hole centre + size as fraction of the stage
+    cx: variant === 'right' ? 0.70 : 0.50,
+    cy: variant === 'low'   ? 0.42 : 0.46,
+    radius: variant === 'low' ? 0.30 : (variant === 'right' ? 0.26 : 0.22),
+    tilt: 0.30,                       // disk vertical squash
+    diskScale: variant === 'low' ? 1.75 : 1.55,
+    dim: variant === 'center' ? 0.72 : 1.0
+  };
+
+  let w = 0, h = 0, stars = [], t0 = performance.now(), angle = 0;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = stage.getBoundingClientRect();
+    w = canvas.width = Math.max(1, Math.round(rect.width * dpr));
+    h = canvas.height = Math.max(1, Math.round(rect.height * dpr));
+    stars = makeStars(w, h, Math.round((w * h) / 5200));
+  }
+
+  const ro = new ResizeObserver(resize);
+  ro.observe(stage);
+  resize();
+
+  function drawArc(cx, cy, rx, ry, from, to, color, width, alpha) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, from, to);
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - t0) / 1000);
+    t0 = now;
+    if (motionOn) angle += dt * 0.55 * spin;
+
+    const cx = w * cfg.cx, cy = h * cfg.cy;
+    const R = Math.min(w, h) * cfg.radius;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+
+    /* ── stars ── */
+    for (const s of stars) {
+      if (motionOn) {
+        s.x += dt * 3.2 * s.z * driftSpeed;
+        if (s.x > w + 4) { s.x = -4; s.y = Math.random() * h; }
+      }
+      const tw = 0.55 + 0.45 * Math.sin((now / 900) + s.tw);
+      const col = s.hue ? `hsl(${s.hue} 70% ${72 + s.z * 18}%)` : `hsl(0 0% ${76 + s.z * 20}%)`;
+      ctx.globalAlpha = (0.18 + s.z * 0.55) * tw;
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r * (w / 900), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    /* ── outer halo / lensing glow ── */
+    const halo = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 4.6);
+    halo.addColorStop(0, `rgba(255,150,60,${0.16 * cfg.dim})`);
+    halo.addColorStop(0.35, `rgba(150,90,220,${0.10 * cfg.dim})`);
+    halo.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = halo;
+    ctx.fillRect(0, 0, w, h);
+
+    /* ── disk: back half (behind the sphere) ── */
+    const segs = 46;
+    const rx = R * cfg.diskScale, ry = rx * cfg.tilt;
+    for (let i = 0; i < segs; i++) {
+      const a0 = Math.PI + (i / segs) * Math.PI;
+      const a1 = Math.PI + ((i + 1) / segs) * Math.PI + 0.02;
+      const k = i / segs;
+      // hotter near the hole, cooler at the rim
+      const hue = 32 - k * 22;
+      const light = 88 - k * 34;
+      ctx.globalAlpha = (0.55 - k * 0.32) * cfg.dim;
+      ctx.strokeStyle = `hsl(${hue} 100% ${light}%)`;
+      ctx.lineWidth = Math.max(1.2, (w / 420) * (2.6 - k * 1.4));
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx * (0.42 + k * 0.58), ry * (0.42 + k * 0.58), 0, a0, a1);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    /* ── the hole itself ── */
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* ── photon ring ── */
+    for (let i = 3; i >= 1; i--) {
+      ctx.globalAlpha = 0.16 * cfg.dim;
+      ctx.strokeStyle = i === 1 ? '#fff3d6' : '#ffb060';
+      ctx.lineWidth = i * (w / 900) * 2.2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * (1 + i * 0.012), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    /* ── lensed arcs above and below (the "Interstellar" bulge) ── */
+    const lensed = [
+      { rx: R * 1.25, ry: R * 0.55, a0: Math.PI * 1.08, a1: Math.PI * 1.92, lw: 2.4, al: 0.5 },
+      { rx: R * 1.55, ry: R * 0.30, a0: Math.PI * 1.12, a1: Math.PI * 1.88, lw: 1.6, al: 0.30 },
+      { rx: R * 1.25, ry: R * 0.55, a0: Math.PI * 0.08, a1: Math.PI * 0.92, lw: 2.0, al: 0.34 },
+      { rx: R * 1.55, ry: R * 0.30, a0: Math.PI * 0.12, a1: Math.PI * 0.88, lw: 1.3, al: 0.20 }
+    ];
+    for (const l of lensed) {
+      ctx.globalAlpha = l.al * cfg.dim;
+      ctx.strokeStyle = 'hsl(28 100% 86%)';
+      ctx.lineWidth = l.lw * (w / 900);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - R * 0.18, l.rx, l.ry, 0, l.a0, l.a1);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    /* ── disk: front half (in front of the sphere) ── */
+    for (let i = 0; i < segs; i++) {
+      const k = i / segs;
+      const a0 = (i / segs) * Math.PI;
+      const a1 = ((i + 1) / segs) * Math.PI + 0.02;
+      const hue = 32 - k * 22;
+      const light = 92 - k * 32;
+      ctx.globalAlpha = (0.72 - k * 0.4) * cfg.dim;
+      ctx.strokeStyle = `hsl(${hue} 100% ${light}%)`;
+      ctx.lineWidth = Math.max(1.4, (w / 420) * (3.0 - k * 1.5));
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx * (0.42 + k * 0.58), ry * (0.42 + k * 0.58), 0, a0, a1);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    /* ── rotating hot spots so the rotation is visible ── */
+    const spots = 7;
+    for (let i = 0; i < spots; i++) {
+      const a = angle * 1.4 + (i / spots) * Math.PI * 2;
+      const rr = 0.55 + (i % 3) * 0.16;
+      const sx = cx + Math.cos(a) * rx * rr;
+      const sy = cy + Math.sin(a) * ry * rr;
+      const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, R * 0.20);
+      g.addColorStop(0, `rgba(255,228,190,${0.30 * cfg.dim})`);
+      g.addColorStop(1, 'rgba(255,150,60,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(sx, sy, R * 0.20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+}
+
+stages.forEach(initStage);
+
+/* ── controls ── */
+document.getElementById('speed').oninput = e => { spin = e.target.value / 100; };
+document.getElementById('drift').oninput = e => { driftSpeed = e.target.value / 100; };
+document.getElementById('motionToggle').onclick = e => {
+  motionOn = !motionOn;
+  e.currentTarget.classList.toggle('on', motionOn);
+  e.currentTarget.lastChild.textContent = motionOn ? ' animation on' : ' animation off';
+};
+
+/* fake hover feedback for the tiled/grid variants */
+document.querySelectorAll('.btn').forEach(b => {
+  b.addEventListener('click', () => {
+    b.animate([{transform:'scale(.97)'},{transform:'scale(1)'}], {duration:120});
+  });
+});
+</script>
+</body>
+</html>

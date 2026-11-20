@@ -1,0 +1,15 @@
+{
+  "key.orbit.open_gui": "Open Orbit GUI",
+  "key.categories.orbit.main": "Orbit",
+  "key.category.orbit.main": "Orbit",
+  "key.orbit.module.freecam": "Toggle Freecam",
+  "key.orbit.module.storage_esp": "Toggle Storage ESP",
+  "key.orbit.module.auto_ah": "Toggle Auto AH",
+  "key.orbit.module.player_tracking": "Toggle Player Tracking",
+  "key.orbit.module.mob_esp": "Toggle Mob ESP",
+  "key.orbit.module.title_screen": "Toggle Title Screen",
+  "key.orbit.module.item_esp": "Toggle Item ESP",
+  "key.orbit.module.custom_sky": "Toggle Custom Sky",
+  "key.orbit.module.music": "Toggle Music",
+  "key.orbit.module.fullbright": "Toggle Fullbright"
+}
