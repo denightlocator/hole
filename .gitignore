@@ -1,0 +1,9 @@
+# Local Gradle, launch, and test output
+.gradle/
+build/
+run/
+out/
+.cache/
+*.class
+__pycache__/
+*.pyc

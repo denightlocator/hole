@@ -1,0 +1,5 @@
+# Keep Gradle launchers usable on their intended platforms.
+gradlew text eol=lf
+gradlew.bat text eol=crlf whitespace=cr-at-eol
+companion/gradlew text eol=lf
+companion/gradlew.bat text eol=crlf whitespace=cr-at-eol
