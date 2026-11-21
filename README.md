@@ -23,7 +23,34 @@ client-side Chunk Activity and Geode Age modules.
 | Loom | 1.16.3 |
 | Java | 21 |
 
-## Build
+## Get the jar on Windows
+
+1. Open [`start.bat`](start.bat) on GitHub, click **Download raw file**, and save it somewhere
+   writable, such as Downloads. Make sure it is named `start.bat`, not `start.bat.txt`. If you
+   already have this repository, you can use the `start.bat` in the project folder instead.
+2. Double-click `start.bat` and leave its window open. It uses a local combined Orbit checkout when
+   present, otherwise it downloads the source from the Orbit branch on GitHub (trying main if the
+   branch is unavailable). It finds a JDK 21 (including IntelliJ's `~/.jdks` folder), or downloads
+   Eclipse Temurin and verifies its SHA-256 checksum. It then builds with the Gradle wrapper; the
+   first run downloads Gradle and Minecraft/Fabric dependencies.
+3. **If the build succeeds**, the remapped jar is in `Orbit-Client\orbit-0.1.0.jar` beside the
+   starter, and that folder opens. The starter does not install or change any Minecraft instance.
+   Copy the jar into your instance's `mods` folder alongside Fabric API, using Fabric Loader for
+   Minecraft 1.21.11.
+
+Requires 64-bit Windows 10 or 11, Windows PowerShell 5.1, a writable folder, free disk space, and an
+Internet connection for the first run. It can take several minutes. The JDK download is cached under
+`%LOCALAPPDATA%\OrbitBuilder\jdks`; Gradle uses its normal user cache. IntelliJ is optional. If the
+automatic Java download fails, install a JDK 21 (for example through IntelliJ) and run the starter
+again, or set `JAVA_HOME` to that JDK's folder.
+
+If it fails, check `Orbit-Client\starter.log` and `Orbit-Client\gradle-build.log` (if created);
+logs may include local file paths. They are replaced on the next run. An older jar is left in place
+if a new build fails, so check the latest run before using it. The starter cannot produce a jar when
+a dependency download or compilation fails. Windows execution, the full Fabric build, and in-game
+behavior have not been verified here.
+
+## Build manually
 
 Install JDK 21 and, from the project directory, run:
 
@@ -160,6 +187,12 @@ Run the self-tests with JDK 21 and Python 3:
 bash tools/selftest/run-observation-tests.sh
 bash tools/selftest/run-original-tests.sh
 bash tools/selftest/run-config-tests.sh  # after Gradle has cached Gson, or set GSON_JAR
+```
+
+On Windows, the starter also has an offline fixture test (it does not build Minecraft):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/selftest/test-start.ps1
 ```
 
 The observation and configuration suites use deliberately simplified Minecraft/Fabric stubs. They
