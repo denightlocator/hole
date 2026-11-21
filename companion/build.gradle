@@ -1,0 +1,57 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+}
+
+version = project.mod_version
+group = 'dev.orbitobserver'
+base { archivesName = 'orbit-observer' }
+
+repositories {
+    mavenCentral()
+    maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+// Reuse the observation implementation without shipping classes in Orbit's namespace. The
+// companion can therefore be loaded alongside an existing Orbit jar without class-name clashes.
+def generatedSources = layout.buildDirectory.dir('generated/sources/observer/java')
+def prepareObservationSources = tasks.register('prepareObservationSources', Sync) {
+    from('../src/main/java') {
+        include 'dev/orbit/client/observation/**'
+        include 'dev/orbit/client/module/impl/render/ChunkActivity.java'
+        include 'dev/orbit/client/module/impl/render/GeodeAge.java'
+        include 'dev/orbit/client/mixin/ActivityClientWorldMixin.java'
+        eachFile { details ->
+            details.path = details.path.replace('dev/orbit/client/', 'dev/orbitobserver/client/')
+        }
+        filter { line -> line.replace('dev.orbit.client.', 'dev.orbitobserver.client.') }
+        includeEmptyDirs = false
+    }
+    into(generatedSources)
+}
+sourceSets.main.java.srcDir(generatedSources)
+tasks.named('compileJava') { dependsOn(prepareObservationSources) }
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    from('../LICENSE') { rename { "${it}_orbit-observer" } }
+}

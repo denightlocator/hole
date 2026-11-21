@@ -1,0 +1,11 @@
+# Local Gradle, launch, and test output
+.gradle/
+build/
+run/
+out/
+.cache/
+*.class
+__pycache__/
+*.pyc
+# Windows starter output (jar and logs)
+/Orbit-Client/

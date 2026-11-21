@@ -1,0 +1,1 @@
+package net.minecraft.world.chunk; import net.minecraft.world.World; public class WorldChunk extends Chunk {private final World world; public WorldChunk(World w,int x,int z){super(x,z);world=w;} public World getWorld(){return world;} }

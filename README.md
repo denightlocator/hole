@@ -1,36 +1,74 @@
 # Orbit Client
 
 Fabric client for **Minecraft 1.21.11**, with the Right Shift GUI and modules described below.
-The project includes Java source, resources, build scripts, and design prototypes.
+The root project combines the recovered Orbit framework, resources and original mixins with the
+client-side Chunk Activity and Geode Age modules.
+
+> **Verification:** the observation and configuration self-tests use Minecraft/Fabric doubles.
+> A real Fabric build and in-game testing are still needed to verify compatibility, mixin application
+> and rendering. The documentation below describes the intended behavior, not a runtime guarantee.
+
+> **Optional fallback:** [`companion/`](companion/README.md) is a separate mod with its own settings
+> and keybinds. Don't install it alongside this combined client: both contain the same features and
+> could respond to the same keys or draw duplicate overlays.
 
 ## Versions
 
 | | |
 | --- | --- |
 | Minecraft | 1.21.11 |
-| Fabric Loader | 0.17.2 |
+| Fabric Loader | 0.17.3 or newer |
 | Fabric API | 0.141.6+1.21.11 |
 | Yarn mappings | 1.21.11+build.6 |
 | Loom | 1.16.3 |
 | Java | 21 |
 
-## Build
+## Get the jar on Windows
 
-Install JDK 21 and Gradle 9.9.1, then run from the project directory:
+1. Open [`start.bat`](start.bat) on GitHub, click **Download raw file**, and save it somewhere
+   writable, such as Downloads. Make sure it is named `start.bat`, not `start.bat.txt`. If you
+   already have this repository, you can use the `start.bat` in the project folder instead.
+2. Double-click `start.bat` and leave its window open. It uses a local combined Orbit checkout when
+   present, otherwise it downloads the source from the Orbit branch on GitHub (trying main if the
+   branch is unavailable). It finds a JDK 21 (including IntelliJ's `~/.jdks` folder), or downloads
+   Eclipse Temurin and verifies its SHA-256 checksum. It then builds with the Gradle wrapper; the
+   first run downloads Gradle and Minecraft/Fabric dependencies.
+3. **If the build succeeds**, the remapped jar is in `Orbit-Client\orbit-0.1.0.jar` beside the
+   starter, and that folder opens. The starter does not install or change any Minecraft instance.
+   Copy the jar into your instance's `mods` folder alongside Fabric API, using Fabric Loader for
+   Minecraft 1.21.11.
+
+Requires 64-bit Windows 10 or 11, Windows PowerShell 5.1, a writable folder, free disk space, and an
+Internet connection for the first run. It can take several minutes. The JDK download is cached under
+`%LOCALAPPDATA%\OrbitBuilder\jdks`; Gradle uses its normal user cache. IntelliJ is optional. If the
+automatic Java download fails, install a JDK 21 (for example through IntelliJ) and run the starter
+again, or set `JAVA_HOME` to that JDK's folder.
+
+If it fails, check `Orbit-Client\starter.log` and `Orbit-Client\gradle-build.log` (if created);
+logs may include local file paths. They are replaced on the next run. An older jar is left in place
+if a new build fails, so check the latest run before using it. The starter cannot produce a jar when
+a dependency download or compilation fails. Windows execution, the full Fabric build, and in-game
+behavior have not been verified here.
+
+## Build manually
+
+Install JDK 21 and, from the project directory, run:
 
 ```bash
-gradle build
-# -> build/libs/orbit-0.1.0.jar
+./gradlew build
+# if successful: build/libs/orbit-0.1.0.jar
 ```
 
-There is no Gradle wrapper in this project. `bash tools/build.sh` can also set up and build in a
-compatible Debian/Ubuntu environment with `sudo`. The build downloads dependencies from the
-configured repositories. Dev launch: `gradle runClient`. Install the jar into `.minecraft/mods`
-with Fabric Loader 0.17+ and Fabric API 0.141.6+1.21.11.
+On Windows use `gradlew.bat build`. The wrapper downloads and verifies Gradle 9.4.1; the first build
+also needs access to the configured Fabric, Maven Central and Mojang repositories. A GitHub Actions
+[workflow template](tools/ci/README.md) is included, but must first be installed by someone with
+GitHub workflow permissions. For a development launch, use `./gradlew runClient`. Install the
+**remapped** jar (not `-dev` or `-sources`) into `.minecraft/mods` with Fabric Loader 0.17.3+ and
+Fabric API 0.141.6+1.21.11.
 
 ## The GUI
 
-Press **Right Shift** in game (keybind also appears in Options → Controls → Misc as "Open Orbit GUI").
+Press **Right Shift** in game (the keybind also appears in Minecraft's Options → Controls).
 
 Layout — prototype A:
 
@@ -63,6 +101,104 @@ Behaviour as implemented:
 * Scroll wheel scrolls the module grid once a category overflows.
 * Esc or Right Shift closes. Reopening restores the last category + selected module.
 * In-game the GUI uses a light darkening pass instead of vanilla's full-screen background blur.
+
+## Chunk Activity & Geode Age
+
+Two independent, client-only modules are registered under **Render**. Both start off and clear
+observations when switched off. Neither feature intercepts or changes packets, requires a server-side
+mod, or requests chunk loads. World observations and draw data are prepared on the client tick.
+
+The modules expose their options through Orbit's settings and keybind APIs, persisted in
+`config/orbit.json`. Configuration round-trips have been tested with runtime doubles; the in-game
+GUI and keybind conflicts still need checking. Check the default keys against your other bindings.
+
+### Chunk Activity
+
+**B** toggles a thin, depth-tested outline around chunks with recent activity. Its horizontal plane
+is placed at the height of the last observation, so uneven ground can obscure parts of an outline.
+Activity is recorded when a locally loaded player actually moves, and when the client observes a
+block type change within six blocks of a loaded player. Standing still and loading a chunk do not
+create marks. The latest observation refreshes the outline; its opacity decreases linearly to zero.
+Only currently loaded chunks are drawn, though their unexpired observations survive a temporary
+unload. History is held in memory only, bounded to 2,048 chunks, and reset on disconnect, world or
+dimension change, and disable.
+
+The client cannot reliably identify who caused an arbitrary block change. Proximity is **only a
+heuristic**: natural changes or machinery near a player can be marked, and changes outside the
+client's view or range can be missed. Fluid-only updates and changes to properties of the same block
+type are ignored; placing or breaking a solid block in fluid can still be observed.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `Color` | `#65C7FF` | RGB hex (`#RRGGBB`); invalid values use the default |
+| `Opacity` | 35% | Maximum opacity immediately after an observation |
+| `Fade Time` | 300 s | Time from the most recent observation until the outline disappears |
+| `Line Width` | 1.5 | Outline thickness |
+
+### Geode Age
+
+**J** toggles a small, depth-tested `Geode: Fresh*`, `Geode: Aging*`, or
+`Geode: Very aged*` label. The asterisk matters: **this is not a geode's actual age**. Minecraft does
+not provide a creation timestamp to the client; amethyst grows randomly and can be harvested, and a
+client-loaded chunk is not necessarily ticking on the server. The label is a visual heuristic using
+the time this client has observed the chunk loaded and the largest **visible** bud stage nearby:
+
+* **Fresh**: under `Aging After`, with at most small buds.
+* **Aging**: at least `Aging After` or a visible medium/large bud.
+* **Very aged**: at least `Very Aged After` or a visible fully grown cluster.
+
+`Very Aged After` is effectively clamped to at least `Aging After`. The clock resets when a chunk
+unloads, the world changes, or the module is disabled. If the module is enabled after a chunk was
+already loaded, the clock starts when the module first observes it, so it is only a lower bound.
+Nearby exposed budding-amethyst blocks, buds, and plain amethyst surfaces are grouped approximately
+within eight blocks. Plain surfaces are sampled when they border known air or fluid; aiming at one
+also adds it immediately, without waiting for the next scan. These blocks can be player-placed and
+are not proof of a naturally generated geode. Only candidates hit by an unobstructed client-side
+raycast through loaded chunks are labelled. Opaque blocks **and glass** may obscure a label; a
+calcite-only shell is not identified. Scanning is spread over ticks, the number of candidates is
+bounded, and at most eight groups are displayed.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `Range` | 32 m | Maximum camera-to-candidate distance (8–48 m) |
+| `Aging After` / `Very Aged After` | 120 / 600 s | Local-load-time thresholds |
+| `Fresh Color` / `Aging Color` / `Very Aged Color` | `#A8E8FF` / `#C397FF` / `#FF9FDC` | RGB hex label colours |
+| `Opacity` / `Label Scale` | 90% / 0.8× | Label appearance |
+
+The following example entries (also in [`examples/observation-settings.json`](examples/observation-settings.json))
+follow Orbit's `config/orbit.json` format. Merge them into an existing `modules` array rather than
+replacing other module and theme settings:
+
+```json
+{ "name": "Chunk Activity", "enabled": false, "bind": "key.keyboard.b",
+  "settings": { "Color": "#65C7FF", "Opacity": 35, "Fade Time": 300, "Line Width": 1.5 } }
+```
+
+```json
+{ "name": "Geode Age", "enabled": false, "bind": "key.keyboard.j",
+  "settings": { "Range": 32, "Aging After": 120, "Very Aged After": 600,
+    "Fresh Color": "#A8E8FF", "Aging Color": "#C397FF", "Very Aged Color": "#FF9FDC",
+    "Opacity": 90, "Label Scale": 0.8 } }
+```
+
+Run the self-tests with JDK 21 and Python 3:
+
+```bash
+bash tools/selftest/run-observation-tests.sh
+bash tools/selftest/run-original-tests.sh
+bash tools/selftest/run-config-tests.sh  # after Gradle has cached Gson, or set GSON_JAR
+```
+
+On Windows, the starter also has an offline fixture test (it does not build Minecraft):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/selftest/test-start.ps1
+```
+
+The observation and configuration suites use deliberately simplified Minecraft/Fabric stubs. They
+check logic, module control flow and configuration persistence, not real API compatibility, mixin
+application or in-game rendering. The original suite tests rounded geometry, inspector clipping and
+local audio serving.
 
 ## Title screen
 
