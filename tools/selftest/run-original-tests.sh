@@ -14,8 +14,11 @@ classes="$(mktemp -d "${TMPDIR:-/tmp}/orbit-original-test.XXXXXX")"
 trap 'rm -rf "$classes"' EXIT
 "$javac" --release 21 -encoding UTF-8 -d "$classes" \
   src/main/java/dev/orbit/client/gui/RoundedSpans.java \
+  src/main/java/dev/orbit/client/gui/InspectorViewport.java \
   src/main/java/dev/orbit/client/audio/LocalAudioServer.java \
-  tools/selftest/SpanSelfTest.java tools/selftest/ServerSelfTest.java
+  tools/selftest/SpanSelfTest.java tools/selftest/InspectorViewportSelfTest.java \
+  tools/selftest/ServerSelfTest.java
 "$java" -cp "$classes" SpanSelfTest
+"$java" -cp "$classes" dev.orbit.client.gui.InspectorViewportSelfTest
 "$java" -cp "$classes" ServerSelfTest
 "$java" -Djava.net.preferIPv6Addresses=true -cp "$classes" ServerSelfTest

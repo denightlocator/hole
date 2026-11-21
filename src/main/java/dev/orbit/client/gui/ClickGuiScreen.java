@@ -329,8 +329,11 @@ public class ClickGuiScreen extends Screen {
             return;
         }
 
-        int bottom = inspectorBottom - 4;
-        context.enableScissor(inspectorX, inspectorTop + 2, inspectorX + INSPECTOR_W - 2, bottom);
+        // Keep the scrollable settings above the pinned keybind row. Input uses the same
+        // viewport, so a clipped setting cannot steal a click from the keybind or titlebar.
+        int bottom = InspectorViewport.bottom(inspectorBottom);
+        context.enableScissor(inspectorX, InspectorViewport.top(inspectorTop),
+                inspectorX + INSPECTOR_W - 2, bottom);
 
         int y = top - inspectorScroll;
 
@@ -635,6 +638,10 @@ public class ClickGuiScreen extends Screen {
 
         for (Region region : regions) {
             if (!region.contains(mouseX, mouseY)) {
+                continue;
+            }
+            if (region.kind.isInspectorSetting() && !InspectorViewport.contains(mouseX, mouseY,
+                    inspectorX, inspectorX + INSPECTOR_W - 2, inspectorTop, inspectorBottom)) {
                 continue;
             }
             // while the theme editor is open it is modal - only its own controls react
@@ -960,6 +967,11 @@ public class ClickGuiScreen extends Screen {
         boolean isTheme() {
             return this == THEME_BUTTON || this == THEME_CLOSE || this == THEME_PRESET
                     || this == THEME_SLIDER || this == THEME_TOGGLE;
+        }
+
+        boolean isInspectorSetting() {
+            return this == SETTING_TOGGLE || this == SLIDER || this == COLOR_SLIDER
+                    || this == TEXT_FIELD || this == MODE;
         }
     }
 

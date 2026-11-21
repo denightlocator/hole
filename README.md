@@ -164,7 +164,8 @@ bash tools/selftest/run-config-tests.sh  # after Gradle has cached Gson, or set 
 
 The observation and configuration suites use deliberately simplified Minecraft/Fabric stubs. They
 check logic, module control flow and configuration persistence, not real API compatibility, mixin
-application or in-game rendering. The original suite tests rounded geometry and local audio serving.
+application or in-game rendering. The original suite tests rounded geometry, inspector clipping and
+local audio serving.
 
 ## Title screen
 
