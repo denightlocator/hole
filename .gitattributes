@@ -1,0 +1,7 @@
+# Keep Gradle launchers usable on their intended platforms.
+gradlew text eol=lf
+companion/gradlew text eol=lf
+companion/gradlew.bat text eol=crlf whitespace=cr-at-eol
+# Preserve CRLF in raw downloads and source ZIPs, not only in Git checkouts.
+gradlew.bat -text whitespace=cr-at-eol
+start.bat -text whitespace=cr-at-eol

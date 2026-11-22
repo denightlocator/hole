@@ -1,0 +1,31 @@
+{
+  "version": "0.1.0",
+  "modules": [
+    {
+      "name": "Chunk Activity",
+      "enabled": false,
+      "bind": "key.keyboard.b",
+      "settings": {
+        "Color": "#65C7FF",
+        "Opacity": 35,
+        "Fade Time": 300,
+        "Line Width": 1.5
+      }
+    },
+    {
+      "name": "Geode Age",
+      "enabled": false,
+      "bind": "key.keyboard.j",
+      "settings": {
+        "Range": 32,
+        "Aging After": 120,
+        "Very Aged After": 600,
+        "Fresh Color": "#A8E8FF",
+        "Aging Color": "#C397FF",
+        "Very Aged Color": "#FF9FDC",
+        "Opacity": 90,
+        "Label Scale": 0.8
+      }
+    }
+  ]
+}
