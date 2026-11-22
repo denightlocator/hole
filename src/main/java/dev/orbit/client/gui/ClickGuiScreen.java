@@ -363,25 +363,31 @@ public class ClickGuiScreen extends Screen {
                 context.drawText(textRenderer, mode.getName(), x, y, Theme.textFaint(), false);
                 y += 11;
                 List<String> modes = mode.getModes();
-                int gap = 3;
-                int segW = (w - (modes.size() - 1) * gap) / modes.size();
+                int[] labelWidths = new int[modes.size()];
                 for (int i = 0; i < modes.size(); i++) {
-                    int segX = x + i * (segW + gap);
+                    labelWidths[i] = textRenderer.getWidth(modes.get(i));
+                }
+                InspectorModeLayout.Result layout = InspectorModeLayout.arrange(w, labelWidths);
+                for (InspectorModeLayout.Cell cell : layout.cells()) {
+                    int i = cell.index();
+                    int segX = x + cell.x();
+                    int segY = y + cell.y();
+                    int segW = cell.width();
                     boolean sel = modes.get(i).equals(mode.get());
                     if (sel) {
-                        Rounded.fillGradient(context, segX, y, segW, 13, 4,
+                        Rounded.fillGradient(context, segX, segY, segW, 13, 4,
                                 Theme.alpha(Theme.accent(), 0x50), Theme.alpha(Theme.accentAlt(), 0x28));
-                        Rounded.outline(context, segX, y, segW, 13, 4, Theme.borderAccent());
+                        Rounded.outline(context, segX, segY, segW, 13, 4, Theme.borderAccent());
                     } else {
-                        Rounded.fill(context, segX, y, segW, 13, 4, Theme.card());
+                        Rounded.fill(context, segX, segY, segW, 13, 4, Theme.card());
                     }
-                    String label = textRenderer.trimToWidth(modes.get(i), segW - 6);
-                    context.drawCenteredTextWithShadow(textRenderer, label, segX + segW / 2, y + 3,
+                    String label = textRenderer.trimToWidth(modes.get(i), Math.max(0, segW - 6));
+                    context.drawCenteredTextWithShadow(textRenderer, label, segX + segW / 2, segY + 3,
                             sel ? Theme.text() : Theme.textFaint());
-                    regions.add(new Region(segX, y, segW, 13, Kind.MODE,
+                    regions.add(new Region(segX, segY, segW, 13, Kind.MODE,
                             selected.getCategory(), selected, setting, i, ""));
                 }
-                y += 21;
+                y += layout.height() + 8;
             } else if (setting instanceof ColorSetting color) {
                 y = drawColorSetting(context, color, x, y, w, mouseX, mouseY);
             } else if (setting instanceof StringSetting text) {

@@ -4,10 +4,17 @@ import dev.orbit.client.module.ModuleRegistry;
 import dev.orbit.client.module.impl.misc.TitleScreenModule;
 import dev.orbit.client.module.impl.render.ChunkActivity;
 import dev.orbit.client.module.impl.render.GeodeAge;
+import dev.orbit.client.module.impl.render.SkyModule;
+import dev.orbit.client.module.setting.ModeSetting;
 import dev.orbit.client.module.setting.NumberSetting;
 import dev.orbit.client.module.setting.Setting;
 import dev.orbit.client.module.setting.StringSetting;
+import dev.orbit.client.render.SkyRenderer;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.Identifier;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,10 +30,22 @@ public final class ConfigIntegrationSelfTest {
             TitleScreenModule title = new TitleScreenModule();
             ChunkActivity chunk = new ChunkActivity();
             GeodeAge geode = new GeodeAge();
+            SkyModule sky = new SkyModule();
             ModuleRegistry.register(title);
             ModuleRegistry.register(chunk);
             ModuleRegistry.register(geode);
+            ModuleRegistry.register(sky);
             check(title.isEnabled(), "title starts enabled");
+            ModeSetting skyChoice = mode(sky, "Sky");
+            check(skyChoice.getModes().size() == SkyModule.SKIES.length, "every registered sky is selectable");
+            for (String[] entry : SkyModule.SKIES) {
+                check(skyChoice.getModes().contains(entry[0]), "sky option exists: " + entry[0]);
+                skyChoice.set(entry[0]);
+                check(sky.currentTexture().equals(Identifier.of("orbit", "textures/gui/sky/" + entry[1] + ".png")),
+                        "sky option resolves to its PNG: " + entry[0]);
+            }
+            skyChoice.set("Moonlit Aurora");
+            sky.setEnabled(true);
             title.setEnabled(false);
             chunk.setEnabled(true);
             geode.setEnabled(true);
@@ -46,9 +65,11 @@ public final class ConfigIntegrationSelfTest {
             TitleScreenModule restoredTitle = new TitleScreenModule();
             ChunkActivity restoredChunk = new ChunkActivity();
             GeodeAge restoredGeode = new GeodeAge();
+            SkyModule restoredSky = new SkyModule();
             ModuleRegistry.register(restoredTitle);
             ModuleRegistry.register(restoredChunk);
             ModuleRegistry.register(restoredGeode);
+            ModuleRegistry.register(restoredSky);
             new ConfigManager().load();
             check(!restoredTitle.isEnabled(), "saved false disables default-on title screen");
             check(restoredChunk.isEnabled() && restoredGeode.isEnabled(), "saved feature toggles restored");
@@ -59,6 +80,19 @@ public final class ConfigIntegrationSelfTest {
             check(string(restoredGeode, "Aging Color").get().equals("#445566"), "geode color round-trip");
             check(restoredChunk.getKeybind().serialize().equals("key.keyboard.b"), "chunk key round-trip");
             check(restoredGeode.getKeybind().serialize().equals("key.keyboard.j"), "geode key round-trip");
+            check(restoredSky.isEnabled() && mode(restoredSky, "Sky").get().equals("Moonlit Aurora"),
+                    "new sky selection and enabled state round-trip");
+            check(restoredSky.currentTexture().equals(Identifier.of("orbit", "textures/gui/sky/moonlit_aurora.png")),
+                    "restored selection resolves to the supplied PNG");
+            MinecraftClient.getInstance().world = new ClientWorld();
+            restoredSky.onWorldRender(new WorldRenderContext());
+            check(SkyRenderer.lastTexture.equals(restoredSky.currentTexture()), "selected sky reaches renderer double");
+            check(SkyModule.isReplacing(), "enabled sky replaces vanilla sky");
+            SkyRenderer.drawSucceeds = false;
+            restoredSky.onWorldRender(new WorldRenderContext());
+            check(!restoredSky.replacesVanillaSky(), "failed draw restores vanilla sky on the next pass");
+            SkyRenderer.drawSucceeds = true;
+            MinecraftClient.getInstance().world = null;
             restoredChunk.setEnabled(false);
             restoredGeode.setEnabled(false);
             System.out.println("ConfigIntegrationSelfTest: all checks passed");
@@ -74,6 +108,9 @@ public final class ConfigIntegrationSelfTest {
 
     private static NumberSetting number(Module module, String name) {
         return (NumberSetting) setting(module, name);
+    }
+    private static ModeSetting mode(Module module, String name) {
+        return (ModeSetting) setting(module, name);
     }
     private static StringSetting string(Module module, String name) {
         return (StringSetting) setting(module, name);

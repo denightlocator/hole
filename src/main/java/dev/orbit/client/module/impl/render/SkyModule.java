@@ -13,6 +13,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
+import java.util.Arrays;
+
 /**
  * Custom Sky - replaces the vanilla sky with a baked image dome.
  *
@@ -27,15 +29,14 @@ public class SkyModule extends Module {
             {"Blood Moon", "eclipse"},
             {"Synthwave", "synthwave"},
             {"Aurora", "aurora"},
+            {"Moonlit Aurora", "moonlit_aurora"},
             {"Nebula", "nebula"},
             {"Void", "void"},
             {"Clear Day", "day"},
     };
 
-    private final ModeSetting sky = addSetting(new ModeSetting("Sky",
-            "Anime / Starfall",
-            "Anime / Starfall", "Interstellar", "Blood Moon", "Synthwave",
-            "Aurora", "Nebula", "Void", "Clear Day"));
+    private final ModeSetting sky = addSetting(new ModeSetting("Sky", "Anime / Starfall",
+            Arrays.stream(SKIES).map(entry -> entry[0]).toArray(String[]::new)));
 
     private final BoolSetting keepClouds = addSetting(new BoolSetting("Keep Clouds", true));
     private final BoolSetting hideVanillaSky = addSetting(new BoolSetting("Replace Vanilla Sky", true));

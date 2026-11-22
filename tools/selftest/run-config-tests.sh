@@ -37,6 +37,7 @@ mapfile -t doubles < <(find tools/selftest/config-mocks/src tools/selftest/mocks
   src/main/java/dev/orbit/client/module/impl/misc/TitleScreenModule.java \
   src/main/java/dev/orbit/client/module/impl/render/ChunkActivity.java \
   src/main/java/dev/orbit/client/module/impl/render/GeodeAge.java \
+  src/main/java/dev/orbit/client/module/impl/render/SkyModule.java \
   src/main/java/dev/orbit/client/observation/*.java \
   src/main/java/dev/orbit/client/hud/HudLayout.java \
   src/main/java/dev/orbit/client/config/ConfigManager.java \

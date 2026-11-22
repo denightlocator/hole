@@ -300,11 +300,14 @@ auction house, which closed *any* screen - including Orbit's ClickGUI. It now on
 
 Replaces vanilla sky rendering with a baked image dome (`Render → Custom Sky`).
 
-* Eight skies ship in the jar (`assets/orbit/textures/gui/sky/`): Anime / Starfall, Interstellar,
-  Blood Moon, Synthwave, Aurora, Nebula, Void, Clear Day. 1.2 MB is the biggest, 56 KB the smallest.
-* The dome is five quads at radius 320 centred on the camera, drawn before terrain so depth testing
-  hides it behind blocks. It is geometry rather than a fullscreen blit on purpose: the image has to
-  rotate when you look around, which a 2D blit cannot do.
+* Nine skies ship in the jar (`assets/orbit/textures/gui/sky/`): Anime / Starfall, Interstellar,
+  Blood Moon, Synthwave, Aurora, **Moonlit Aurora**, Nebula, Void and Clear Day.
+* To use the supplied image, open the GUI with Right Shift, select **Render → Custom Sky**, enable
+  the module and choose **Moonlit Aurora** under **Sky**. The choices wrap onto multiple rows;
+  scroll the inspector if some settings are below the visible area.
+* The dome is a 96-by-48 sphere at radius 320 centred on the camera, drawn before terrain so depth
+  testing hides it behind blocks. It is geometry rather than a fullscreen blit on purpose: the
+  image has to rotate when you look around, which a 2D blit cannot do.
 * Vanilla's `renderSky` pass is cancelled by `WorldRendererMixin` (sun, moon, stars and the horizon
   gradient all live there). Clouds are a separate pass and survive, so `Keep Clouds` still works.
 * If the dome pipeline fails to build, the module disables `Replace Vanilla Sky` itself and logs,
@@ -558,31 +561,22 @@ default in `HudLayout` - the editor itself needs no changes.
 
 ## Sky dome
 
-Custom Sky renders the chosen image as a dome around the camera. It took four fixes to get right:
+Custom Sky prepares a full 360°×180° texture at load time and maps longitude and latitude to a
+sphere. Its pixel dimensions retain vertical image detail and need not be 2:1. Each source image
+runs **once** around the horizon, rather than being tiled or mirrored.
+A narrow overlap blends its left and right edges, and the first and last texture columns match. The
+art extends from about 80° above the horizon to 5° below it; its upper and lower edges fade into
+colours sampled from the picture, closing the zenith and nadir without stretching an edge row into
+long streaks.
 
-1. **Collinear UVs.** The old dome was five quads of a cube, and `quad()` handed the second triangle
-   the UVs `(0,0) (0,0) (0,1)` - two identical, so that triangle collapsed into one stretched texel.
-   Exactly half of every wall was a smear.
-2. **No spherical projection.** Each wall sampled the whole image, so the picture tiled four times
-   around the player. Latitude now maps to `v`, longitude to `u`.
-3. **Wrong seam and pole.** The art is a *painting* of a sky, not a 360-degree panorama: its left and
-   right edges do not match, and its top row means "far away", not "overhead". The art is mirrored
-   into a seamless strip.
-4. **Gaps.** A capped dome left the zenith showing vanilla sky. The texture is now a complete
-   **360x180 panorama** built at load time: the art fills the band from 60 degrees up to the horizon,
-   above it fades into the art's own average colour, below it fades into a darkened ground tone. The
-   geometry is a full sphere (96 x 48), so no direction is left uncovered.
+The source images are flat paintings, not genuine 360° photos. Wrapping them around a sphere can
+stretch their details, and the overlap may visibly blend features from opposite edges. The colour
+fades fill missing directions; they cannot invent the scenery outside the original image.
 
-The zenith and nadir are *fades to the art's average colour* rather than stretched copies of its edge
-rows. Smearing the edge row is what turns a character or a mountain in the picture into radial streaks
-across the whole sky.
-
-`tools/sky_projection_check.py` renders the dome from the same mapping the Java uses (panorama build,
-mirror, equirect lookup) at three angles - horizon, straight up, straight down - and writes
-`art/sky-dome-preview.png`. Every bug above was found with it, without launching the game.
-
-Known trade-off: mirroring means every feature appears twice, mirrored. Invisible for soft skies and
-stars; obvious on a picture with one sun, which is why `Synthwave` has two.
+For an offline approximation, `tools/sky_projection_check.py` compiles and runs the actual Java
+panorama builder and ray-casts four views into `art/sky-dome-preview.png`. It requires JDK 21,
+Python 3, NumPy and Pillow. Pass `--image path/to/image.png` to preview another sky, or
+`--panorama path/to/output.png` to save the prepared panorama. The preview is not a Minecraft render.
 
 ## Freecam
 
